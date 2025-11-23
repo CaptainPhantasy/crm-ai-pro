@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="128" height="160">
+  <defs>
+    <linearGradient id="grad-inbox" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(0,229,255,0.2);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(0,229,255,0.5);stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow-inbox">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="circuit-inbox" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M10,0 V20 M0,10 H20" stroke="#008BA3" stroke-width="1" opacity="0.2"/>
+      <circle cx="10" cy="10" r="1.5" fill="#008BA3" opacity="0.4"/>
+    </pattern>
+  </defs>
+  
+  <circle cx="64" cy="64" r="60" fill="rgba(0, 20, 40, 0.9)" stroke="#00E5FF" stroke-width="3" filter="url(#glow-inbox)"/>
+  <circle cx="64" cy="64" r="60" fill="url(#circuit-inbox)"/>
+  
+  <g transform="translate(32, 32) scale(2.5)" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-inbox)">
+    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+  </g>
+  
+  <text x="64" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="12" stroke="black" stroke-width="3" fill="none">inbox</text>
+  <text x="64" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="12" fill="white">inbox</text>
+</svg>

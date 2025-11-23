@@ -1,0 +1,89 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+export default function LoginPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+      // For now, just redirect to inbox
+      // In production, you'd authenticate here
+      router.push('/inbox')
+    } catch (err) {
+      setError('Failed to sign in. Please try again.')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="w-full max-w-md relative z-10">
+      <Card className="border-neon-blue-glow300">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-neon-blue-glow300 flex items-center justify-center text-black font-bold text-[10px] leading-tight neon-glow-blue">
+              AI
+            </div>
+            <CardTitle className="text-2xl font-bold text-neon-blue-glow300">
+              CRM-AI PRO
+            </CardTitle>
+          </div>
+          <CardDescription>
+            Sign in to your account to continue
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-white">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-white">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {error && (
+              <div className="text-sm text-neon-accent-red bg-dark-panel border-2 border-neon-accent-red p-3 rounded-md">
+                {error}
+              </div>
+            )}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+

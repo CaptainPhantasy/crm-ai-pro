@@ -1,0 +1,228 @@
+import { NextResponse } from 'next/server'
+import { getAuthenticatedSession } from '@/lib/auth-helper'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+export async function GET(request: Request) {
+  try {
+    const session = await getAuthenticatedSession(request)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const reportType = searchParams.get('type') // 'jobs', 'financial', 'tech-performance'
+    const format = searchParams.get('format') || 'json' // 'json', 'csv'
+    const dateFrom = searchParams.get('dateFrom')
+    const dateTo = searchParams.get('dateTo')
+    const techId = searchParams.get('techId')
+
+    if (!reportType) {
+      return NextResponse.json({ error: 'Missing required parameter: type' }, { status: 400 })
+    }
+
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {}
+          },
+        },
+        global: {
+          headers: {
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+        },
+      }
+    )
+
+    // Get user's account_id
+    const { data: user } = await supabase
+      .from('users')
+      .select('account_id')
+      .eq('id', session.user.id)
+      .single()
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    if (reportType === 'jobs') {
+      let jobsQuery = supabase
+        .from('jobs')
+        .select('*, contact:contacts(*), tech:users!tech_assigned_id(*)')
+        .eq('account_id', user.account_id)
+
+      if (dateFrom) {
+        jobsQuery = jobsQuery.gte('created_at', dateFrom)
+      }
+
+      if (dateTo) {
+        jobsQuery = jobsQuery.lte('created_at', dateTo)
+      }
+
+      const { data: jobs, error } = await jobsQuery
+
+      if (error) {
+        return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 })
+      }
+
+      if (format === 'csv') {
+        const headers = ['ID', 'Status', 'Description', 'Contact', 'Tech', 'Amount', 'Created At']
+        const rows =
+          jobs?.map((job) => [
+            job.id,
+            job.status,
+            job.description || '',
+            `${job.contact?.first_name || ''} ${job.contact?.last_name || ''}`.trim(),
+            job.tech?.name || 'Unassigned',
+            job.total_amount ? `$${(job.total_amount / 100).toFixed(2)}` : '$0.00',
+            job.created_at,
+          ]) || []
+
+        const csv = [
+          headers.join(','),
+          ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+        ].join('\n')
+
+        return new NextResponse(csv, {
+          headers: {
+            'Content-Type': 'text/csv',
+            'Content-Disposition': `attachment; filename="jobs-report-${Date.now()}.csv"`,
+          },
+        })
+      }
+
+      return NextResponse.json({ jobs: jobs || [] })
+    } else if (reportType === 'financial') {
+      let paymentsQuery = supabase
+        .from('payments')
+        .select('*, invoice:invoices(*), job:jobs(*)')
+        .eq('account_id', user.account_id)
+        .eq('status', 'completed')
+
+      if (dateFrom) {
+        paymentsQuery = paymentsQuery.gte('created_at', dateFrom)
+      }
+
+      if (dateTo) {
+        paymentsQuery = paymentsQuery.lte('created_at', dateTo)
+      }
+
+      const { data: payments, error } = await paymentsQuery
+
+      if (error) {
+        return NextResponse.json({ error: 'Failed to fetch payments' }, { status: 500 })
+      }
+
+      if (format === 'csv') {
+        const headers = ['ID', 'Amount', 'Payment Method', 'Invoice', 'Job', 'Date']
+        const rows =
+          payments?.map((payment) => [
+            payment.id,
+            `$${((payment.amount || 0) / 100).toFixed(2)}`,
+            payment.payment_method || '',
+            payment.invoice?.invoice_number || '',
+            payment.job?.description || '',
+            payment.created_at,
+          ]) || []
+
+        const csv = [
+          headers.join(','),
+          ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+        ].join('\n')
+
+        return new NextResponse(csv, {
+          headers: {
+            'Content-Type': 'text/csv',
+            'Content-Disposition': `attachment; filename="financial-report-${Date.now()}.csv"`,
+          },
+        })
+      }
+
+      return NextResponse.json({ payments: payments || [] })
+    } else if (reportType === 'tech-performance') {
+      if (!techId) {
+        return NextResponse.json({ error: 'Missing required parameter: techId' }, { status: 400 })
+      }
+
+      let jobsQuery = supabase
+        .from('jobs')
+        .select('*, contact:contacts(*)')
+        .eq('account_id', user.account_id)
+        .eq('tech_assigned_id', techId)
+
+      if (dateFrom) {
+        jobsQuery = jobsQuery.gte('created_at', dateFrom)
+      }
+
+      if (dateTo) {
+        jobsQuery = jobsQuery.lte('created_at', dateTo)
+      }
+
+      const { data: jobs, error } = await jobsQuery
+
+      if (error) {
+        return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 })
+      }
+
+      const completedJobs = jobs?.filter((j) => j.status === 'completed').length || 0
+      const totalRevenue = jobs?.reduce((sum, j) => sum + (j.total_amount || 0), 0) || 0
+      const avgJobValue = jobs && jobs.length > 0 ? totalRevenue / jobs.length : 0
+
+      if (format === 'csv') {
+        const headers = ['ID', 'Status', 'Description', 'Contact', 'Amount', 'Created At', 'Completed At']
+        const rows =
+          jobs?.map((job) => [
+            job.id,
+            job.status,
+            job.description || '',
+            `${job.contact?.first_name || ''} ${job.contact?.last_name || ''}`.trim(),
+            job.total_amount ? `$${(job.total_amount / 100).toFixed(2)}` : '$0.00',
+            job.created_at,
+            job.completed_at || '',
+          ]) || []
+
+        const csv = [
+          headers.join(','),
+          ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+        ].join('\n')
+
+        return new NextResponse(csv, {
+          headers: {
+            'Content-Type': 'text/csv',
+            'Content-Disposition': `attachment; filename="tech-performance-${techId}-${Date.now()}.csv"`,
+          },
+        })
+      }
+
+      return NextResponse.json({
+        techId,
+        totalJobs: jobs?.length || 0,
+        completedJobs,
+        totalRevenue,
+        avgJobValue: Math.round(avgJobValue),
+        jobs: jobs || [],
+      })
+    } else {
+      return NextResponse.json({ error: 'Invalid report type' }, { status: 400 })
+    }
+  } catch (error: unknown) {
+    console.error('Error in GET /api/reports:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+

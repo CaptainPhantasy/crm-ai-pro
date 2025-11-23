@@ -1,0 +1,119 @@
+import { NextResponse } from 'next/server'
+import { getAuthenticatedSession } from '@/lib/auth-helper'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+export async function POST(request: Request) {
+  try {
+    const session = await getAuthenticatedSession(request)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { jobIds, date } = body
+
+    if (!jobIds || !Array.isArray(jobIds) || jobIds.length === 0) {
+      return NextResponse.json(
+        { error: 'Missing or invalid jobIds array' },
+        { status: 400 }
+      )
+    }
+
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {}
+          },
+        },
+        global: {
+          headers: {
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+        },
+      }
+    )
+
+    // Get user's account_id
+    const { data: user } = await supabase
+      .from('users')
+      .select('account_id')
+      .eq('id', session.user.id)
+      .single()
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get jobs with contact addresses
+    const { data: jobs, error: jobsError } = await supabase
+      .from('jobs')
+      .select('id, description, scheduled_start, scheduled_end, contact:contacts(address)')
+      .eq('account_id', user.account_id)
+      .in('id', jobIds)
+
+    if (jobsError || !jobs || jobs.length === 0) {
+      return NextResponse.json({ error: 'Jobs not found' }, { status: 404 })
+    }
+
+    // Simple optimization: sort by scheduled time and calculate estimated travel
+    // In a real implementation, this would use a routing algorithm (like Google Maps API)
+    const optimizedJobs = jobs
+      .filter((job) => job.scheduled_start)
+      .sort((a, b) => {
+        const timeA = new Date(a.scheduled_start).getTime()
+        const timeB = new Date(b.scheduled_start).getTime()
+        return timeA - timeB
+      })
+      .map((job, index) => {
+        const startTime = new Date(job.scheduled_start)
+        const estimatedTravel = index > 0 ? 30 : 0 // 30 minutes between jobs (simplified)
+        const estimatedArrival = new Date(startTime.getTime() + estimatedTravel * 60000)
+
+        return {
+          jobId: job.id,
+          description: job.description,
+          scheduledStart: job.scheduled_start,
+          scheduledEnd: job.scheduled_end,
+          address: job.contact?.address || '',
+          estimatedArrival: estimatedArrival.toISOString(),
+          estimatedTravelMinutes: estimatedTravel,
+          order: index + 1,
+        }
+      })
+
+    // Calculate total estimated time
+    const totalEstimatedMinutes = optimizedJobs.reduce((sum, job) => {
+      const duration = job.scheduledEnd
+        ? Math.round((new Date(job.scheduledEnd).getTime() - new Date(job.scheduledStart).getTime()) / 60000)
+        : 60 // Default 1 hour if no end time
+      return sum + duration + job.estimatedTravelMinutes
+    }, 0)
+
+    return NextResponse.json({
+      success: true,
+      optimizedRoute: optimizedJobs,
+      totalEstimatedMinutes,
+      totalEstimatedHours: (totalEstimatedMinutes / 60).toFixed(1),
+      note: 'This is a simplified optimization. For production, integrate with Google Maps Directions API for accurate routing.',
+    })
+  } catch (error: unknown) {
+    console.error('Error in POST /api/schedule/optimize:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
