@@ -1,9 +1,13 @@
 'use client'
 
-import React from 'react'
-import { usePathname } from 'next/navigation'
+import React, { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { GlobalSearch } from '@/components/search/global-search'
 import { UserMenu } from '@/components/dashboard/user-menu'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { CommandPalette } from '@/components/ui/command-palette'
+import { KeyboardShortcutsHelp } from '@/components/ui/keyboard-shortcuts-help'
+import { useKeyboardShortcuts, type KeyboardShortcut } from '@/lib/keyboard-shortcuts'
 import { cn } from '@/lib/utils'
 import { BarChart3, DollarSign, Settings as SettingsIcon } from 'lucide-react'
 
@@ -16,6 +20,9 @@ export default function DashboardLayout({
   // Skip Supabase for now to allow pages to load
   // Auth can be added back later when needed
   const pathname = usePathname()
+  const router = useRouter()
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false)
 
   const isActive = (path: string) => {
     if (path === '/inbox') {
@@ -60,19 +67,84 @@ export default function DashboardLayout({
     return cn(
       "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all relative border-2",
       active
-        ? `text-white bg-dark-tertiary ${borderColor} ${glowClass}`
-        : `text-neon-blue-glow100 hover:text-white hover:bg-dark-tertiary/50 border-transparent ${hoverBorder}`
+        ? `text-theme-primary bg-theme-surface ${borderColor} ${glowClass}`
+        : `text-theme-secondary hover:text-theme-primary hover:bg-theme-surface/50 border-transparent ${hoverBorder}`
     )
   }
 
+  // Keyboard shortcuts
+  const shortcuts: KeyboardShortcut[] = [
+    {
+      key: 'k',
+      meta: true,
+      action: () => setCommandPaletteOpen(true),
+      description: 'Open command palette',
+      category: 'general'
+    },
+    {
+      key: '/',
+      meta: true,
+      action: () => setShortcutsHelpOpen(true),
+      description: 'Show keyboard shortcuts',
+      category: 'general'
+    },
+    {
+      key: 'n',
+      meta: true,
+      action: () => {
+        if (pathname.startsWith('/jobs')) {
+          router.push('/jobs?action=create')
+        } else if (pathname.startsWith('/contacts')) {
+          router.push('/contacts?action=create')
+        } else {
+          router.push('/jobs?action=create')
+        }
+      },
+      description: 'Create new (context-aware)',
+      category: 'actions'
+    },
+    {
+      key: 'j',
+      meta: true,
+      action: () => router.push('/jobs'),
+      description: 'Go to Jobs',
+      category: 'navigation'
+    },
+    {
+      key: 'c',
+      meta: true,
+      action: () => router.push('/contacts'),
+      description: 'Go to Contacts',
+      category: 'navigation'
+    },
+    {
+      key: 'i',
+      meta: true,
+      action: () => router.push('/inbox'),
+      description: 'Go to Inbox',
+      category: 'navigation'
+    },
+    {
+      key: 'Escape',
+      action: () => {
+        setCommandPaletteOpen(false)
+        setShortcutsHelpOpen(false)
+      },
+      description: 'Close modals/dialogs',
+      category: 'general'
+    }
+  ]
+
+  useKeyboardShortcuts(shortcuts)
+
   return (
-    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden bg-dark-secondary">
-      <div className="w-full flex-none md:w-64 bg-dark-primary border-r-2 border-neon-blue-glow700/50 p-4 flex flex-col circuit-pattern relative overflow-hidden">
-        <div className="font-semibold text-lg text-neon-blue-glow300 mb-4 flex items-center gap-2 relative z-10">
+    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden bg-theme-primary">
+      <div className="w-full flex-none md:w-64 bg-theme-surface border-r-2 border-neon-blue-glow700/50 p-4 flex flex-col circuit-pattern relative overflow-hidden">
+        <div className="font-semibold text-lg text-theme-primary mb-4 flex items-center gap-2 relative z-10">
           <div className="w-8 h-8 rounded-lg bg-neon-blue-glow300 flex items-center justify-center text-black font-bold text-[10px] leading-tight neon-glow-blue">
             AI
           </div>
-          <span className="text-neon-blue-glow300">CRM-AI PRO</span>
+          <span className="text-theme-primary">CRM-AI PRO</span>
         </div>
         <div className="mb-4">
           <GlobalSearch />
@@ -121,7 +193,7 @@ export default function DashboardLayout({
             Tech View
           </a>
           <div className="pt-2 mt-2 border-t-2 border-neon-blue-glow700/50">
-            <div className="px-3 py-1 text-xs font-semibold text-neon-blue-glow100 uppercase mb-1">
+            <div className="px-3 py-1 text-xs font-semibold text-theme-secondary uppercase mb-1">
               Marketing
             </div>
             <a 
@@ -164,15 +236,31 @@ export default function DashboardLayout({
           </div>
         </nav>
       </div>
-      <div className="flex-grow flex flex-col md:overflow-hidden bg-dark-secondary">
-        <header className="flex-none h-16 bg-dark-panel border-b-2 border-neon-blue-glow700/50 px-6 flex items-center justify-between">
+      <div className="flex-grow flex flex-col md:overflow-hidden bg-theme-primary">
+        <header className="flex-none h-16 bg-theme-surface border-b-2 border-neon-blue-glow700/50 px-6 flex items-center justify-between">
           <div className="flex-1"></div>
-          <UserMenu />
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <UserMenu />
+          </div>
         </header>
-        <div className="flex-1 md:overflow-y-auto bg-dark-secondary">
+        <div className="flex-1 md:overflow-y-auto bg-theme-primary">
           {children}
         </div>
       </div>
+      
+      {/* Command Palette */}
+      <CommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+      />
+      
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsHelp
+        open={shortcutsHelpOpen}
+        onOpenChange={setShortcutsHelpOpen}
+        shortcuts={shortcuts}
+      />
     </div>
   )
 }

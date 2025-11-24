@@ -5,7 +5,7 @@
 :root {
   --radius: 0.375rem;
   
-  /* NeonOps Design System CSS Variables */
+  /* NeonOps Design System CSS Variables (Legacy - kept for backward compatibility) */
   --neonBlue-glow100: #AEEFFF;
   --neonBlue-glow300: #00E5FF;
   --neonBlue-glow500: #00B8D4;
@@ -20,15 +20,324 @@
   --dark-secondary: #001528;
   --dark-tertiary: #002a50;
   --dark-panel: rgba(0, 20, 40, 0.9);
+
+  /* ============================================
+     WARM MODE (LIGHT THEME) - DEFAULT
+     ============================================ */
+  
+  /* Core Colors */
+  --warm-bg-primary: #f2e4cf;
+  --warm-bg-secondary: #ebd7b8;
+  --warm-bg-surface: rgba(255, 248, 234, 0.68);
+  --warm-text-primary: #2c2218;
+  --warm-text-secondary: rgba(102, 79, 54, 0.78);
+  --warm-text-subtle: rgba(120, 88, 60, 0.55);
+  --warm-border: rgba(198, 142, 84, 0.32);
+  
+  /* Accents & Gradients */
+  --warm-accent-primary: #f7a229;
+  --warm-accent-secondary: #e9803d;
+  --warm-gradient-accent: linear-gradient(135deg, #f7a229, #e9803d);
+  --warm-gradient-surface: linear-gradient(155deg, rgba(247, 193, 118, 0.28), rgba(226, 164, 96, 0.14));
+  
+  /* Glass Effects */
+  --warm-glass-border: rgba(194, 146, 104, 0.28);
+  --warm-glass-highlight: rgba(255, 246, 229, 0.22);
+  --warm-glass-overlay: radial-gradient(circle at top left, rgba(255, 214, 153, 0.25), transparent 55%);
+  
+  /* Shadows */
+  --warm-shadow-elevated: 0 30px 70px -34px rgba(172, 108, 44, 0.4);
+  --warm-shadow-glow: 0 26px 58px -32px rgba(206, 144, 58, 0.5);
+  --warm-shadow-sm: 0 2px 8px rgba(172, 108, 44, 0.12);
+  
+  /* Component Specific */
+  --warm-card-bg: rgba(242, 212, 176, 0.7);
+  --warm-card-border: rgba(204, 148, 96, 0.32);
+  --warm-input-bg: rgba(244, 218, 184, 0.85);
+  --warm-badge-bg: rgba(251, 191, 36, 0.25);
+  --warm-badge-text: #c2410c;
+
+  /* ============================================
+     MIDNIGHT MODE (DARK THEME)
+     ============================================ */
+  
+  /* Core Colors */
+  --midnight-bg-primary: #040816;
+  --midnight-bg-secondary: #101b33;
+  --midnight-bg-surface: rgba(12, 19, 36, 0.72);
+  --midnight-text-primary: #f8fafc;
+  --midnight-text-secondary: rgba(186, 199, 222, 0.78);
+  --midnight-text-subtle: rgba(148, 163, 184, 0.58);
+  --midnight-border: rgba(87, 112, 164, 0.28);
+  
+  /* Accents & Gradients */
+  --midnight-accent-primary: #38bdf8;
+  --midnight-accent-secondary: #818cf8;
+  --midnight-gradient-accent: linear-gradient(135deg, #38bdf8, #818cf8);
+  --midnight-gradient-surface: linear-gradient(155deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.08));
+  
+  /* Glass Effects */
+  --midnight-glass-border: rgba(148, 172, 229, 0.22);
+  --midnight-glass-highlight: rgba(255, 255, 255, 0.18);
+  --midnight-glass-overlay: radial-gradient(circle at top left, rgba(148, 197, 255, 0.22), transparent 55%);
+  
+  /* Shadows */
+  --midnight-shadow-elevated: 0 30px 80px -36px rgba(15, 23, 42, 0.9);
+  --midnight-shadow-glow: 0 24px 60px -32px rgba(56, 189, 248, 0.55);
+  --midnight-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  
+  /* Component Specific */
+  --midnight-card-bg: rgba(8, 14, 31, 0.6);
+  --midnight-card-border: rgba(255, 255, 255, 0.08);
+  --midnight-input-bg: rgba(1, 10, 28, 0.65);
+  --midnight-badge-bg: rgba(56, 189, 248, 0.15);
+  --midnight-badge-text: #38bdf8;
+
+  /* ============================================
+     SHARED PROPERTIES
+     ============================================ */
+  
+  --card-radius: 24px;
+  --button-radius: 12px;
+  --input-radius: 10px;
+  --badge-radius: 6px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+  --transition-slow: 500ms ease;
+  
+  /* Backdrop Filters */
+  --backdrop-blur: blur(22px) saturate(135%);
+  
+  /* Z-Index Scale */
+  --z-base: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-modal: 1030;
+  --z-popover: 1040;
+  --z-tooltip: 1050;
+}
+
+/* ============================================
+   ACTIVE THEME VARIABLES - Default to Warm
+   ============================================ */
+
+:root {
+  --color-bg-primary: var(--warm-bg-primary);
+  --color-bg-secondary: var(--warm-bg-secondary);
+  --color-bg-surface: var(--warm-bg-surface);
+  --color-text-primary: var(--warm-text-primary);
+  --color-text-secondary: var(--warm-text-secondary);
+  --color-text-subtle: var(--warm-text-subtle);
+  --color-border: var(--warm-border);
+  --color-accent-primary: var(--warm-accent-primary);
+  --color-accent-secondary: var(--warm-accent-secondary);
+  --gradient-accent: var(--warm-gradient-accent);
+  --gradient-surface: var(--warm-gradient-surface);
+  --glass-border: var(--warm-glass-border);
+  --glass-highlight: var(--warm-glass-highlight);
+  --glass-overlay: var(--warm-glass-overlay);
+  --shadow-elevated: var(--warm-shadow-elevated);
+  --shadow-glow: var(--warm-shadow-glow);
+  --shadow-sm: var(--warm-shadow-sm);
+  --card-bg: var(--warm-card-bg);
+  --card-border: var(--warm-card-border);
+  --input-bg: var(--warm-input-bg);
+  --badge-bg: var(--warm-badge-bg);
+  --badge-text: var(--warm-badge-text);
+  
+  color-scheme: light;
+}
+
+/* Midnight Theme Active */
+[data-theme="midnight"] {
+  --color-bg-primary: var(--midnight-bg-primary);
+  --color-bg-secondary: var(--midnight-bg-secondary);
+  --color-bg-surface: var(--midnight-bg-surface);
+  --color-text-primary: var(--midnight-text-primary);
+  --color-text-secondary: var(--midnight-text-secondary);
+  --color-text-subtle: var(--midnight-text-subtle);
+  --color-border: var(--midnight-border);
+  --color-accent-primary: var(--midnight-accent-primary);
+  --color-accent-secondary: var(--midnight-accent-secondary);
+  --gradient-accent: var(--midnight-gradient-accent);
+  --gradient-surface: var(--midnight-gradient-surface);
+  --glass-border: var(--midnight-glass-border);
+  --glass-highlight: var(--midnight-glass-highlight);
+  --glass-overlay: var(--midnight-glass-overlay);
+  --shadow-elevated: var(--midnight-shadow-elevated);
+  --shadow-glow: var(--midnight-shadow-glow);
+  --shadow-sm: var(--midnight-shadow-sm);
+  --card-bg: var(--midnight-card-bg);
+  --card-border: var(--midnight-card-border);
+  --input-bg: var(--midnight-input-bg);
+  --badge-bg: var(--midnight-badge-bg);
+  --badge-text: var(--midnight-badge-text);
+  
+  color-scheme: dark;
+}
+
+/* System Theme - Auto-detection */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --color-bg-primary: var(--midnight-bg-primary);
+    --color-bg-secondary: var(--midnight-bg-secondary);
+    --color-bg-surface: var(--midnight-bg-surface);
+    --color-text-primary: var(--midnight-text-primary);
+    --color-text-secondary: var(--midnight-text-secondary);
+    --color-text-subtle: var(--midnight-text-subtle);
+    --color-border: var(--midnight-border);
+    --color-accent-primary: var(--midnight-accent-primary);
+    --color-accent-secondary: var(--midnight-accent-secondary);
+    --gradient-accent: var(--midnight-gradient-accent);
+    --gradient-surface: var(--midnight-gradient-surface);
+    --glass-border: var(--midnight-glass-border);
+    --glass-highlight: var(--midnight-glass-highlight);
+    --glass-overlay: var(--midnight-glass-overlay);
+    --shadow-elevated: var(--midnight-shadow-elevated);
+    --shadow-glow: var(--midnight-shadow-glow);
+    --shadow-sm: var(--midnight-shadow-sm);
+    --card-bg: var(--midnight-card-bg);
+    --card-border: var(--midnight-card-border);
+    --input-bg: var(--midnight-input-bg);
+    --badge-bg: var(--midnight-badge-bg);
+    --badge-text: var(--midnight-badge-text);
+    
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --color-bg-primary: var(--warm-bg-primary);
+    --color-bg-secondary: var(--warm-bg-secondary);
+    --color-bg-surface: var(--warm-bg-surface);
+    --color-text-primary: var(--warm-text-primary);
+    --color-text-secondary: var(--warm-text-secondary);
+    --color-text-subtle: var(--warm-text-subtle);
+    --color-border: var(--warm-border);
+    --color-accent-primary: var(--warm-accent-primary);
+    --color-accent-secondary: var(--warm-accent-secondary);
+    --gradient-accent: var(--warm-gradient-accent);
+    --gradient-surface: var(--warm-gradient-surface);
+    --glass-border: var(--warm-glass-border);
+    --glass-highlight: var(--warm-glass-highlight);
+    --glass-overlay: var(--warm-glass-overlay);
+    --shadow-elevated: var(--warm-shadow-elevated);
+    --shadow-glow: var(--warm-shadow-glow);
+    --shadow-sm: var(--warm-shadow-sm);
+    --card-bg: var(--warm-card-bg);
+    --card-border: var(--warm-card-border);
+    --input-bg: var(--warm-input-bg);
+    --badge-bg: var(--warm-badge-bg);
+    --badge-text: var(--warm-badge-text);
+    
+    color-scheme: light;
+  }
 }
 
 @layer base {
   body {
-    @apply bg-dark-secondary text-white;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+
+  /* Background with Gradients */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -2;
+    background: var(--gradient-surface);
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  /* Glow Effects Layer */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background: var(--glass-overlay);
+    pointer-events: none;
+  }
+
+  /* Theme transition class */
+  body.theme-transitioning * {
+    transition: background-color var(--transition-base), 
+                color var(--transition-base),
+                border-color var(--transition-base) !important;
   }
 }
 
 @layer utilities {
+  /* Theme-aware background utilities */
+  .bg-theme-primary {
+    background-color: var(--color-bg-primary);
+  }
+  
+  .bg-theme-secondary {
+    background-color: var(--color-bg-secondary);
+  }
+  
+  .bg-theme-surface {
+    background-color: var(--color-bg-surface);
+  }
+  
+  /* Theme-aware text utilities */
+  .text-theme-primary {
+    color: var(--color-text-primary);
+  }
+  
+  .text-theme-secondary {
+    color: var(--color-text-secondary);
+  }
+  
+  .text-theme-subtle {
+    color: var(--color-text-subtle);
+  }
+  
+  /* Theme-aware border utilities */
+  .border-theme {
+    border-color: var(--color-border);
+  }
+  
+  /* Theme-aware accent utilities */
+  .text-theme-accent-primary {
+    color: var(--color-accent-primary);
+  }
+  
+  .text-theme-accent-secondary {
+    color: var(--color-accent-secondary);
+  }
+  
+  .border-theme-accent-primary {
+    border-color: var(--color-accent-primary);
+  }
+  
+  /* Theme-aware shadow utilities */
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+  
+  .shadow-sm-theme {
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* Legacy NeonOps utilities (kept for backward compatibility) */
   .neon-glow-blue {
     box-shadow: 0 0 10px #00E5FF, 0 0 20px #00E5FF, 0 0 30px rgba(0, 229, 255, 0.5);
   }
