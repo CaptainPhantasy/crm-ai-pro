@@ -3,7 +3,7 @@
  * Supports localStorage persistence and system preference detection
  */
 
-export type Theme = 'warm' | 'midnight' | 'system'
+export type Theme = 'light' | 'dark' | 'warm' | 'midnight' | 'taro' | 'matcha' | 'honeydew' | 'system'
 
 const THEME_STORAGE_KEY = 'theme-preference'
 const DEFAULT_THEME: Theme = 'system'
@@ -20,8 +20,9 @@ class ThemeManager {
   private loadTheme(): Theme {
     if (typeof window === 'undefined') return DEFAULT_THEME
     
+    const validThemes: Theme[] = ['light', 'dark', 'warm', 'midnight', 'taro', 'matcha', 'honeydew', 'system']
     const stored = localStorage.getItem(THEME_STORAGE_KEY)
-    if (stored && (stored === 'warm' || stored === 'midnight' || stored === 'system')) {
+    if (stored && validThemes.includes(stored as Theme)) {
       return stored as Theme
     }
     return DEFAULT_THEME
@@ -36,7 +37,10 @@ class ThemeManager {
     if (typeof document === 'undefined') return
 
     // Remove all theme classes
-    document.documentElement.classList.remove('theme-warm', 'theme-midnight', 'theme-system')
+    const allThemes: Theme[] = ['light', 'dark', 'warm', 'midnight', 'taro', 'matcha', 'honeydew', 'system']
+    allThemes.forEach(t => {
+      document.documentElement.classList.remove(`theme-${t}`)
+    })
     
     // Apply new theme
     document.documentElement.setAttribute('data-theme', theme)
@@ -58,10 +62,10 @@ class ThemeManager {
 
     let color: string
     
-    if (theme === 'midnight' || (theme === 'system' && this.isDarkMode())) {
-      color = '#040816' // Midnight primary bg
+    if (theme === 'dark' || theme === 'midnight' || (theme === 'system' && this.isDarkMode())) {
+      color = 'hsl(220, 30%, 8%)' // Dark/Midnight primary bg
     } else {
-      color = '#f2e4cf' // Warm primary bg
+      color = 'hsl(0, 0%, 100%)' // Light/Warm primary bg
     }
     
     // Update or create meta tag
@@ -109,7 +113,7 @@ class ThemeManager {
   }
 
   cycleTheme() {
-    const themes: Theme[] = ['warm', 'system', 'midnight']
+    const themes: Theme[] = ['light', 'dark', 'warm', 'midnight', 'taro', 'matcha', 'honeydew', 'system']
     const currentIndex = themes.indexOf(this.currentTheme)
     const nextIndex = (currentIndex + 1) % themes.length
     const nextTheme = themes[nextIndex]
@@ -118,7 +122,8 @@ class ThemeManager {
   }
 
   setTheme(theme: Theme) {
-    if (theme !== 'warm' && theme !== 'midnight' && theme !== 'system') {
+    const validThemes: Theme[] = ['light', 'dark', 'warm', 'midnight', 'taro', 'matcha', 'honeydew', 'system']
+    if (!validThemes.includes(theme)) {
       console.warn(`Invalid theme: ${theme}`)
       return
     }
@@ -159,11 +164,11 @@ class ThemeManager {
     return this.currentTheme
   }
 
-  getEffectiveTheme(): 'warm' | 'midnight' {
+  getEffectiveTheme(): 'light' | 'dark' | 'warm' | 'midnight' | 'taro' | 'matcha' | 'honeydew' {
     if (this.currentTheme === 'system') {
-      return this.isDarkMode() ? 'midnight' : 'warm'
+      return this.isDarkMode() ? 'dark' : 'light'
     }
-    return this.currentTheme
+    return this.currentTheme as Exclude<Theme, 'system'>
   }
 }
 
