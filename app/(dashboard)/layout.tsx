@@ -60,9 +60,9 @@ export default function DashboardLayout({
 
   const getNavLinkClasses = (path: string, glowColor: 'blue' | 'green' = 'blue') => {
     const active = isActive(path)
-    const borderColor = glowColor === 'blue' ? 'border-neon-blue-glow300' : 'border-neon-green-glow300'
-    const glowClass = glowColor === 'blue' ? 'neon-glow-blue' : 'neon-glow-green'
-    const hoverBorder = glowColor === 'blue' ? 'hover:border-neon-blue-glow300/30' : 'hover:border-neon-green-glow300/30'
+    const borderColor = glowColor === 'blue' ? 'border-theme-accent-primary' : 'border-theme-accent-secondary'
+    const glowClass = glowColor === 'blue' ? 'shadow-glow' : 'shadow-glow'
+    const hoverBorder = glowColor === 'blue' ? 'hover:border-theme-accent-primary/30' : 'hover:border-theme-accent-secondary/30'
     
     return cn(
       "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all relative border-2",
@@ -139,9 +139,9 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen flex-col md:flex-row md:overflow-hidden bg-theme-primary">
-      <div className="w-full flex-none md:w-64 bg-theme-surface border-r-2 border-neon-blue-glow700/50 p-4 flex flex-col circuit-pattern relative overflow-hidden">
+      <div className="w-full flex-none md:w-64 bg-theme-surface border-r-2 border-theme-border p-4 flex flex-col relative overflow-hidden">
         <div className="font-semibold text-lg text-theme-primary mb-4 flex items-center gap-2 relative z-10">
-          <div className="w-8 h-8 rounded-lg bg-neon-blue-glow300 flex items-center justify-center text-black font-bold text-[10px] leading-tight neon-glow-blue">
+          <div className="w-8 h-8 rounded-lg bg-theme-accent-primary flex items-center justify-center text-black font-bold text-[10px] leading-tight shadow-glow">
             AI
           </div>
           <span className="text-theme-primary">CRM-AI PRO</span>
@@ -154,45 +154,45 @@ export default function DashboardLayout({
             href="/inbox" 
             className={getNavLinkClasses('/inbox', 'blue')}
           >
-            <div className="w-2 h-2 rounded-full bg-neon-blue-glow300 neon-glow-blue"></div>
+            <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
             Inbox
           </a>
           <a 
             href="/jobs" 
             className={getNavLinkClasses('/jobs', 'blue')}
           >
-            <div className="w-2 h-2 rounded-full bg-neon-blue-glow300 neon-glow-blue"></div>
+            <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
             Jobs
           </a>
           <a 
             href="/contacts" 
             className={getNavLinkClasses('/contacts', 'green')}
           >
-            <div className="w-2 h-2 rounded-full bg-neon-green-glow300 neon-glow-green"></div>
+            <div className="w-2 h-2 rounded-full bg-theme-accent-secondary shadow-glow"></div>
             Contacts
           </a>
           <a 
             href="/analytics" 
             className={getNavLinkClasses('/analytics', 'blue')}
           >
-            <BarChart3 className="w-4 h-4 text-neon-blue-glow300" />
+            <BarChart3 className="w-4 h-4 text-theme-accent-primary" />
             Analytics
           </a>
           <a 
             href="/finance/dashboard" 
             className={getNavLinkClasses('/finance', 'green')}
           >
-            <DollarSign className="w-4 h-4 text-neon-green-glow300" />
+            <DollarSign className="w-4 h-4 text-theme-accent-secondary" />
             Finance
           </a>
           <a 
             href="/tech/dashboard" 
             className={getNavLinkClasses('/tech/dashboard', 'blue')}
           >
-            <div className="w-2 h-2 rounded-full bg-neon-blue-glow300 neon-glow-blue"></div>
+            <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
             Tech View
           </a>
-          <div className="pt-2 mt-2 border-t-2 border-neon-blue-glow700/50">
+          <div className="pt-2 mt-2 border-t-2 border-theme-border">
             <div className="px-3 py-1 text-xs font-semibold text-theme-secondary uppercase mb-1">
               Marketing
             </div>
@@ -200,44 +200,44 @@ export default function DashboardLayout({
               href="/marketing/campaigns" 
               className={getNavLinkClasses('/marketing/campaigns', 'blue')}
             >
-              <div className="w-2 h-2 rounded-full bg-neon-blue-glow300 neon-glow-blue"></div>
+              <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
               Campaigns
             </a>
             <a 
               href="/marketing/email-templates" 
               className={getNavLinkClasses('/marketing/email-templates', 'blue')}
             >
-              <div className="w-2 h-2 rounded-full bg-neon-blue-glow300 neon-glow-blue"></div>
+              <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
               Templates
             </a>
             <a 
               href="/marketing/tags" 
               className={getNavLinkClasses('/marketing/tags', 'green')}
             >
-              <div className="w-2 h-2 rounded-full bg-neon-green-glow300 neon-glow-green"></div>
+              <div className="w-2 h-2 rounded-full bg-theme-accent-secondary shadow-glow"></div>
               Tags
             </a>
           </div>
-          <div className="pt-2 mt-2 border-t-2 border-neon-blue-glow700/50">
+          <div className="pt-2 mt-2 border-t-2 border-theme-border">
             <a 
               href="/admin/settings" 
               className={getNavLinkClasses('/settings', 'blue')}
             >
-              <SettingsIcon className="w-4 h-4 text-neon-blue-glow300" />
+              <SettingsIcon className="w-4 h-4 text-theme-accent-primary" />
               Settings
             </a>
             <a 
               href="/settings/integrations" 
               className={getNavLinkClasses('/settings/integrations', 'blue')}
             >
-              <div className="w-2 h-2 rounded-full bg-neon-blue-glow300 neon-glow-blue"></div>
+              <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
               Integrations
             </a>
           </div>
         </nav>
       </div>
       <div className="flex-grow flex flex-col md:overflow-hidden bg-theme-primary">
-        <header className="flex-none h-16 bg-theme-surface border-b-2 border-neon-blue-glow700/50 px-6 flex items-center justify-between">
+        <header className="flex-none h-16 bg-theme-surface border-b-2 border-theme-border px-6 flex items-center justify-between">
           <div className="flex-1"></div>
           <div className="flex items-center gap-4">
             <ThemeToggle />

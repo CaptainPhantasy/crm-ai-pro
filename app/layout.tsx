@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
+import { VoiceAgentOverlay } from "@/components/voice-agent-overlay";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,15 +37,16 @@ export default function RootLayout({
                   root.classList.add('theme-' + theme);
                   
                   // Update meta theme-color
-                  const isDark = theme === 'midnight' || 
+                  const darkThemes = ['dark', 'midnight'];
+                  const isDark = darkThemes.includes(theme) || 
                     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
                   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
                   if (metaThemeColor) {
-                    metaThemeColor.setAttribute('content', isDark ? '#040816' : '#f2e4cf');
+                    metaThemeColor.setAttribute('content', isDark ? 'hsl(220, 30%, 8%)' : 'hsl(0, 0%, 100%)');
                   } else {
                     const meta = document.createElement('meta');
                     meta.name = 'theme-color';
-                    meta.content = isDark ? '#040816' : '#f2e4cf';
+                    meta.content = isDark ? 'hsl(220, 30%, 8%)' : 'hsl(0, 0%, 100%)';
                     document.head.appendChild(meta);
                   }
                 } catch (e) {

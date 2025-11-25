@@ -1,5 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js'
 import { createClient } from '@supabase/supabase-js'
+import { getMCPLLMHelper } from '../llm'
 
 // Initialize Supabase client with service role for MCP server
 function getSupabaseClient() {
@@ -8,10 +9,27 @@ function getSupabaseClient() {
   return createClient(supabaseUrl, serviceRoleKey)
 }
 
-// Get account ID from environment or use default
-function getAccountId(): string {
+// Get account ID from user session or use default
+async function getAccountId(userId?: string): Promise<string> {
+  if (userId) {
+    const supabase = getSupabaseClient()
+    const { data: user } = await supabase
+      .from('users')
+      .select('account_id')
+      .eq('id', userId)
+      .single()
+
+    if (user?.account_id) {
+      return user.account_id
+    }
+  }
+
+  // Fallback to default account
   return process.env.DEFAULT_ACCOUNT_ID || 'fde73a6a-ea84-46a7-803b-a3ae7cc09d00'
 }
+
+// Get LLM helper instance
+const llmHelper = getMCPLLMHelper()
 
 export const crmTools: Tool[] = [
   {
@@ -453,6 +471,910 @@ export const crmTools: Tool[] = [
       required: ['jobId'],
     },
   },
+  // Wave 1: High-Priority Core Operations
+  {
+    name: 'list_contacts',
+    description: 'List all contacts with optional filters (search, tags, status, date range)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        search: {
+          type: 'string',
+          description: 'Search query for name, email, or phone (optional)',
+        },
+        tags: {
+          type: 'string',
+          description: 'Comma-separated tag IDs to filter by (optional)',
+        },
+        status: {
+          type: 'string',
+          description: 'Filter by status (optional)',
+        },
+        dateStart: {
+          type: 'string',
+          description: 'ISO 8601 date to start from (optional)',
+        },
+        dateEnd: {
+          type: 'string',
+          description: 'ISO 8601 date to end at (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+        offset: {
+          type: 'number',
+          description: 'Offset for pagination (default: 0)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'update_contact',
+    description: 'Update contact information',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: {
+          type: 'string',
+          description: 'UUID of the contact',
+        },
+        email: {
+          type: 'string',
+          description: 'Email address (optional)',
+        },
+        firstName: {
+          type: 'string',
+          description: 'First name (optional)',
+        },
+        lastName: {
+          type: 'string',
+          description: 'Last name (optional)',
+        },
+        phone: {
+          type: 'string',
+          description: 'Phone number (optional)',
+        },
+        address: {
+          type: 'string',
+          description: 'Address (optional)',
+        },
+      },
+      required: ['contactId'],
+    },
+  },
+  {
+    name: 'update_job',
+    description: 'Update job details (description, scheduled times, etc.)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job',
+        },
+        description: {
+          type: 'string',
+          description: 'Job description (optional)',
+        },
+        scheduledStart: {
+          type: 'string',
+          description: 'ISO 8601 datetime for scheduled start (optional)',
+        },
+        scheduledEnd: {
+          type: 'string',
+          description: 'ISO 8601 datetime for scheduled end (optional)',
+        },
+        totalAmount: {
+          type: 'number',
+          description: 'Total amount in cents (optional)',
+        },
+      },
+      required: ['jobId'],
+    },
+  },
+  {
+    name: 'list_conversations',
+    description: 'List conversations with optional filters',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: {
+          type: 'string',
+          description: 'Filter by contact ID (optional)',
+        },
+        status: {
+          type: 'string',
+          description: 'Filter by status (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+        offset: {
+          type: 'number',
+          description: 'Offset for pagination (default: 0)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_conversation',
+    description: 'Get conversation details including messages',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        conversationId: {
+          type: 'string',
+          description: 'UUID of the conversation',
+        },
+      },
+      required: ['conversationId'],
+    },
+  },
+  {
+    name: 'create_conversation',
+    description: 'Create a new conversation',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: {
+          type: 'string',
+          description: 'UUID of the contact',
+        },
+        subject: {
+          type: 'string',
+          description: 'Conversation subject (optional)',
+        },
+        status: {
+          type: 'string',
+          description: 'Initial status (default: open)',
+        },
+      },
+      required: ['contactId'],
+    },
+  },
+  {
+    name: 'list_users',
+    description: 'List users/technicians with optional role filter',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        role: {
+          type: 'string',
+          description: 'Filter by role (owner, admin, dispatcher, tech) (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+        offset: {
+          type: 'number',
+          description: 'Offset for pagination (default: 0)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_user',
+    description: 'Get user details by ID',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'string',
+          description: 'UUID of the user',
+        },
+      },
+      required: ['userId'],
+    },
+  },
+  // Wave 2: Field Operations
+  {
+    name: 'upload_job_photo',
+    description: 'Upload a photo to a job (requires photo URL or base64 data)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job',
+        },
+        photoUrl: {
+          type: 'string',
+          description: 'URL of the photo to upload (optional if base64 provided)',
+        },
+        base64Data: {
+          type: 'string',
+          description: 'Base64 encoded image data (optional if photoUrl provided)',
+        },
+        caption: {
+          type: 'string',
+          description: 'Photo caption (optional)',
+        },
+      },
+      required: ['jobId'],
+    },
+  },
+  {
+    name: 'capture_location',
+    description: 'Capture and save job location coordinates',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job',
+        },
+        latitude: {
+          type: 'number',
+          description: 'Latitude coordinate',
+        },
+        longitude: {
+          type: 'number',
+          description: 'Longitude coordinate',
+        },
+        address: {
+          type: 'string',
+          description: 'Address string (optional)',
+        },
+      },
+      required: ['jobId', 'latitude', 'longitude'],
+    },
+  },
+  {
+    name: 'clock_in',
+    description: 'Clock in for time tracking',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job (optional)',
+        },
+        notes: {
+          type: 'string',
+          description: 'Notes about the time entry (optional)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'clock_out',
+    description: 'Clock out from time tracking',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        timeEntryId: {
+          type: 'string',
+          description: 'UUID of the time entry to clock out from',
+        },
+        notes: {
+          type: 'string',
+          description: 'Notes about the time entry (optional)',
+        },
+      },
+      required: ['timeEntryId'],
+    },
+  },
+  {
+    name: 'get_tech_jobs',
+    description: 'Get jobs assigned to a technician',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        techId: {
+          type: 'string',
+          description: 'UUID of the technician (optional, defaults to current user)',
+        },
+        status: {
+          type: 'string',
+          description: 'Filter by status (optional)',
+        },
+        date: {
+          type: 'string',
+          description: 'Filter by date (ISO 8601 date, optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'add_contact_note',
+    description: 'Add a note to a contact',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: {
+          type: 'string',
+          description: 'UUID of the contact',
+        },
+        content: {
+          type: 'string',
+          description: 'Note content',
+        },
+      },
+      required: ['contactId', 'content'],
+    },
+  },
+  {
+    name: 'add_conversation_note',
+    description: 'Add a note to a conversation',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        conversationId: {
+          type: 'string',
+          description: 'UUID of the conversation',
+        },
+        content: {
+          type: 'string',
+          description: 'Note content',
+        },
+      },
+      required: ['conversationId', 'content'],
+    },
+  },
+  // Wave 3: Financial Operations
+  {
+    name: 'update_invoice',
+    description: 'Update invoice details',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        invoiceId: {
+          type: 'string',
+          description: 'UUID of the invoice',
+        },
+        totalAmount: {
+          type: 'number',
+          description: 'Total amount in cents (optional)',
+        },
+        dueDate: {
+          type: 'string',
+          description: 'ISO 8601 date for due date (optional)',
+        },
+        notes: {
+          type: 'string',
+          description: 'Notes (optional)',
+        },
+      },
+      required: ['invoiceId'],
+    },
+  },
+  {
+    name: 'send_invoice',
+    description: 'Send invoice to customer via email',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        invoiceId: {
+          type: 'string',
+          description: 'UUID of the invoice',
+        },
+      },
+      required: ['invoiceId'],
+    },
+  },
+  {
+    name: 'mark_invoice_paid',
+    description: 'Mark an invoice as paid',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        invoiceId: {
+          type: 'string',
+          description: 'UUID of the invoice',
+        },
+      },
+      required: ['invoiceId'],
+    },
+  },
+  {
+    name: 'list_payments',
+    description: 'List payments with optional filters',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'Filter by job ID (optional)',
+        },
+        invoiceId: {
+          type: 'string',
+          description: 'Filter by invoice ID (optional)',
+        },
+        status: {
+          type: 'string',
+          description: 'Filter by status (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'create_payment',
+    description: 'Create a payment record',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        invoiceId: {
+          type: 'string',
+          description: 'UUID of the invoice',
+        },
+        amount: {
+          type: 'number',
+          description: 'Payment amount in cents',
+        },
+        method: {
+          type: 'string',
+          description: 'Payment method (cash, check, card, etc.)',
+        },
+        notes: {
+          type: 'string',
+          description: 'Payment notes (optional)',
+        },
+      },
+      required: ['invoiceId', 'amount', 'method'],
+    },
+  },
+  // Wave 4: Marketing Operations
+  {
+    name: 'list_campaigns',
+    description: 'List marketing campaigns',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          description: 'Filter by status (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'create_campaign',
+    description: 'Create a new marketing campaign',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Campaign name',
+        },
+        type: {
+          type: 'string',
+          description: 'Campaign type (email, sms, etc.)',
+        },
+        templateId: {
+          type: 'string',
+          description: 'UUID of the email template (optional)',
+        },
+        subject: {
+          type: 'string',
+          description: 'Email subject (optional)',
+        },
+        body: {
+          type: 'string',
+          description: 'Email body (optional)',
+        },
+      },
+      required: ['name', 'type'],
+    },
+  },
+  {
+    name: 'get_campaign',
+    description: 'Get campaign details',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        campaignId: {
+          type: 'string',
+          description: 'UUID of the campaign',
+        },
+      },
+      required: ['campaignId'],
+    },
+  },
+  {
+    name: 'send_campaign',
+    description: 'Send a marketing campaign',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        campaignId: {
+          type: 'string',
+          description: 'UUID of the campaign',
+        },
+      },
+      required: ['campaignId'],
+    },
+  },
+  {
+    name: 'list_email_templates',
+    description: 'List email templates',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+          description: 'Filter by template type (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'create_email_template',
+    description: 'Create a new email template',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Template name',
+        },
+        type: {
+          type: 'string',
+          description: 'Template type (review_request, invoice, etc.)',
+        },
+        subject: {
+          type: 'string',
+          description: 'Email subject',
+        },
+        body: {
+          type: 'string',
+          description: 'Email body (HTML or text)',
+        },
+      },
+      required: ['name', 'type', 'subject', 'body'],
+    },
+  },
+  {
+    name: 'list_contact_tags',
+    description: 'List contact tags',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'create_contact_tag',
+    description: 'Create a new contact tag',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Tag name',
+        },
+        color: {
+          type: 'string',
+          description: 'Tag color (hex code, optional)',
+        },
+      },
+      required: ['name'],
+    },
+  },
+  {
+    name: 'assign_tag_to_contact',
+    description: 'Assign a tag to a contact',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: {
+          type: 'string',
+          description: 'UUID of the contact',
+        },
+        tagId: {
+          type: 'string',
+          description: 'UUID of the tag',
+        },
+      },
+      required: ['contactId', 'tagId'],
+    },
+  },
+  // Wave 5: Analytics & Admin
+  {
+    name: 'get_contact_analytics',
+    description: 'Get contact analytics and statistics',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        dateFrom: {
+          type: 'string',
+          description: 'ISO 8601 date to start from (optional)',
+        },
+        dateTo: {
+          type: 'string',
+          description: 'ISO 8601 date to end at (optional)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'generate_report',
+    description: 'Generate a report (jobs, contacts, invoices, etc.)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+          description: 'Report type (jobs, contacts, invoices, revenue)',
+        },
+        dateFrom: {
+          type: 'string',
+          description: 'ISO 8601 date to start from (optional)',
+        },
+        dateTo: {
+          type: 'string',
+          description: 'ISO 8601 date to end at (optional)',
+        },
+      },
+      required: ['type'],
+    },
+  },
+  {
+    name: 'export_contacts',
+    description: 'Export contacts to CSV or JSON',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        format: {
+          type: 'string',
+          enum: ['csv', 'json'],
+          description: 'Export format (default: csv)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'export_jobs',
+    description: 'Export jobs to CSV or JSON',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        format: {
+          type: 'string',
+          enum: ['csv', 'json'],
+          description: 'Export format (default: csv)',
+        },
+        dateFrom: {
+          type: 'string',
+          description: 'ISO 8601 date to start from (optional)',
+        },
+        dateTo: {
+          type: 'string',
+          description: 'ISO 8601 date to end at (optional)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'list_automation_rules',
+    description: 'List automation rules',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        active: {
+          type: 'boolean',
+          description: 'Filter by active status (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'create_automation_rule',
+    description: 'Create a new automation rule',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Rule name',
+        },
+        trigger: {
+          type: 'string',
+          description: 'Trigger event (job_created, job_completed, etc.)',
+        },
+        action: {
+          type: 'string',
+          description: 'Action to perform',
+        },
+        active: {
+          type: 'boolean',
+          description: 'Whether rule is active (default: true)',
+        },
+      },
+      required: ['name', 'trigger', 'action'],
+    },
+  },
+  {
+    name: 'get_account_settings',
+    description: 'Get account settings',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: 'update_account_settings',
+    description: 'Update account settings',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        settings: {
+          type: 'object',
+          description: 'Settings object to update',
+        },
+      },
+      required: ['settings'],
+    },
+  },
+  {
+    name: 'get_audit_logs',
+    description: 'Get audit logs with optional filters',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        action: {
+          type: 'string',
+          description: 'Filter by action type (optional)',
+        },
+        userId: {
+          type: 'string',
+          description: 'Filter by user ID (optional)',
+        },
+        dateFrom: {
+          type: 'string',
+          description: 'ISO 8601 date to start from (optional)',
+        },
+        dateTo: {
+          type: 'string',
+          description: 'ISO 8601 date to end at (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results (default: 50)',
+        },
+      },
+      required: [],
+    },
+  },
+  // ======================================
+  // AI-POWERED TOOLS (LLM Router Integration)
+  // ======================================
+  {
+    name: 'generate_job_description',
+    description: 'Generate a professional job description using AI based on customer input and job type. Useful when creating new jobs with vague or incomplete descriptions.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobType: {
+          type: 'string',
+          description: 'Type of job (e.g., "plumbing repair", "HVAC installation", "electrical work")',
+        },
+        customerNotes: {
+          type: 'string',
+          description: 'Customer\'s description of the issue or work needed',
+        },
+        additionalContext: {
+          type: 'string',
+          description: 'Optional additional context (e.g., urgency, location details, equipment info)',
+        },
+      },
+      required: ['jobType', 'customerNotes'],
+    },
+  },
+  {
+    name: 'draft_customer_response',
+    description: 'Generate an AI-drafted response to a customer message in a conversation. Analyzes conversation context and provides a professional reply.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        conversationId: {
+          type: 'string',
+          description: 'UUID of the conversation',
+        },
+        customerMessage: {
+          type: 'string',
+          description: 'The customer\'s most recent message',
+        },
+        tone: {
+          type: 'string',
+          enum: ['professional', 'friendly', 'apologetic', 'urgent'],
+          description: 'Tone for the response (default: professional)',
+        },
+      },
+      required: ['conversationId', 'customerMessage'],
+    },
+  },
+  {
+    name: 'summarize_job_notes',
+    description: 'Generate a concise summary of all notes and activities for a job. Useful for quickly understanding job history.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job',
+        },
+      },
+      required: ['jobId'],
+    },
+  },
+  {
+    name: 'analyze_customer_sentiment',
+    description: 'Analyze the sentiment of customer communications in a conversation. Returns sentiment (positive/negative/neutral) with confidence score.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        conversationId: {
+          type: 'string',
+          description: 'UUID of the conversation',
+        },
+      },
+      required: ['conversationId'],
+    },
+  },
+  {
+    name: 'generate_invoice_description',
+    description: 'Generate professional invoice line items and descriptions based on job details and work performed.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job',
+        },
+        includeLabor: {
+          type: 'boolean',
+          description: 'Include labor charges in description (default: true)',
+        },
+        includeMaterials: {
+          type: 'boolean',
+          description: 'Include materials charges in description (default: true)',
+        },
+      },
+      required: ['jobId'],
+    },
+  },
 ]
 
 export async function handleCrmTool(
@@ -461,7 +1383,7 @@ export async function handleCrmTool(
   userId?: string
 ): Promise<unknown> {
   const supabase = getSupabaseClient()
-  const accountId = getAccountId()
+  const accountId = await getAccountId(userId)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL!
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
@@ -1325,6 +2247,1726 @@ export async function handleCrmTool(
       return {
         photos: photos || [],
         count: photos?.length || 0,
+      }
+    }
+
+    // Wave 1: High-Priority Core Operations
+    case 'list_contacts': {
+      const { search, tags, status, dateStart, dateEnd, limit = 50, offset = 0 } = args as {
+        search?: string
+        tags?: string
+        status?: string
+        dateStart?: string
+        dateEnd?: string
+        limit?: number
+        offset?: number
+      }
+
+      let query = supabase
+        .from('contacts')
+        .select('*')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      if (search) {
+        query = query.or(
+          `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`
+        )
+      }
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      if (dateStart) {
+        query = query.gte('created_at', dateStart)
+      }
+
+      if (dateEnd) {
+        query = query.lte('created_at', dateEnd)
+      }
+
+      const { data: contacts, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      // Filter by tags if provided
+      let filteredContacts = contacts || []
+      if (tags && contacts) {
+        const tagIds = tags.split(',').map((t) => t.trim())
+        // Note: This is a simplified filter. Full tag filtering would require a join query
+        filteredContacts = contacts
+      }
+
+      return {
+        contacts: filteredContacts,
+        count: filteredContacts.length,
+      }
+    }
+
+    case 'update_contact': {
+      const { contactId, email, firstName, lastName, phone, address } = args as {
+        contactId: string
+        email?: string
+        firstName?: string
+        lastName?: string
+        phone?: string
+        address?: string
+      }
+
+      const updateData: Record<string, unknown> = {}
+      if (email !== undefined) updateData.email = email
+      if (firstName !== undefined) updateData.first_name = firstName
+      if (lastName !== undefined) updateData.last_name = lastName
+      if (phone !== undefined) updateData.phone = phone
+      if (address !== undefined) updateData.address = address
+
+      const { data: contact, error } = await supabase
+        .from('contacts')
+        .update(updateData)
+        .eq('id', contactId)
+        .eq('account_id', accountId)
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (!contact) {
+        return { error: 'Contact not found' }
+      }
+
+      return {
+        success: true,
+        contact,
+        message: 'Contact updated successfully',
+      }
+    }
+
+    case 'update_job': {
+      const { jobId, description, scheduledStart, scheduledEnd, totalAmount } = args as {
+        jobId: string
+        description?: string
+        scheduledStart?: string
+        scheduledEnd?: string
+        totalAmount?: number
+      }
+
+      const updateData: Record<string, unknown> = {}
+      if (description !== undefined) updateData.description = description
+      if (scheduledStart !== undefined) updateData.scheduled_start = scheduledStart
+      if (scheduledEnd !== undefined) updateData.scheduled_end = scheduledEnd
+      if (totalAmount !== undefined) updateData.total_amount = totalAmount
+
+      const { data: job, error } = await supabase
+        .from('jobs')
+        .update(updateData)
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .select('*, contacts(*), users(*)')
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (!job) {
+        return { error: 'Job not found' }
+      }
+
+      return {
+        success: true,
+        job,
+        message: 'Job updated successfully',
+      }
+    }
+
+    case 'list_conversations': {
+      const { contactId, status, limit = 50, offset = 0 } = args as {
+        contactId?: string
+        status?: string
+        limit?: number
+        offset?: number
+      }
+
+      let query = supabase
+        .from('conversations')
+        .select('*, contacts(*)')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      if (contactId) {
+        query = query.eq('contact_id', contactId)
+      }
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      const { data: conversations, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        conversations: conversations || [],
+        count: conversations?.length || 0,
+      }
+    }
+
+    case 'get_conversation': {
+      const { conversationId } = args as { conversationId: string }
+
+      const { data: conversation, error } = await supabase
+        .from('conversations')
+        .select('*, contacts(*)')
+        .eq('id', conversationId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (!conversation) {
+        return { error: 'Conversation not found' }
+      }
+
+      // Get messages
+      const { data: messages } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true })
+
+      return {
+        conversation,
+        messages: messages || [],
+        messageCount: messages?.length || 0,
+      }
+    }
+
+    case 'create_conversation': {
+      const { contactId, subject, status = 'open' } = args as {
+        contactId: string
+        subject?: string
+        status?: string
+      }
+
+      // Verify contact exists
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('id', contactId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!contact) {
+        return { error: 'Contact not found' }
+      }
+
+      const { data: conversation, error } = await supabase
+        .from('conversations')
+        .insert({
+          account_id: accountId,
+          contact_id: contactId,
+          subject: subject || null,
+          status,
+        })
+        .select('*, contacts(*)')
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        conversation,
+        message: 'Conversation created successfully',
+      }
+    }
+
+    case 'list_users': {
+      const { role, limit = 50, offset = 0 } = args as {
+        role?: string
+        limit?: number
+        offset?: number
+      }
+
+      let query = supabase
+        .from('users')
+        .select('id, first_name, last_name, email, role, phone')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      if (role) {
+        query = query.eq('role', role)
+      }
+
+      const { data: users, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        users: users || [],
+        count: users?.length || 0,
+      }
+    }
+
+    case 'get_user': {
+      const { userId } = args as { userId: string }
+
+      const { data: user } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!user) {
+        return { error: 'User not found' }
+      }
+
+      return { user }
+    }
+
+    // Wave 2: Field Operations
+    case 'upload_job_photo': {
+      const { jobId, photoUrl, base64Data, caption } = args as {
+        jobId: string
+        photoUrl?: string
+        base64Data?: string
+        caption?: string
+      }
+
+      // Verify job exists
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('id, account_id')
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!job) {
+        return { error: 'Job not found' }
+      }
+
+      // If base64 data provided, we'd need to upload to storage
+      // For now, if photoUrl is provided, we can store it directly
+      if (!photoUrl && !base64Data) {
+        return { error: 'Either photoUrl or base64Data must be provided' }
+      }
+
+      // Store photo reference (if URL provided)
+      if (photoUrl) {
+        const { data: photo, error } = await supabase
+          .from('job_photos')
+          .insert({
+            account_id: accountId,
+            job_id: jobId,
+            photo_url: photoUrl,
+            thumbnail_url: photoUrl,
+            caption: caption || null,
+          })
+          .select()
+          .single()
+
+        if (error) {
+          return { error: error.message }
+        }
+
+        return {
+          success: true,
+          photo,
+          message: 'Photo uploaded successfully',
+        }
+      }
+
+      // Base64 upload would require storage upload - return error for now
+      return {
+        error: 'Base64 upload not yet implemented. Please provide photoUrl instead.',
+      }
+    }
+
+    case 'capture_location': {
+      const { jobId, latitude, longitude, address } = args as {
+        jobId: string
+        latitude: number
+        longitude: number
+        address?: string
+      }
+
+      // Verify job exists
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('id')
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!job) {
+        return { error: 'Job not found' }
+      }
+
+      // Update job with location
+      const { data: updatedJob, error } = await supabase
+        .from('jobs')
+        .update({
+          latitude,
+          longitude,
+          address: address || null,
+        })
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        job: updatedJob,
+        message: 'Location captured successfully',
+      }
+    }
+
+    case 'clock_in': {
+      const { jobId, notes } = args as {
+        jobId?: string
+        notes?: string
+      }
+
+      // Get current user ID if available
+      const currentUserId = userId || null
+
+      if (!currentUserId) {
+        return { error: 'User ID required for time tracking' }
+      }
+
+      const { data: timeEntry, error } = await supabase
+        .from('time_entries')
+        .insert({
+          account_id: accountId,
+          user_id: currentUserId,
+          job_id: jobId || null,
+          clock_in: new Date().toISOString(),
+          notes: notes || null,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        timeEntry,
+        message: 'Clocked in successfully',
+      }
+    }
+
+    case 'clock_out': {
+      const { timeEntryId, notes } = args as {
+        timeEntryId: string
+        notes?: string
+      }
+
+      // Get existing time entry
+      const { data: existingEntry } = await supabase
+        .from('time_entries')
+        .select('*')
+        .eq('id', timeEntryId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!existingEntry) {
+        return { error: 'Time entry not found' }
+      }
+
+      const clockOutTime = new Date()
+      const clockInTime = new Date(existingEntry.clock_in)
+      const duration = Math.round((clockOutTime.getTime() - clockInTime.getTime()) / 1000) // seconds
+
+      const { data: timeEntry, error } = await supabase
+        .from('time_entries')
+        .update({
+          clock_out: clockOutTime.toISOString(),
+          duration,
+          notes: notes || existingEntry.notes || null,
+        })
+        .eq('id', timeEntryId)
+        .eq('account_id', accountId)
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        timeEntry,
+        message: `Clocked out successfully. Duration: ${Math.round(duration / 60)} minutes`,
+      }
+    }
+
+    case 'get_tech_jobs': {
+      const { techId, status, date, limit = 50 } = args as {
+        techId?: string
+        status?: string
+        date?: string
+        limit?: number
+      }
+
+      // Use provided techId or default to userId
+      const targetTechId = techId || userId
+
+      if (!targetTechId) {
+        return { error: 'Technician ID required' }
+      }
+
+      let query = supabase
+        .from('jobs')
+        .select('*, contacts(*), users(*)')
+        .eq('account_id', accountId)
+        .eq('tech_assigned_id', targetTechId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      if (date) {
+        const dateStart = new Date(date)
+        dateStart.setHours(0, 0, 0, 0)
+        const dateEnd = new Date(date)
+        dateEnd.setHours(23, 59, 59, 999)
+
+        query = query.gte('scheduled_start', dateStart.toISOString()).lte('scheduled_start', dateEnd.toISOString())
+      }
+
+      const { data: jobs, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        jobs: jobs || [],
+        count: jobs?.length || 0,
+      }
+    }
+
+    case 'add_contact_note': {
+      const { contactId, content } = args as {
+        contactId: string
+        content: string
+      }
+
+      // Verify contact exists
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('id', contactId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!contact) {
+        return { error: 'Contact not found' }
+      }
+
+      const { data: note, error } = await supabase
+        .from('contact_notes')
+        .insert({
+          account_id: accountId,
+          contact_id: contactId,
+          content,
+          created_by: userId || null,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        note,
+        message: 'Note added successfully',
+      }
+    }
+
+    case 'add_conversation_note': {
+      const { conversationId, content } = args as {
+        conversationId: string
+        content: string
+      }
+
+      // Verify conversation exists
+      const { data: conversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('id', conversationId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!conversation) {
+        return { error: 'Conversation not found' }
+      }
+
+      const { data: note, error } = await supabase
+        .from('conversation_notes')
+        .insert({
+          account_id: accountId,
+          conversation_id: conversationId,
+          content,
+          created_by: userId || null,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        note,
+        message: 'Note added successfully',
+      }
+    }
+
+    // Wave 3: Financial Operations
+    case 'update_invoice': {
+      const { invoiceId, totalAmount, dueDate, notes } = args as {
+        invoiceId: string
+        totalAmount?: number
+        dueDate?: string
+        notes?: string
+      }
+
+      const updateData: Record<string, unknown> = {}
+      if (totalAmount !== undefined) updateData.total_amount = totalAmount
+      if (dueDate !== undefined) updateData.due_date = dueDate
+      if (notes !== undefined) updateData.notes = notes
+
+      const { data: invoice, error } = await supabase
+        .from('invoices')
+        .update(updateData)
+        .eq('id', invoiceId)
+        .eq('account_id', accountId)
+        .select('*, jobs(*), contacts(*)')
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (!invoice) {
+        return { error: 'Invoice not found' }
+      }
+
+      return {
+        success: true,
+        invoice,
+        message: 'Invoice updated successfully',
+      }
+    }
+
+    case 'send_invoice': {
+      const { invoiceId } = args as { invoiceId: string }
+
+      // Get invoice with contact details
+      const { data: invoice } = await supabase
+        .from('invoices')
+        .select('*, jobs(*), contacts(*)')
+        .eq('id', invoiceId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!invoice) {
+        return { error: 'Invoice not found' }
+      }
+
+      const contact = invoice.contacts as any
+      if (!contact?.email) {
+        return { error: 'Contact does not have an email address' }
+      }
+
+      // Update invoice status to 'sent'
+      const { error: updateError } = await supabase
+        .from('invoices')
+        .update({ status: 'sent' })
+        .eq('id', invoiceId)
+        .eq('account_id', accountId)
+
+      if (updateError) {
+        return { error: updateError.message }
+      }
+
+      // Send email via Resend
+      const resendKey = process.env.RESEND_API_KEY
+      if (!resendKey) {
+        return { error: 'Email service not configured' }
+      }
+
+      const emailSubject = `Invoice #${invoiceId.substring(0, 8)}`
+      const emailBody = `
+        <h2>Invoice</h2>
+        <p>Invoice #${invoiceId.substring(0, 8)}</p>
+        <p>Amount: $${((invoice.total_amount || 0) / 100).toFixed(2)}</p>
+        ${invoice.notes ? `<p>Notes: ${invoice.notes}</p>` : ''}
+      `
+
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'CRM <noreply@317plumber.com>',
+          to: [contact.email],
+          subject: emailSubject,
+          html: emailBody,
+        }),
+      })
+
+      const emailData = await emailRes.json()
+
+      if (!emailRes.ok) {
+        return { error: emailData.message || 'Failed to send invoice' }
+      }
+
+      return {
+        success: true,
+        messageId: emailData.id,
+        message: `Invoice sent to ${contact.email}`,
+      }
+    }
+
+    case 'mark_invoice_paid': {
+      const { invoiceId } = args as { invoiceId: string }
+
+      const { data: invoice, error } = await supabase
+        .from('invoices')
+        .update({ status: 'paid' })
+        .eq('id', invoiceId)
+        .eq('account_id', accountId)
+        .select('*, jobs(*), contacts(*)')
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (!invoice) {
+        return { error: 'Invoice not found' }
+      }
+
+      return {
+        success: true,
+        invoice,
+        message: 'Invoice marked as paid',
+      }
+    }
+
+    case 'list_payments': {
+      const { jobId, invoiceId, status, limit = 50 } = args as {
+        jobId?: string
+        invoiceId?: string
+        status?: string
+        limit?: number
+      }
+
+      let query = supabase
+        .from('payments')
+        .select('*, invoices(*), jobs(*)')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (jobId) {
+        query = query.eq('job_id', jobId)
+      }
+
+      if (invoiceId) {
+        query = query.eq('invoice_id', invoiceId)
+      }
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      const { data: payments, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        payments: payments || [],
+        count: payments?.length || 0,
+      }
+    }
+
+    case 'create_payment': {
+      const { invoiceId, amount, method, notes } = args as {
+        invoiceId: string
+        amount: number
+        method: string
+        notes?: string
+      }
+
+      // Verify invoice exists
+      const { data: invoice } = await supabase
+        .from('invoices')
+        .select('id, job_id, contact_id')
+        .eq('id', invoiceId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!invoice) {
+        return { error: 'Invoice not found' }
+      }
+
+      const { data: payment, error } = await supabase
+        .from('payments')
+        .insert({
+          account_id: accountId,
+          invoice_id: invoiceId,
+          job_id: invoice.job_id || null,
+          contact_id: invoice.contact_id || null,
+          amount,
+          method,
+          status: 'completed',
+          notes: notes || null,
+        })
+        .select('*, invoices(*), jobs(*)')
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        payment,
+        message: 'Payment created successfully',
+      }
+    }
+
+    // Wave 4: Marketing Operations
+    case 'list_campaigns': {
+      const { status, limit = 50 } = args as {
+        status?: string
+        limit?: number
+      }
+
+      let query = supabase
+        .from('campaigns')
+        .select('*')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      const { data: campaigns, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        campaigns: campaigns || [],
+        count: campaigns?.length || 0,
+      }
+    }
+
+    case 'create_campaign': {
+      const { name, type, templateId, subject, body } = args as {
+        name: string
+        type: string
+        templateId?: string
+        subject?: string
+        body?: string
+      }
+
+      const { data: campaign, error } = await supabase
+        .from('campaigns')
+        .insert({
+          account_id: accountId,
+          name,
+          type,
+          template_id: templateId || null,
+          subject: subject || null,
+          body: body || null,
+          status: 'draft',
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        campaign,
+        message: 'Campaign created successfully',
+      }
+    }
+
+    case 'get_campaign': {
+      const { campaignId } = args as { campaignId: string }
+
+      const { data: campaign } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('id', campaignId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!campaign) {
+        return { error: 'Campaign not found' }
+      }
+
+      return { campaign }
+    }
+
+    case 'send_campaign': {
+      const { campaignId } = args as { campaignId: string }
+
+      // Update campaign status to 'sending'
+      const { data: campaign, error } = await supabase
+        .from('campaigns')
+        .update({ status: 'sending' })
+        .eq('id', campaignId)
+        .eq('account_id', accountId)
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (!campaign) {
+        return { error: 'Campaign not found' }
+      }
+
+      return {
+        success: true,
+        campaign,
+        message: 'Campaign sending started',
+      }
+    }
+
+    case 'list_email_templates': {
+      const { type, limit = 50 } = args as {
+        type?: string
+        limit?: number
+      }
+
+      let query = supabase
+        .from('email_templates')
+        .select('*')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (type) {
+        query = query.eq('type', type)
+      }
+
+      const { data: templates, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        templates: templates || [],
+        count: templates?.length || 0,
+      }
+    }
+
+    case 'create_email_template': {
+      const { name, type, subject, body } = args as {
+        name: string
+        type: string
+        subject: string
+        body: string
+      }
+
+      const { data: template, error } = await supabase
+        .from('email_templates')
+        .insert({
+          account_id: accountId,
+          name,
+          type,
+          subject,
+          body_html: body,
+          body_text: body,
+          active: true,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        template,
+        message: 'Email template created successfully',
+      }
+    }
+
+    case 'list_contact_tags': {
+      const { limit = 50 } = args as {
+        limit?: number
+      }
+
+      const { data: tags, error } = await supabase
+        .from('contact_tags')
+        .select('*')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        tags: tags || [],
+        count: tags?.length || 0,
+      }
+    }
+
+    case 'create_contact_tag': {
+      const { name, color } = args as {
+        name: string
+        color?: string
+      }
+
+      const { data: tag, error } = await supabase
+        .from('contact_tags')
+        .insert({
+          account_id: accountId,
+          name,
+          color: color || '#3B82F6',
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        tag,
+        message: 'Contact tag created successfully',
+      }
+    }
+
+    case 'assign_tag_to_contact': {
+      const { contactId, tagId } = args as {
+        contactId: string
+        tagId: string
+      }
+
+      // Verify contact and tag exist
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('id', contactId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!contact) {
+        return { error: 'Contact not found' }
+      }
+
+      const { data: tag } = await supabase
+        .from('contact_tags')
+        .select('id')
+        .eq('id', tagId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!tag) {
+        return { error: 'Tag not found' }
+      }
+
+      // Check if already assigned
+      const { data: existing } = await supabase
+        .from('contact_tag_assignments')
+        .select('id')
+        .eq('contact_id', contactId)
+        .eq('tag_id', tagId)
+        .single()
+
+      if (existing) {
+        return {
+          success: true,
+          message: 'Tag already assigned to contact',
+        }
+      }
+
+      const { data: assignment, error } = await supabase
+        .from('contact_tag_assignments')
+        .insert({
+          account_id: accountId,
+          contact_id: contactId,
+          tag_id: tagId,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        assignment,
+        message: 'Tag assigned to contact successfully',
+      }
+    }
+
+    // Wave 5: Analytics & Admin
+    case 'get_contact_analytics': {
+      const { dateFrom, dateTo } = args as {
+        dateFrom?: string
+        dateTo?: string
+      }
+
+      let query = supabase
+        .from('contacts')
+        .select('id, created_at, status')
+        .eq('account_id', accountId)
+
+      if (dateFrom) {
+        query = query.gte('created_at', dateFrom)
+      }
+
+      if (dateTo) {
+        query = query.lte('created_at', dateTo)
+      }
+
+      const { data: contacts, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      const totalContacts = contacts?.length || 0
+      const statusBreakdown: Record<string, number> = {}
+      contacts?.forEach((contact) => {
+        const status = contact.status || 'unknown'
+        statusBreakdown[status] = (statusBreakdown[status] || 0) + 1
+      })
+
+      return {
+        totalContacts,
+        statusBreakdown,
+      }
+    }
+
+    case 'generate_report': {
+      const { type, dateFrom, dateTo } = args as {
+        type: string
+        dateFrom?: string
+        dateTo?: string
+      }
+
+      // Generate report based on type
+      if (type === 'jobs') {
+        let query = supabase.from('jobs').select('*').eq('account_id', accountId)
+
+        if (dateFrom) query = query.gte('created_at', dateFrom)
+        if (dateTo) query = query.lte('created_at', dateTo)
+
+        const { data: jobs, error } = await query
+        if (error) return { error: error.message }
+
+        return {
+          type: 'jobs',
+          data: jobs || [],
+          count: jobs?.length || 0,
+        }
+      }
+
+      if (type === 'contacts') {
+        let query = supabase.from('contacts').select('*').eq('account_id', accountId)
+
+        if (dateFrom) query = query.gte('created_at', dateFrom)
+        if (dateTo) query = query.lte('created_at', dateTo)
+
+        const { data: contacts, error } = await query
+        if (error) return { error: error.message }
+
+        return {
+          type: 'contacts',
+          data: contacts || [],
+          count: contacts?.length || 0,
+        }
+      }
+
+      if (type === 'invoices') {
+        let query = supabase.from('invoices').select('*').eq('account_id', accountId)
+
+        if (dateFrom) query = query.gte('created_at', dateFrom)
+        if (dateTo) query = query.lte('created_at', dateTo)
+
+        const { data: invoices, error } = await query
+        if (error) return { error: error.message }
+
+        return {
+          type: 'invoices',
+          data: invoices || [],
+          count: invoices?.length || 0,
+        }
+      }
+
+      return { error: `Unknown report type: ${type}` }
+    }
+
+    case 'export_contacts': {
+      const { format = 'csv' } = args as {
+        format?: 'csv' | 'json'
+      }
+
+      const { data: contacts, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('account_id', accountId)
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (format === 'json') {
+        return {
+          format: 'json',
+          data: contacts || [],
+          count: contacts?.length || 0,
+        }
+      }
+
+      // CSV format would need conversion - return JSON for now
+      return {
+        format: 'csv',
+        data: contacts || [],
+        count: contacts?.length || 0,
+        note: 'CSV conversion should be done client-side',
+      }
+    }
+
+    case 'export_jobs': {
+      const { format = 'csv', dateFrom, dateTo } = args as {
+        format?: 'csv' | 'json'
+        dateFrom?: string
+        dateTo?: string
+      }
+
+      let query = supabase.from('jobs').select('*, contacts(*), users(*)').eq('account_id', accountId)
+
+      if (dateFrom) query = query.gte('created_at', dateFrom)
+      if (dateTo) query = query.lte('created_at', dateTo)
+
+      const { data: jobs, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (format === 'json') {
+        return {
+          format: 'json',
+          data: jobs || [],
+          count: jobs?.length || 0,
+        }
+      }
+
+      return {
+        format: 'csv',
+        data: jobs || [],
+        count: jobs?.length || 0,
+        note: 'CSV conversion should be done client-side',
+      }
+    }
+
+    case 'list_automation_rules': {
+      const { active, limit = 50 } = args as {
+        active?: boolean
+        limit?: number
+      }
+
+      let query = supabase
+        .from('automation_rules')
+        .select('*')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (active !== undefined) {
+        query = query.eq('active', active)
+      }
+
+      const { data: rules, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        rules: rules || [],
+        count: rules?.length || 0,
+      }
+    }
+
+    case 'create_automation_rule': {
+      const { name, trigger, action, active = true } = args as {
+        name: string
+        trigger: string
+        action: string
+        active?: boolean
+      }
+
+      const { data: rule, error } = await supabase
+        .from('automation_rules')
+        .insert({
+          account_id: accountId,
+          name,
+          trigger,
+          action,
+          active,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        rule,
+        message: 'Automation rule created successfully',
+      }
+    }
+
+    case 'get_account_settings': {
+      const { data: account } = await supabase
+        .from('accounts')
+        .select('settings, name, owner_email')
+        .eq('id', accountId)
+        .single()
+
+      if (!account) {
+        return { error: 'Account not found' }
+      }
+
+      return {
+        settings: account.settings || {},
+        accountName: account.name,
+        ownerEmail: account.owner_email,
+      }
+    }
+
+    case 'update_account_settings': {
+      const { settings } = args as {
+        settings: Record<string, unknown>
+      }
+
+      const { data: account, error } = await supabase
+        .from('accounts')
+        .update({ settings })
+        .eq('id', accountId)
+        .select('settings')
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        settings: account.settings,
+        message: 'Account settings updated successfully',
+      }
+    }
+
+    case 'get_audit_logs': {
+      const { action, userId, dateFrom, dateTo, limit = 50 } = args as {
+        action?: string
+        userId?: string
+        dateFrom?: string
+        dateTo?: string
+        limit?: number
+      }
+
+      let query = supabase
+        .from('audit_logs')
+        .select('*')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (action) {
+        query = query.eq('action', action)
+      }
+
+      if (userId) {
+        query = query.eq('user_id', userId)
+      }
+
+      if (dateFrom) {
+        query = query.gte('created_at', dateFrom)
+      }
+
+      if (dateTo) {
+        query = query.lte('created_at', dateTo)
+      }
+
+      const { data: logs, error } = await query
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        logs: logs || [],
+        count: logs?.length || 0,
+      }
+    }
+
+    // ======================================
+    // AI-POWERED TOOL HANDLERS
+    // ======================================
+
+    case 'generate_job_description': {
+      const { jobType, customerNotes, additionalContext } = args as {
+        jobType: string
+        customerNotes: string
+        additionalContext?: string
+      }
+
+      try {
+        // Construct prompt with context
+        const contextPart = additionalContext ? `\n\nAdditional Context: ${additionalContext}` : ''
+        const prompt = `Job Type: ${jobType}\nCustomer Notes: ${customerNotes}${contextPart}\n\nGenerate a clear, professional job description that includes:\n1. What needs to be done\n2. Any specific requirements or constraints\n3. Expected scope of work`
+
+        const description = await llmHelper.callRouter({
+          accountId,
+          useCase: 'draft',
+          prompt,
+          systemPrompt: 'You are a professional job description writer for a service business. Create clear, actionable job descriptions that are concise yet complete. Focus on what work needs to be done, not how to do it. Keep descriptions between 2-4 sentences.',
+          maxTokens: 500,
+          temperature: 0.7,
+        })
+
+        return {
+          success: true,
+          description: description.trim(),
+          jobType,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return {
+          success: false,
+          error: `Failed to generate job description: ${message}`,
+        }
+      }
+    }
+
+    case 'draft_customer_response': {
+      const { conversationId, customerMessage, tone } = args as {
+        conversationId: string
+        customerMessage: string
+        tone?: string
+      }
+
+      try {
+        // Fetch conversation context
+        const { data: conversation, error: convError } = await supabase
+          .from('conversations')
+          .select('subject, contact:contact_id(first_name, last_name)')
+          .eq('id', conversationId)
+          .single()
+
+        if (convError || !conversation) {
+          return { error: 'Conversation not found' }
+        }
+
+        // Fetch recent messages for context
+        const { data: messages } = await supabase
+          .from('messages')
+          .select('content, sender_type, created_at')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: false })
+          .limit(5)
+
+        const conversationContext = messages
+          ? messages
+              .reverse()
+              .map((m) => `[${m.sender_type}]: ${m.content}`)
+              .join('\n')
+          : ''
+
+        const responseTone = tone || 'professional'
+        const contact = conversation.contact as any
+        const customerName = contact
+          ? `${contact.first_name} ${contact.last_name}`
+          : 'the customer'
+
+        const prompt = `Conversation Subject: ${conversation.subject}\nCustomer Name: ${customerName}\n\nRecent Conversation History:\n${conversationContext}\n\nLatest Customer Message:\n${customerMessage}\n\nDraft a ${responseTone} response to this customer message.`
+
+        const draftResponse = await llmHelper.callRouter({
+          accountId,
+          useCase: 'draft',
+          prompt,
+          systemPrompt: `You are a customer service representative for a service business. Draft ${responseTone} responses that are helpful, clear, and maintain good customer relationships. Keep responses concise (2-4 sentences) unless more detail is needed. Always be respectful and solution-oriented.`,
+          maxTokens: 300,
+          temperature: 0.7,
+        })
+
+        return {
+          success: true,
+          draftResponse: draftResponse.trim(),
+          tone: responseTone,
+          conversationId,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return {
+          success: false,
+          error: `Failed to draft response: ${message}`,
+        }
+      }
+    }
+
+    case 'summarize_job_notes': {
+      const { jobId } = args as { jobId: string }
+
+      try {
+        // Fetch job details
+        const { data: job, error: jobError } = await supabase
+          .from('jobs')
+          .select('description, status, notes, contact:contact_id(first_name, last_name)')
+          .eq('id', jobId)
+          .single()
+
+        if (jobError || !job) {
+          return { error: 'Job not found' }
+        }
+
+        // Fetch job photos (descriptions)
+        const { data: photos } = await supabase
+          .from('job_photos')
+          .select('description, photo_type')
+          .eq('job_id', jobId)
+          .order('created_at', { ascending: true })
+
+        const photoNotes = photos
+          ? photos
+              .filter((p) => p.description)
+              .map((p) => `[${p.photo_type}]: ${p.description}`)
+              .join('\n')
+          : ''
+
+        const contact = job.contact as any
+        const customerName = contact
+          ? `${contact.first_name} ${contact.last_name}`
+          : 'Customer'
+
+        const allNotes = [
+          `Job Description: ${job.description}`,
+          job.notes ? `Notes: ${job.notes}` : '',
+          photoNotes ? `Photo Notes:\n${photoNotes}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+
+        const prompt = `Customer: ${customerName}\nJob Status: ${job.status}\n\n${allNotes}\n\nProvide a concise summary of this job, highlighting key points, current status, and any important details.`
+
+        const summary = await llmHelper.callRouter({
+          accountId,
+          useCase: 'summary',
+          prompt,
+          systemPrompt: 'You are summarizing job information for a service business. Create concise, informative summaries that capture the essential details. Use 2-4 sentences. Focus on what matters most: the work being done, current status, and any issues or special requirements.',
+          maxTokens: 200,
+          temperature: 0.5,
+        })
+
+        return {
+          success: true,
+          summary: summary.trim(),
+          jobId,
+          status: job.status,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return {
+          success: false,
+          error: `Failed to summarize job notes: ${message}`,
+        }
+      }
+    }
+
+    case 'analyze_customer_sentiment': {
+      const { conversationId } = args as { conversationId: string }
+
+      try {
+        // Fetch recent messages from customer
+        const { data: messages, error: msgError } = await supabase
+          .from('messages')
+          .select('content, sender_type, created_at')
+          .eq('conversation_id', conversationId)
+          .eq('sender_type', 'contact')
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        if (msgError || !messages || messages.length === 0) {
+          return { error: 'No customer messages found in conversation' }
+        }
+
+        const customerMessages = messages
+          .reverse()
+          .map((m) => m.content)
+          .join('\n---\n')
+
+        const prompt = `Analyze the sentiment of these customer messages:\n\n${customerMessages}\n\nProvide:\n1. Overall sentiment: positive, negative, or neutral\n2. Confidence level: high, medium, or low\n3. Key emotions detected\n4. Brief explanation (1 sentence)\n\nRespond in JSON format: {"sentiment": "positive|negative|neutral", "confidence": "high|medium|low", "emotions": ["emotion1", "emotion2"], "explanation": "brief explanation"}`
+
+        const analysisText = await llmHelper.callRouter({
+          accountId,
+          useCase: 'general',
+          prompt,
+          systemPrompt: 'You are a sentiment analysis expert. Analyze customer communications and provide accurate sentiment assessments. Always respond with valid JSON. Be objective and base your analysis on the actual content.',
+          maxTokens: 150,
+          temperature: 0.3,
+        })
+
+        // Parse JSON response
+        let analysis
+        try {
+          // Extract JSON from potential markdown code blocks
+          const jsonMatch = analysisText.match(/\{[\s\S]*\}/)
+          analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(analysisText)
+        } catch {
+          // Fallback if JSON parsing fails
+          analysis = {
+            sentiment: 'neutral',
+            confidence: 'low',
+            emotions: ['unclear'],
+            explanation: 'Unable to parse sentiment analysis',
+          }
+        }
+
+        return {
+          success: true,
+          conversationId,
+          messageCount: messages.length,
+          ...analysis,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return {
+          success: false,
+          error: `Failed to analyze sentiment: ${message}`,
+        }
+      }
+    }
+
+    case 'generate_invoice_description': {
+      const { jobId, includeLabor, includeMaterials } = args as {
+        jobId: string
+        includeLabor?: boolean
+        includeMaterials?: boolean
+      }
+
+      try {
+        const shouldIncludeLabor = includeLabor !== false
+        const shouldIncludeMaterials = includeMaterials !== false
+
+        // Fetch job details
+        const { data: job, error: jobError } = await supabase
+          .from('jobs')
+          .select('description, notes, status, contact:contact_id(first_name, last_name, address)')
+          .eq('id', jobId)
+          .single()
+
+        if (jobError || !job) {
+          return { error: 'Job not found' }
+        }
+
+        // Fetch job materials if including materials
+        let materialsInfo = ''
+        if (shouldIncludeMaterials) {
+          const { data: materials } = await supabase
+            .from('job_materials')
+            .select('name, quantity, unit_cost')
+            .eq('job_id', jobId)
+
+          if (materials && materials.length > 0) {
+            materialsInfo = `\n\nMaterials Used:\n${materials
+              .map((m) => `- ${m.name} (Qty: ${m.quantity}, Cost: $${(m.unit_cost / 100).toFixed(2)})`)
+              .join('\n')}`
+          }
+        }
+
+        const contact = job.contact as any
+        const customerName = contact
+          ? `${contact.first_name} ${contact.last_name}`
+          : 'Customer'
+        const address = contact?.address || 'Address on file'
+
+        const prompt = `Customer: ${customerName}\nService Address: ${address}\nJob Status: ${job.status}\n\nWork Performed:\n${job.description}\n${job.notes ? `\nNotes: ${job.notes}` : ''}${materialsInfo}\n\nGenerate professional invoice line items with descriptions. ${shouldIncludeLabor ? 'Include labor charges.' : ''} ${shouldIncludeMaterials ? 'Include materials charges.' : ''}\n\nFormat each line item as:\n- Description: [what was done]\n- Suggested category: [Labor/Materials/Service/Other]`
+
+        const invoiceDescription = await llmHelper.callRouter({
+          accountId,
+          useCase: 'draft',
+          prompt,
+          systemPrompt: 'You are creating professional invoice descriptions for a service business. Write clear, itemized descriptions of work performed. Be specific but concise. Each line item should clearly describe what was provided. Use professional business language.',
+          maxTokens: 400,
+          temperature: 0.6,
+        })
+
+        return {
+          success: true,
+          invoiceDescription: invoiceDescription.trim(),
+          jobId,
+          includeLabor: shouldIncludeLabor,
+          includeMaterials: shouldIncludeMaterials,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return {
+          success: false,
+          error: `Failed to generate invoice description: ${message}`,
+        }
       }
     }
 
