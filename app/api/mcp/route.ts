@@ -17,7 +17,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const userId = request.headers.get('x-api-key') || undefined
+    // Support both Bearer token and x-api-key header
+    const authHeader = request.headers.get('authorization')
+    const bearerToken = authHeader?.startsWith('Bearer ') 
+      ? authHeader.substring(7) 
+      : undefined
+    const apiKey = request.headers.get('x-api-key') || undefined
+    const userId = bearerToken || apiKey
     const response = await handleMCPRequest(body, userId)
     return NextResponse.json(response)
   } catch (error) {

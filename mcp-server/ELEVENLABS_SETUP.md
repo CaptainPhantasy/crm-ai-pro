@@ -33,28 +33,39 @@ The server runs on stdio and will wait for MCP protocol messages.
 
 ## ElevenLabs Configuration
 
-In your ElevenLabs agent settings, add this MCP server:
+In your ElevenLabs agent settings, configure the MCP server connection:
 
-### Option 1: Direct Command
+### ElevenLabs Agent Configuration (Production)
 
-```json
-{
-  "mcpServers": {
-    "crm-ai-pro": {
-      "command": "node",
-      "args": ["/absolute/path/to/CRM-AI-PRO/mcp-server/index.ts"],
-      "env": {
-        "SUPABASE_URL": "https://expbvujyegxmxvatcjqt.supabase.co",
-        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key",
-        "DEFAULT_ACCOUNT_ID": "fde73a6a-ea84-46a7-803b-a3ae7cc09d00",
-        "RESEND_API_KEY": "your-resend-key"
-      }
-    }
-  }
-}
+Your agent `agent_6501katrbe2re0c834kfes3hvk2d` should be configured with:
+
+**MCP Server URL**: `https://your-domain.com/api/mcp`
+
+**Request Headers**:
+```
+Authorization: Bearer sb_publishable_PVtLOJSfyLR9b0-_4cwk3g_3BvFVflj
 ```
 
-### Option 2: Using tsx (Recommended)
+### Development Configuration
+
+For local development, configure your ElevenLabs agent to connect to:
+- **URL**: `http://localhost:3000/api/mcp`
+- **Headers**: `Authorization: Bearer test-token` (or your actual auth token)
+
+### CRM Integration
+
+The voice agent is now embedded directly in the CRM interface using the ElevenLabs ConVA widget:
+
+```html
+<elevenlabs-convai agent-id="agent_6501katrbe2re0c834kfes3hvk2d"></elevenlabs-convai>
+<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+```
+
+This allows users to interact with the voice agent while using the CRM normally, rather than in a separate demo interface.
+
+### Option 2: Direct Command (Local Development)
+
+For local development using stdio-based MCP server:
 
 ```json
 {
@@ -63,7 +74,7 @@ In your ElevenLabs agent settings, add this MCP server:
       "command": "npx",
       "args": ["tsx", "/absolute/path/to/CRM-AI-PRO/mcp-server/index.ts"],
       "env": {
-        "SUPABASE_URL": "https://expbvujyegxvatcjqt.supabase.co",
+        "SUPABASE_URL": "https://expbvujyegxmxvatcjqt.supabase.co",
         "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key",
         "DEFAULT_ACCOUNT_ID": "fde73a6a-ea84-46a7-803b-a3ae7cc09d00",
         "RESEND_API_KEY": "your-resend-key"
