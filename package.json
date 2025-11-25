@@ -11,6 +11,7 @@
     "dev:with-cache": "docker-compose --profile with-cache up --build",
     "build": "next build",
     "build:docker": "docker build -t crm-ai-pro .",
+    "monitor:build": "npx tsx scripts/monitor-build.ts",
     "start": "next start",
     "start:docker": "docker-compose up -d",
     "stop": "docker-compose down",
