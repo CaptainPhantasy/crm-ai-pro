@@ -16,7 +16,7 @@ export default function VoiceDemoPage() {
   const [messages, setMessages] = useState<VoiceMessage[]>([])
   const [transcription, setTranscription] = useState('')
   const [accountId, setAccountId] = useState<string | null>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<any>(null)
   const synthRef = useRef<SpeechSynthesis | null>(null)
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -73,9 +73,9 @@ export default function VoiceDemoPage() {
         recognition.interimResults = true
         recognition.lang = 'en-US'
 
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-          const transcript = Array.from(event.results)
-            .map(result => result[0].transcript)
+        recognition.onresult = (event: any) => {
+          const transcript = Array.from(event.results as SpeechRecognitionResultList)
+            .map((result: SpeechRecognitionResult) => result[0].transcript)
             .join('')
           setTranscription(transcript)
         }
@@ -132,7 +132,7 @@ export default function VoiceDemoPage() {
   const sendCommand = async (text: string) => {
     if (!text.trim() || !accountId) return
 
-    const userMessage: Message = {
+    const userMessage: VoiceMessage = {
       id: Date.now().toString(),
       role: 'user',
       content: text,
@@ -173,7 +173,7 @@ export default function VoiceDemoPage() {
       if (response.ok) {
       const data = await response.json()
         if (data.success) {
-        const assistantMessage: Message = {
+        const assistantMessage: VoiceMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content: data.response || 'Command executed successfully',
@@ -209,7 +209,7 @@ export default function VoiceDemoPage() {
         // Speak the response
         speak(assistantMessage.content)
       } else {
-          const errorMessage: Message = {
+          const errorMessage: VoiceMessage = {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
             content: data.error || 'Failed to process command',
@@ -220,7 +220,7 @@ export default function VoiceDemoPage() {
         }
       } else {
         const data = await response.json().catch(() => ({ error: 'Unknown error' }))
-        const errorMessage: Message = {
+        const errorMessage: VoiceMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content: data.error || 'Failed to process command',
@@ -231,7 +231,7 @@ export default function VoiceDemoPage() {
         speak('Sorry, I encountered an error processing that command.')
       }
     } catch (error: any) {
-      const errorMessage: Message = {
+      const errorMessage: VoiceMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: `Error: ${error.message}`,

@@ -17,7 +17,7 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState<AccountSettings>({
     name: '',
     slug: '',
-    inbound_email_domain: null,
+    inboundEmailDomain: null,
     settings: {},
   })
   const [error, setError] = useState<string | null>(null)
@@ -152,12 +152,12 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="inbound_email_domain">Inbound Email Domain</Label>
+              <Label htmlFor="inboundEmailDomain">Inbound Email Domain</Label>
               <Input
-                id="inbound_email_domain"
+                id="inboundEmailDomain"
                 placeholder="reply.yourcompany.com"
-                value={formData.inbound_email_domain || ''}
-                onChange={(e) => setFormData({ ...formData, inbound_email_domain: e.target.value || null })}
+                value={formData.inboundEmailDomain || ''}
+                onChange={(e) => setFormData({ ...formData, inboundEmailDomain: e.target.value || null })}
               />
               <p className="text-xs text-neutral-500">Domain for receiving email replies</p>
             </div>

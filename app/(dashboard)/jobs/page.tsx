@@ -18,6 +18,7 @@ import { toast, error as toastError, success as toastSuccess, warning as toastWa
 import { confirmDialog } from '@/lib/confirm'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 function JobsPageContent() {
   const searchParams = useSearchParams()
@@ -236,15 +237,15 @@ function JobsPageContent() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'scheduled': 
-        return { bg: 'bg-dark-panel', text: 'text-neon-blue-glow300', border: 'border-neon-blue-glow300' }
+        return { bg: 'bg-theme-card', text: 'text-theme-accent-primary', border: 'border-theme-accent-primary' }
       case 'in_progress': 
-        return { bg: 'bg-dark-panel', text: 'text-neon-blue-glow500', border: 'border-neon-blue-glow500' }
+        return { bg: 'bg-theme-card', text: 'text-theme-accent-primary', border: 'border-theme-accent-primary' }
       case 'completed': 
-        return { bg: 'bg-dark-panel', text: 'text-neon-green-glow300', border: 'border-neon-green-glow300' }
+        return { bg: 'bg-theme-card', text: 'text-theme-accent-secondary', border: 'border-theme-accent-secondary' }
       case 'en_route':
-        return { bg: 'bg-dark-panel', text: 'text-neon-green-glow500', border: 'border-neon-green-glow500' }
+        return { bg: 'bg-theme-card', text: 'text-theme-accent-secondary', border: 'border-theme-accent-secondary' }
       default: 
-        return { bg: 'bg-dark-panel', text: 'text-neon-blue-glow100', border: 'border-neon-blue-glow700' }
+        return { bg: 'bg-theme-card', text: 'text-theme-subtle', border: 'border-theme-border' }
     }
   }
 
@@ -255,7 +256,7 @@ function JobsPageContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-white">Jobs</h1>
-          <p className="text-sm text-neon-blue-glow100 mt-1">Manage work orders and schedules</p>
+          <p className="text-sm text-theme-subtle mt-1">Manage work orders and schedules</p>
         </div>
         <div className="flex gap-2">
           <Button 
@@ -271,7 +272,7 @@ function JobsPageContent() {
               <ExportButton endpoint="jobs" />
               {selectedJobIds.size > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-neon-blue-glow100">{selectedJobIds.size} selected</span>
+                  <span className="text-sm text-theme-subtle">{selectedJobIds.size} selected</span>
                   <Select onValueChange={handleBulkStatusUpdate} disabled={bulkStatusUpdating}>
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Update status" />
@@ -325,55 +326,55 @@ function JobsPageContent() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-neon-blue-glow300 shadow-neon-blue-md">
+        <Card className="border-l-4 border-l-theme-accent-primary shadow-elevated">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neon-blue-glow100">Total Jobs</CardTitle>
+            <CardTitle className="text-sm font-medium text-theme-subtle">Total Jobs</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-white">{stats.total}</div>
-            <p className="text-xs text-neon-green-glow300 mt-1 font-medium">+12% from last month</p>
+            <p className="text-xs text-theme-accent-secondary mt-1 font-medium">+12% from last month</p>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-neon-green-glow300 shadow-neon-green-md">
+        <Card className="border-l-4 border-l-theme-accent-secondary shadow-elevated">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neon-green-glow100">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium text-theme-subtle">Completed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-white">{stats.completed}</div>
-            <p className="text-xs text-neon-green-glow300 mt-1 font-medium">75% completion rate</p>
+            <p className="text-xs text-theme-accent-secondary mt-1 font-medium">75% completion rate</p>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-neon-blue-glow500 shadow-neon-blue-md">
+        <Card className="border-l-4 border-l-theme-accent-primary shadow-elevated">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neon-blue-glow100">In Progress</CardTitle>
+            <CardTitle className="text-sm font-medium text-theme-subtle">In Progress</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-white">{stats.inProgress}</div>
-            <p className="text-xs text-neon-blue-glow300 mt-1 font-medium">Active now</p>
+            <p className="text-xs text-theme-accent-primary mt-1 font-medium">Active now</p>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-neon-green-glow500 shadow-neon-green-md">
+        <Card className="border-l-4 border-l-theme-accent-secondary shadow-elevated">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neon-green-glow100">Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium text-theme-subtle">Revenue</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-white">${(stats.revenue / 100).toFixed(2)}</div>
-            <p className="text-xs text-neon-green-glow300 mt-1 font-medium">This month</p>
+            <p className="text-xs text-theme-accent-secondary mt-1 font-medium">This month</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Jobs List */}
-      <Card className="shadow-md border-neon-blue-glow700/50">
+      <Card className="shadow-md border-theme-border">
         <CardHeader>
           <CardTitle>Recent Jobs</CardTitle>
-          <CardDescription className="text-neon-blue-glow100/70">View and manage your work orders</CardDescription>
+          <CardDescription className="text-theme-subtle/70">View and manage your work orders</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-4 border-2 border-neon-blue-glow700/30 rounded-lg">
+                <div key={i} className="flex items-center gap-4 p-4 border-2 border-theme-border rounded-lg">
                   <Skeleton className="h-12 w-12 rounded-lg" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-48" />
@@ -384,16 +385,16 @@ function JobsPageContent() {
               ))}
             </div>
           ) : jobs.length === 0 ? (
-            <div className="text-center py-8 text-neon-blue-glow100/50">No jobs found. Create your first job!</div>
+            <div className="text-center py-8 text-theme-subtle/50">No jobs found. Create your first job!</div>
           ) : (
             <div className="space-y-4">
               {jobs.length > 0 && (
-                <div className="flex items-center gap-2 pb-2 border-b border-neon-blue-glow700/50">
+                <div className="flex items-center gap-2 pb-2 border-b border-theme-border">
                   <Checkbox
                     checked={selectedJobIds.size === jobs.length && jobs.length > 0}
                     onCheckedChange={handleSelectAllJobs}
                   />
-                  <span className="text-sm text-neon-blue-glow100">
+                  <span className="text-sm text-theme-subtle">
                     {selectedJobIds.size > 0 ? `${selectedJobIds.size} selected` : 'Select all'}
                   </span>
                 </div>
@@ -406,8 +407,8 @@ function JobsPageContent() {
                     className={cn(
                       "flex items-center justify-between p-4 border-2 rounded-lg transition-all relative overflow-hidden",
                       selectedJobIds.has(job.id) 
-                        ? "border-neon-blue-glow300 bg-neon-blue-glow700/10 neon-glow-blue" 
-                        : "border-neon-blue-glow700/30 hover:border-neon-blue-glow300 hover:bg-dark-tertiary"
+                        ? "border-theme-accent-primary bg-theme-secondary/10 shadow-glow" 
+                        : "border-theme-border hover:border-theme-accent-primary hover:bg-theme-secondary"
                     )}
                     onClick={(e) => {
                       // Allow clicking the row to toggle selection, unless clicking a button/checkbox
@@ -427,9 +428,9 @@ function JobsPageContent() {
                         onClick={(e) => e.stopPropagation()}
                       />
                       <div 
-                        className="w-12 h-12 rounded-lg flex items-center justify-center bg-dark-tertiary border border-neon-blue-glow700/50"
+                        className="w-12 h-12 rounded-lg flex items-center justify-center bg-theme-secondary border border-theme-border"
                       >
-                        <User className="w-6 h-6 text-neon-blue-glow300" />
+                        <User className="w-6 h-6 text-theme-accent-primary" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -443,28 +444,28 @@ function JobsPageContent() {
                               job.status === 'en_route' ? 'default' : 'outline'
                             }
                             className={cn(
-                                job.status === 'en_route' && "border-neon-green-glow500 text-neon-green-glow500"
+                                job.status === 'en_route' && "border-theme-accent-secondary text-theme-accent-secondary"
                             )}
                           >
                             {job.status?.replace('_', ' ')}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-neon-blue-glow100/70">
+                        <div className="flex items-center gap-4 mt-1 text-sm text-theme-subtle/70">
                           {job.contact?.address && (
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-neon-blue-glow300" />
+                              <MapPin className="w-3 h-3 text-theme-accent-primary" />
                               {job.contact.address}
                             </span>
                           )}
                           {job.scheduled_start && (
                             <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3 text-neon-blue-glow300" />
+                              <Calendar className="w-3 h-3 text-theme-accent-primary" />
                               {new Date(job.scheduled_start).toLocaleDateString()}
                             </span>
                           )}
                         </div>
                         {job.description && (
-                          <p className="text-sm text-neon-blue-glow100/50 mt-1 truncate max-w-md">{job.description}</p>
+                          <p className="text-sm text-theme-subtle/50 mt-1 truncate max-w-md">{job.description}</p>
                         )}
                       </div>
                     </div>
@@ -472,10 +473,10 @@ function JobsPageContent() {
                       {job.total_amount && (
                         <div className="text-right">
                           <div className="font-semibold text-white flex items-center gap-1 justify-end">
-                            <DollarSign className="w-4 h-4 text-neon-green-glow300" />
+                            <DollarSign className="w-4 h-4 text-theme-accent-secondary" />
                             {(job.total_amount / 100).toFixed(2)}
                           </div>
-                          <div className="text-xs text-neon-blue-glow100/50">Total</div>
+                          <div className="text-xs text-theme-subtle/50">Total</div>
                         </div>
                       )}
                       <Button 
@@ -534,12 +535,12 @@ export default function JobsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-white">Jobs</h1>
-            <p className="text-sm text-neon-blue-glow100 mt-1">Manage work orders and schedules</p>
+            <p className="text-sm text-theme-subtle mt-1">Manage work orders and schedules</p>
           </div>
         </div>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-4 p-4 border-2 border-neon-blue-glow700/30 rounded-lg">
+            <div key={i} className="flex items-center gap-4 p-4 border-2 border-theme-border rounded-lg">
               <Skeleton className="h-12 w-12 rounded-lg" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-4 w-48" />
