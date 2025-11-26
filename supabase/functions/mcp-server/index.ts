@@ -581,16 +581,19 @@ const TOOLS = [
   // Navigation Tool
   {
     name: 'navigate',
-    description: 'Navigate to a page, open a modal, or switch tabs. Use this when user says "Go to jobs" or "Show me contacts"',
+    description: 'Navigate the user to a different page in the CRM application. Use this when the user asks to go to a specific section like Jobs, Inbox, Contacts, Analytics, Finance, Settings, etc. Examples: "Go to jobs", "Show me contacts", "Take me to the inbox", "Open analytics"',
     inputSchema: {
       type: 'object',
       properties: {
-        route: { type: 'string', enum: ['jobs', 'contacts', 'inbox', 'analytics', 'settings', 'dashboard'], description: 'Route to navigate to' },
-        action: { type: 'string', enum: ['open', 'close', 'switch'], description: 'Action to perform' },
-        entityId: { type: 'string', description: 'Entity ID for opening specific entities' },
-        entityType: { type: 'string', enum: ['job', 'contact', 'conversation', 'invoice'], description: 'Type of entity' },
+        page: { 
+          type: 'string', 
+          enum: ['inbox', 'jobs', 'contacts', 'analytics', 'finance', 'tech', 'campaigns', 'email-templates', 'tags', 'settings', 'integrations', 'dashboard'], 
+          description: 'The page to navigate to' 
+        },
+        jobId: { type: 'string', description: 'Optional: Job ID if navigating to a specific job' },
+        contactId: { type: 'string', description: 'Optional: Contact ID if navigating to a specific contact' },
       },
-      required: ['route', 'action'],
+      required: ['page'],
     },
   },
   // MISSING TOOLS - Wave 1: High Priority
@@ -2090,16 +2093,62 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
       return { success: true, result: callLogData, callLog: callLogData.callLog }
     }
 
-    // Navigation Tool
+    // Navigation Tool - writes to voice_navigation_commands table for frontend to execute
     else if (toolName === 'navigate') {
+      // Page URL mappings
+      const pageRoutes: Record<string, string> = {
+        'inbox': '/inbox',
+        'jobs': '/jobs',
+        'contacts': '/contacts',
+        'analytics': '/analytics',
+        'finance': '/finance/dashboard',
+        'tech': '/tech/dashboard',
+        'campaigns': '/marketing/campaigns',
+        'email-templates': '/marketing/email-templates',
+        'tags': '/marketing/tags',
+        'settings': '/admin/settings',
+        'integrations': '/settings/integrations',
+        'dashboard': '/jobs', // Default dashboard to jobs
+      }
+
+      const page = args.page || args.route // Support both new and old param names
+      
+      if (!pageRoutes[page]) {
+        return { error: `Invalid page: ${page}. Valid pages are: ${Object.keys(pageRoutes).join(', ')}` }
+      }
+
+      // Build the full path
+      let fullPath = pageRoutes[page]
+      
+      // Handle specific item navigation
+      if (page === 'jobs' && args.jobId) {
+        fullPath = `/jobs/${args.jobId}`
+      } else if (page === 'contacts' && args.contactId) {
+        fullPath = `/contacts/${args.contactId}`
+      }
+
+      // Insert navigation command into database for frontend to pick up via Realtime
+      const { data: navCommand, error: navError } = await supabase
+        .from('voice_navigation_commands')
+        .insert({
+          account_id: accountId,
+          page: fullPath,
+          params: { jobId: args.jobId, contactId: args.contactId },
+          executed: false,
+        })
+        .select()
+        .single()
+
+      if (navError) {
+        console.error('Navigation command error:', navError)
+        return { error: `Failed to send navigation command: ${navError.message}` }
+      }
+
       return {
-        navigation: {
-          route: args.route,
-          action: args.action,
-          entityId: args.entityId,
-          entityType: args.entityType,
-        },
-        message: `Navigate to ${args.route}`
+        success: true,
+        message: `Navigating to ${page}`,
+        path: fullPath,
+        commandId: navCommand?.id,
       }
     }
 

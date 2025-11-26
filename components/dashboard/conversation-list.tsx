@@ -99,11 +99,11 @@ export function ConversationList() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-dark-primary border-r border-neon-blue-glow700/30">
-      <div className="p-4 border-b border-neon-blue-glow700/30 bg-dark-panel flex-shrink-0">
-        <h2 className="text-lg font-semibold text-neon-blue-glow300 mb-3">Inbox</h2>
+    <div className="w-full h-full flex flex-col bg-theme-primary border-r border-theme-border">
+      <div className="p-4 border-b border-theme-border bg-theme-card flex-shrink-0">
+        <h2 className="text-lg font-semibold text-theme-accent-primary mb-3">Inbox</h2>
         <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neon-blue-glow300" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-theme-accent-primary" />
             <Input 
             type="text" 
             placeholder="Search..." 
@@ -111,7 +111,7 @@ export function ConversationList() {
             />
         </div>
       </div>
-      <div className="flex-1 overflow-hidden bg-dark-secondary">
+      <div className="flex-1 overflow-hidden bg-theme-secondary">
         <ScrollArea className="h-full">
           <div className="flex flex-col">
             {conversations.map((conv) => (
@@ -119,8 +119,8 @@ export function ConversationList() {
               key={conv.id}
               onClick={() => router.push(`/inbox?conversation=${conv.id}`)}
               className={cn(
-                "flex flex-col gap-2 px-4 py-3 text-left transition-all border-b border-neon-blue-glow700/30 hover:bg-dark-tertiary",
-                selectedId === conv.id && "bg-dark-tertiary border-l-4 border-l-neon-blue-glow300 neon-glow-blue-inset"
+                "flex flex-col gap-2 px-4 py-3 text-left transition-all border-b border-theme-border hover:bg-theme-secondary",
+                selectedId === conv.id && "bg-theme-secondary border-l-4 border-l-theme-accent-primary shadow-inner"
               )}
             >
               <div className="flex items-center gap-3">
@@ -134,11 +134,11 @@ export function ConversationList() {
                     <span className="font-medium text-sm text-white truncate">
                       {conv.contact?.first_name} {conv.contact?.last_name}
                     </span>
-                    <span className="text-xs text-neon-blue-glow100/70 whitespace-nowrap">
+                    <span className="text-xs text-theme-subtle/70 whitespace-nowrap">
                       {conv.last_message_at && new Date(conv.last_message_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="text-xs text-neon-blue-glow100/50 truncate mt-0.5">
+                  <div className="text-xs text-theme-subtle/50 truncate mt-0.5">
                     {conv.subject || 'No Subject'}
                   </div>
                 </div>
@@ -148,7 +148,7 @@ export function ConversationList() {
                    value={conv.status}
                    onValueChange={(value: 'open' | 'closed' | 'snoozed') => handleStatusChange(conv.id, value)}
                  >
-                   <SelectTrigger className="h-6 w-24 text-[10px] px-2 border-neon-blue-glow700/30">
+                   <SelectTrigger className="h-6 w-24 text-[10px] px-2 border-theme-border">
                      <SelectValue />
                    </SelectTrigger>
                    <SelectContent>
@@ -161,13 +161,13 @@ export function ConversationList() {
             </button>
             ))}
             {!loading && conversations.length === 0 && (
-              <div className="p-8 text-center text-neon-blue-glow100/50 text-sm">
+              <div className="p-8 text-center text-theme-subtle/50 text-sm">
                 <p className="mb-2">No conversations yet.</p>
-                <p className="text-xs text-neon-blue-glow100/30">Seed test data from the Jobs page to see conversations.</p>
+                <p className="text-xs text-theme-subtle/30">Seed test data from the Jobs page to see conversations.</p>
               </div>
             )}
             {loading && (
-              <div className="p-8 text-center text-neon-blue-glow100 text-sm">
+              <div className="p-8 text-center text-theme-subtle text-sm">
                 <p>Loading conversations...</p>
               </div>
             )}

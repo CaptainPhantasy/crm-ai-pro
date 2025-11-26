@@ -20,6 +20,25 @@ interface LLMProvider {
   account_id: string | null
 }
 
+interface ProviderMetrics {
+  provider: string
+  requests: number
+  successRate: string
+  avgLatency: string
+  totalTokens: string
+  totalCost: string
+  avgCost: string
+  errors: number
+}
+
+interface HealthStatus {
+  provider: string
+  healthy: boolean
+  latency: string | null
+  lastCheck: string
+  error: string | null
+}
+
 export default function LLMProvidersPage() {
   const router = useRouter()
   const [providers, setProviders] = useState<LLMProvider[]>([])
@@ -27,10 +46,21 @@ export default function LLMProvidersPage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [providerDialogOpen, setProviderDialogOpen] = useState(false)
   const [editingProvider, setEditingProvider] = useState<LLMProvider | null>(null)
+  const [metrics, setMetrics] = useState<ProviderMetrics[]>([])
+  const [health, setHealth] = useState<HealthStatus[]>([])
+  const [metricsLoading, setMetricsLoading] = useState(false)
 
   useEffect(() => {
     checkAdminAccess()
   }, [])
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchMetricsAndHealth()
+      const interval = setInterval(fetchMetricsAndHealth, 30000) // Refresh every 30 seconds
+      return () => clearInterval(interval)
+    }
+  }, [isAdmin])
 
   async function checkAdminAccess() {
     try {
@@ -63,6 +93,31 @@ export default function LLMProvidersPage() {
       }
     } catch (error) {
       console.error('Error fetching providers:', error)
+    }
+  }
+
+  async function fetchMetricsAndHealth() {
+    setMetricsLoading(true)
+    try {
+      // Fetch metrics and health in parallel
+      const [metricsRes, healthRes] = await Promise.all([
+        fetch('/api/llm/metrics'),
+        fetch('/api/llm/health'),
+      ])
+
+      if (metricsRes.ok) {
+        const metricsData = await metricsRes.json()
+        setMetrics(metricsData.metrics || [])
+      }
+
+      if (healthRes.ok) {
+        const healthData = await healthRes.json()
+        setHealth(healthData.providers || [])
+      }
+    } catch (error) {
+      console.error('Error fetching metrics/health:', error)
+    } finally {
+      setMetricsLoading(false)
     }
   }
 
@@ -118,6 +173,90 @@ export default function LLMProvidersPage() {
           <Plus className="w-4 h-4 mr-2" />
           Add Provider
         </Button>
+      </div>
+
+      {/* Metrics and Health Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="shadow-md">
+          <CardHeader>
+            <CardTitle>Real-Time Metrics</CardTitle>
+            <CardDescription>Provider usage statistics (auto-refreshes every 30s)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {metricsLoading && metrics.length === 0 ? (
+              <div className="text-center py-4 text-neutral-500">Loading metrics...</div>
+            ) : metrics.length === 0 ? (
+              <div className="text-center py-4 text-neutral-500">No metrics yet</div>
+            ) : (
+              <div className="space-y-3">
+                {metrics.map((metric) => (
+                  <div key={metric.provider} className="p-3 border rounded-lg">
+                    <div className="font-medium text-sm mb-2">{metric.provider}</div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-neutral-500">Requests:</span> <span className="font-medium">{metric.requests}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500">Success Rate:</span> <span className="font-medium text-green-600">{metric.successRate}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500">Avg Latency:</span> <span className="font-medium">{metric.avgLatency}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500">Total Cost:</span> <span className="font-medium">{metric.totalCost}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md">
+          <CardHeader>
+            <CardTitle>Health Status</CardTitle>
+            <CardDescription>Provider availability checks (updated every 60s)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {metricsLoading && health.length === 0 ? (
+              <div className="text-center py-4 text-neutral-500">Loading health status...</div>
+            ) : health.length === 0 ? (
+              <div className="text-center py-4 text-neutral-500">No health data yet</div>
+            ) : (
+              <div className="space-y-3">
+                {health.map((status) => (
+                  <div key={status.provider} className="p-3 border rounded-lg flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{status.provider}</div>
+                      <div className="text-xs text-neutral-500 mt-1">
+                        Last checked: {new Date(status.lastCheck).toLocaleTimeString()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {status.healthy ? (
+                        <>
+                          <Badge className="bg-green-100 text-green-700 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Healthy
+                          </Badge>
+                          {status.latency && (
+                            <span className="text-xs text-neutral-500">{status.latency}</span>
+                          )}
+                        </>
+                      ) : (
+                        <Badge className="bg-red-100 text-red-700 flex items-center gap-1">
+                          <XCircle className="w-3 h-3" />
+                          Unhealthy
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="shadow-md">

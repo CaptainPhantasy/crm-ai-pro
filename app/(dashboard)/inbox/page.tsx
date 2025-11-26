@@ -19,9 +19,9 @@ function InboxPageContent() {
 
   return (
     <ErrorBoundary context="inbox">
-      <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-dark-secondary">
+      <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-theme-secondary">
       {/* Sidebar - Always visible on desktop, hidden on mobile if thread selected */}
-      <div className={`${sidebarClasses} w-full md:w-80 h-full flex-shrink-0 border-r-2 border-neon-blue-glow700/50`}>
+      <div className={`${sidebarClasses} w-full md:w-80 h-full flex-shrink-0 border-r-2 border-theme-border`}>
         <ConversationList />
       </div>
 
@@ -30,10 +30,10 @@ function InboxPageContent() {
         {conversationId ? (
           <MessageThread conversationId={conversationId} />
         ) : (
-          <div className="hidden md:flex flex-1 items-center justify-center text-neon-blue-glow100 bg-dark-panel">
+          <div className="hidden md:flex flex-1 items-center justify-center text-theme-subtle bg-theme-card">
             <div className="text-center">
               <p className="text-lg font-medium text-white mb-2">No conversation selected</p>
-              <p className="text-sm text-neon-blue-glow100">Select a conversation from the sidebar to view messages</p>
+              <p className="text-sm text-theme-subtle">Select a conversation from the sidebar to view messages</p>
             </div>
           </div>
         )}
@@ -49,16 +49,16 @@ function InboxPageContent() {
 export default function InboxPage() {
   return (
     <Suspense fallback={
-      <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-dark-secondary">
-        <div className="w-full md:w-80 h-full flex-shrink-0 border-r-2 border-neon-blue-glow700/50 bg-dark-panel">
+      <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-theme-secondary">
+        <div className="w-full md:w-80 h-full flex-shrink-0 border-r-2 border-theme-border bg-theme-card">
           <div className="p-4 space-y-4">
-            <div className="h-16 bg-dark-tertiary rounded animate-pulse border-2 border-neon-blue-glow700/30" />
-            <div className="h-16 bg-dark-tertiary rounded animate-pulse border-2 border-neon-blue-glow700/30" />
-            <div className="h-16 bg-dark-tertiary rounded animate-pulse border-2 border-neon-blue-glow700/30" />
+            <div className="h-16 bg-theme-secondary rounded animate-pulse border-2 border-theme-border" />
+            <div className="h-16 bg-theme-secondary rounded animate-pulse border-2 border-theme-border" />
+            <div className="h-16 bg-theme-secondary rounded animate-pulse border-2 border-theme-border" />
           </div>
         </div>
-        <div className="flex-1 h-full bg-dark-panel flex items-center justify-center">
-          <div className="text-neon-blue-glow100">Loading...</div>
+        <div className="flex-1 h-full bg-theme-card flex items-center justify-center">
+          <div className="text-theme-subtle">Loading...</div>
         </div>
       </div>
     }>

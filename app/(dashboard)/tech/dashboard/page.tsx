@@ -166,28 +166,16 @@ export default function TechDashboardPage() {
 
   return (
     <ErrorBoundary context="tech-dashboard">
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-theme-primary">
       {/* Vibrant Header */}
       <div 
-        className="flex items-center justify-between p-6 rounded-xl border-2"
-        style={{ 
-          background: 'linear-gradient(to right, #E6F7F9, #EBF0FF, #EAFCF1)',
-          borderColor: 'rgba(34, 185, 202, 0.2)'
-        }}
+        className="flex items-center justify-between p-6 rounded-xl border-2 bg-theme-surface border-theme"
       >
         <div>
-          <h1 
-            className="text-2xl font-semibold"
-            style={{ 
-              background: 'linear-gradient(to right, #22B9CA, #3366FF)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
+          <h1 className="text-2xl font-semibold text-theme-primary">
             Tech Dashboard
           </h1>
-          <p className="text-sm text-neutral-600 mt-1 font-medium">Field technician work management</p>
+          <p className="text-sm text-theme-secondary mt-1 font-medium">Field technician work management</p>
         </div>
         <div className="flex gap-2">
           <Button 
@@ -245,19 +233,19 @@ export default function TechDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold" style={{ color: '#3366FF' }}>{stats.today}</div>
-              <p className="text-xs font-medium mt-1" style={{ color: '#3366FF' }}>3 remaining</p>
+              <div className="text-3xl font-bold text-theme-accent-primary">{stats.today}</div>
+              <p className="text-xs font-medium mt-1 text-theme-secondary">3 remaining</p>
             </CardContent>
           </div>
         </Card>
         <Card 
-          className="shadow-md hover:shadow-lg transition-shadow"
-          style={{ borderLeftWidth: '4px', borderLeftColor: '#56D470' }}
+          className="shadow-md hover:shadow-lg transition-shadow bg-theme-surface border-theme"
+          style={{ borderLeftWidth: '4px', borderLeftColor: 'var(--color-accent-primary)' }}
         >
-          <div style={{ background: 'linear-gradient(to bottom right, #EAFCF1, white, rgba(234, 252, 241, 0.5))' }}>
+          <div className="bg-theme-surface">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-neutral-600">Completed</CardTitle>
+                <CardTitle className="text-sm font-medium text-theme-secondary">Completed</CardTitle>
                 <div 
                   className="w-8 h-8 rounded-lg flex items-center justify-center"
                   style={{ backgroundColor: '#56D470' }}
@@ -267,19 +255,19 @@ export default function TechDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold" style={{ color: '#37C856' }}>{stats.completed}</div>
-              <p className="text-xs font-medium mt-1" style={{ color: '#37C856' }}>This week: 12</p>
+              <div className="text-3xl font-bold text-theme-accent-primary">{stats.completed}</div>
+              <p className="text-xs font-medium mt-1 text-theme-secondary">This week: 12</p>
             </CardContent>
           </div>
         </Card>
         <Card 
-          className="shadow-md hover:shadow-lg transition-shadow"
-          style={{ borderLeftWidth: '4px', borderLeftColor: '#FFA24D' }}
+          className="shadow-md hover:shadow-lg transition-shadow bg-theme-surface border-theme"
+          style={{ borderLeftWidth: '4px', borderLeftColor: 'var(--color-accent-primary)' }}
         >
-          <div style={{ background: 'linear-gradient(to bottom right, #FFF4E8, white, rgba(255, 244, 232, 0.5))' }}>
+          <div className="bg-theme-surface">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-neutral-600">In Progress</CardTitle>
+                <CardTitle className="text-sm font-medium text-theme-secondary">In Progress</CardTitle>
                 <div 
                   className="w-8 h-8 rounded-lg flex items-center justify-center"
                   style={{ backgroundColor: '#FFA24D' }}
@@ -289,19 +277,19 @@ export default function TechDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold" style={{ color: '#FF8D29' }}>{stats.inProgress}</div>
-              <p className="text-xs font-medium mt-1" style={{ color: '#FF8D29' }}>Active now</p>
+              <div className="text-3xl font-bold text-theme-accent-primary">{stats.inProgress}</div>
+              <p className="text-xs font-medium mt-1 text-theme-secondary">Active now</p>
             </CardContent>
           </div>
         </Card>
         <Card 
-          className="shadow-md hover:shadow-lg transition-shadow"
-          style={{ borderLeftWidth: '4px', borderLeftColor: '#EE46BC' }}
+          className="shadow-md hover:shadow-lg transition-shadow bg-theme-surface border-theme"
+          style={{ borderLeftWidth: '4px', borderLeftColor: 'var(--color-accent-primary)' }}
         >
-          <div style={{ background: 'linear-gradient(to bottom right, #FDF2F9, white, rgba(253, 242, 249, 0.5))' }}>
+          <div className="bg-theme-surface">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-neutral-600">Revenue</CardTitle>
+                <CardTitle className="text-sm font-medium text-theme-secondary">Revenue</CardTitle>
                 <div 
                   className="w-8 h-8 rounded-lg flex items-center justify-center"
                   style={{ backgroundColor: '#EE46BC' }}
@@ -311,8 +299,8 @@ export default function TechDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold" style={{ color: '#EE46BC' }}>${(stats.revenue / 100).toFixed(2)}</div>
-              <p className="text-xs font-medium mt-1" style={{ color: '#EE46BC' }}>Today</p>
+              <div className="text-3xl font-bold text-theme-accent-primary">${(stats.revenue / 100).toFixed(2)}</div>
+              <p className="text-xs font-medium mt-1 text-theme-secondary">Today</p>
             </CardContent>
           </div>
         </Card>
@@ -320,7 +308,7 @@ export default function TechDashboardPage() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-neutral-100 p-1 border border-neutral-200">
+        <TabsList className="bg-theme-surface p-1 border border-theme">
           <TabsTrigger 
             value="today" 
             className="font-medium data-[state=active]:shadow-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#EBF0FF] data-[state=active]:to-white data-[state=active]:text-[#3366FF]"
@@ -342,22 +330,18 @@ export default function TechDashboardPage() {
         </TabsList>
 
         <TabsContent value="today" className="space-y-4">
-          <Card className="border-2 border-neutral-200 shadow-md">
+          <Card className="border-2 border-theme shadow-md bg-theme-surface">
             <CardHeader 
-              className="border-b"
-              style={{ 
-                background: 'linear-gradient(to right, #EBF0FF, white)',
-                borderBottomColor: '#C8D7FF'
-              }}
+              className="border-b border-theme bg-theme-surface"
             >
-              <CardTitle style={{ color: '#3366FF' }}>Today's Schedule</CardTitle>
-              <CardDescription className="text-neutral-600">Your jobs for today</CardDescription>
+              <CardTitle className="text-theme-primary">Today's Schedule</CardTitle>
+              <CardDescription className="text-theme-secondary">Your jobs for today</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               {loading ? (
-                <div className="text-center py-8 text-neutral-500">Loading jobs...</div>
+                <div className="text-center py-8 text-theme-secondary">Loading jobs...</div>
               ) : jobs.length === 0 ? (
-                <div className="text-center py-8 text-neutral-500">No jobs scheduled for today</div>
+                <div className="text-center py-8 text-theme-secondary">No jobs scheduled for today</div>
               ) : (
                 <div className="space-y-4">
                   {jobs.map((job, index) => {
@@ -394,10 +378,10 @@ export default function TechDashboardPage() {
                                   <CheckCircle className="w-6 h-6" style={{ color: '#3366FF' }} />
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold text-lg text-neutral-800">
+                                  <h3 className="font-semibold text-lg text-theme-primary">
                                     {job.contact?.first_name} {job.contact?.last_name}
                                   </h3>
-                                  <p className="text-sm text-neutral-600 font-medium">{job.description || 'Service call'}</p>
+                                  <p className="text-sm text-theme-secondary font-medium">{job.description || 'Service call'}</p>
                                 </div>
                                 {getStatusBadge(job.status || 'scheduled')}
                               </div>
@@ -503,30 +487,23 @@ export default function TechDashboardPage() {
         </TabsContent>
 
         <TabsContent value="upcoming">
-          <Card className="border-2 border-neutral-200 shadow-md">
+          <Card className="border-2 border-theme shadow-md bg-theme-surface">
             <CardHeader 
-              className="border-b"
-              style={{ 
-                background: 'linear-gradient(to right, #FFF4E8, white)',
-                borderBottomColor: '#FFE3C2'
-              }}
+              className="border-b border-theme bg-theme-surface"
             >
-              <CardTitle style={{ color: '#FF8D29' }}>Upcoming Jobs</CardTitle>
-              <CardDescription className="text-neutral-600">Your scheduled work for the week</CardDescription>
+              <CardTitle className="text-theme-primary">Upcoming Jobs</CardTitle>
+              <CardDescription className="text-theme-secondary">Your scheduled work for the week</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-neutral-500">Loading...</div>
+                <div className="text-center py-8 text-theme-secondary">Loading...</div>
               ) : (
                 <div className="text-center py-12">
-                  <div 
-                    className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ background: 'linear-gradient(to bottom right, #FFF4E8, #FFE3C2)' }}
-                  >
-                    <Clock className="w-8 h-8" style={{ color: '#FF8D29' }} />
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-theme-surface">
+                    <Clock className="w-8 h-8 text-theme-accent-primary" />
                   </div>
-                  <p className="text-neutral-500 font-medium">No upcoming jobs scheduled</p>
-                  <p className="text-sm text-neutral-400 mt-1">Check back later for new assignments</p>
+                  <p className="text-theme-secondary font-medium">No upcoming jobs scheduled</p>
+                  <p className="text-sm text-theme-subtle mt-1">Check back later for new assignments</p>
                 </div>
               )}
             </CardContent>
@@ -534,39 +511,32 @@ export default function TechDashboardPage() {
         </TabsContent>
 
         <TabsContent value="completed">
-          <Card className="border-2 border-neutral-200 shadow-md">
+          <Card className="border-2 border-theme shadow-md bg-theme-surface">
             <CardHeader 
-              className="border-b"
-              style={{ 
-                background: 'linear-gradient(to right, #EAFCF1, white)',
-                borderBottomColor: '#C3F5D1'
-              }}
+              className="border-b border-theme bg-theme-surface"
             >
-              <CardTitle style={{ color: '#37C856' }}>Completed Jobs</CardTitle>
-              <CardDescription className="text-neutral-600">Your finished work</CardDescription>
+              <CardTitle className="text-theme-primary">Completed Jobs</CardTitle>
+              <CardDescription className="text-theme-secondary">Your finished work</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-neutral-500">Loading...</div>
+                <div className="text-center py-8 text-theme-secondary">Loading...</div>
               ) : jobs.length === 0 ? (
                 <div className="text-center py-12">
-                  <div 
-                    className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ background: 'linear-gradient(to bottom right, #EAFCF1, #C3F5D1)' }}
-                  >
-                    <CheckCircle className="w-8 h-8" style={{ color: '#37C856' }} />
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-theme-surface">
+                    <CheckCircle className="w-8 h-8 text-theme-accent-primary" />
                   </div>
-                  <p className="text-neutral-500 font-medium">No completed jobs to display</p>
-                  <p className="text-sm text-neutral-400 mt-1">Completed jobs will appear here</p>
+                  <p className="text-theme-secondary font-medium">No completed jobs to display</p>
+                  <p className="text-sm text-theme-subtle mt-1">Completed jobs will appear here</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {jobs.map((job) => (
-                    <div key={job.id} className="p-4 border rounded-lg">
+                    <div key={job.id} className="p-4 border border-theme rounded-lg bg-theme-surface">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-semibold">{job.contact?.first_name} {job.contact?.last_name}</h3>
-                          <p className="text-sm text-neutral-500">{job.description}</p>
+                          <h3 className="font-semibold text-theme-primary">{job.contact?.first_name} {job.contact?.last_name}</h3>
+                          <p className="text-sm text-theme-secondary">{job.description}</p>
                         </div>
                         {getStatusBadge(job.status || 'completed')}
                       </div>

@@ -4,6 +4,7 @@ import { openai } from '@ai-sdk/openai'
 import { streamText } from 'ai'
 
 import { getAuthenticatedSession } from '@/lib/auth-helper'
+import { createRouterClient } from '@/lib/llm/integration'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -108,55 +109,24 @@ export async function POST(request: Request) {
     personaConfig = account?.persona_config || {}
   }
 
-  // 5. Use LLM Router Edge Function if available, otherwise fallback to direct OpenAI
-  const useLLMRouter = process.env.USE_LLM_ROUTER !== 'false'
-  
-  if (useLLMRouter && process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    try {
-      const routerUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/llm-router`
-      const routerResponse = await fetch(routerUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          accountId: user?.account_id,
-          useCase: 'draft',
-          prompt: `Conversation History:\n${history}${ragContext}\n\nDraft a reply:`,
-          systemPrompt: personaConfig.systemPrompt || `You are Carl, an assistant for CRM-AI PRO. 
-    Service Area: Indianapolis, Carmel, Fishers.
-    Pricing: $89 Diagnostic Fee (waived if work is done).
-    Urgency: If water is actively leaking, tell them to shut off the main valve immediately.
-    
-    Your goal is to be helpful, brief, and ask for the address if missing.
-    Draft a response to the customer based on the conversation history.
-    Do not include "Subject:" lines. Just the body.`,
-          maxTokens: 500,
-          temperature: 0.7,
-        }),
-      })
+  // 5. Use LLM Router with automatic fallback
+  const routerClient = createRouterClient()
 
-      if (routerResponse.ok) {
-        const routerData = await routerResponse.json()
-        // Return as streaming response
-        return new Response(
-          new ReadableStream({
-            start(controller) {
-              controller.enqueue(new TextEncoder().encode(routerData.text))
-              controller.close()
-            }
-          }),
-          { headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
-        )
-      }
-    } catch (error) {
-      console.error('LLM Router error, falling back to direct:', error)
-      // Fall through to direct OpenAI
-    }
-  }
+  // Get auth token for router call
+  const authToken = request.headers.get('authorization') ||
+    (await supabase.auth.getSession()).data.session?.access_token
 
-  // 6. Use OpenAI with tool calling for advanced interactions
+  const defaultSystemPrompt = personaConfig.systemPrompt || `You are Carl, an assistant for CRM-AI PRO.
+Service Area: Indianapolis, Carmel, Fishers.
+Pricing: $89 Diagnostic Fee (waived if work is done).
+Urgency: If water is actively leaking, tell them to shut off the main valve immediately.
+
+Your goal is to be helpful, brief, and ask for the address if missing.
+Draft a response to the customer based on the conversation history.
+You can use tools to create jobs or search contacts if needed.
+Do not include "Subject:" lines. Just the body.`
+
+  // 6. Define tools for function calling
   const tools = {
     create_job: {
       description: 'Create a new job if the customer needs service',
@@ -182,22 +152,30 @@ export async function POST(request: Request) {
     },
   }
 
-  const result = streamText({
-    model: openai('gpt-4o-mini'),
-    system: personaConfig.systemPrompt || `You are Carl, an assistant for CRM-AI PRO. 
-    Service Area: Indianapolis, Carmel, Fishers.
-    Pricing: $89 Diagnostic Fee (waived if work is done).
-    Urgency: If water is actively leaking, tell them to shut off the main valve immediately.
-    
-    Your goal is to be helpful, brief, and ask for the address if missing.
-    Draft a response to the customer based on the conversation history.
-    You can use tools to create jobs or search contacts if needed.
-    Do not include "Subject:" lines. Just the body.`,
-    prompt: `Conversation History:\n${history}${ragContext}\n\nDraft a reply:`,
-    tools,
-    maxSteps: 3, // Allow tool calling but limit steps
-  })
+  // 7. Call LLM Router with fallback to direct OpenAI
+  const result = await routerClient.callWithFallback(
+    {
+      accountId: user?.account_id,
+      useCase: 'draft',
+      prompt: `Conversation History:\n${history}${ragContext}\n\nDraft a reply:`,
+      systemPrompt: defaultSystemPrompt,
+      maxTokens: 500,
+      temperature: 0.7,
+      stream: true,
+      tools,
+      maxSteps: 3,
+    },
+    // Fallback function: use direct OpenAI if router fails
+    () => streamText({
+      model: openai('gpt-4o-mini'),
+      system: defaultSystemPrompt,
+      prompt: `Conversation History:\n${history}${ragContext}\n\nDraft a reply:`,
+      tools,
+      maxSteps: 3,
+    }).toTextStreamResponse(),
+    authToken
+  )
 
-  return result.toTextStreamResponse()
+  return result
 }
 

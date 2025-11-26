@@ -82,7 +82,7 @@ export function UserMenu() {
 
   if (loading) {
     return (
-      <div className="w-8 h-8 rounded-full bg-dark-tertiary animate-pulse border-2 border-neon-blue-glow700/50" />
+      <div className="w-8 h-8 rounded-full bg-theme-secondary animate-pulse border-2 border-theme-border" />
     )
   }
 
@@ -98,42 +98,42 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-neon-blue-glow300 focus:ring-offset-2 focus:ring-offset-dark-secondary">
-          <Avatar className="w-8 h-8 border-2 border-neon-blue-glow300 neon-glow-blue">
+        <button className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-theme-accent-primary focus:ring-offset-2 focus:ring-offset-theme-secondary">
+          <Avatar className="w-8 h-8 border-2 border-theme-accent-primary shadow-glow">
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt={user.full_name || 'User'} />
             ) : (
-              <AvatarFallback className="bg-neon-blue-glow300 text-black text-xs font-semibold">
+              <AvatarFallback className="bg-theme-accent-primary text-black text-xs font-semibold">
                 {initials}
               </AvatarFallback>
             )}
           </Avatar>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-dark-panel border-2 border-neon-blue-glow700/50 circuit-pattern">
+      <DropdownMenuContent align="end" className="w-56 bg-theme-card border-2 border-theme-border">
         <DropdownMenuLabel className="text-white">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none text-white">
               {user?.full_name || 'User'}
             </p>
             {user?.role && (
-              <p className="text-xs leading-none text-neon-blue-glow100 capitalize">
+              <p className="text-xs leading-none text-theme-subtle capitalize">
                 {user.role}
               </p>
             )}
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-neon-blue-glow700/50" />
-        <DropdownMenuItem onClick={() => router.push('/admin/settings')} className="text-white hover:bg-dark-tertiary hover:text-neon-blue-glow300 focus:bg-dark-tertiary">
-          <Settings className="mr-2 h-4 w-4 text-neon-blue-glow300" />
+        <DropdownMenuSeparator className="bg-theme-secondary/50" />
+        <DropdownMenuItem onClick={() => router.push('/admin/settings')} className="text-white hover:bg-theme-secondary hover:text-theme-accent-primary focus:bg-theme-secondary">
+          <Settings className="mr-2 h-4 w-4 text-theme-accent-primary" />
           <span>Settings</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/admin/users')} className="text-white hover:bg-dark-tertiary hover:text-neon-blue-glow300 focus:bg-dark-tertiary">
-          <User className="mr-2 h-4 w-4 text-neon-blue-glow300" />
+        <DropdownMenuItem onClick={() => router.push('/admin/users')} className="text-white hover:bg-theme-secondary hover:text-theme-accent-primary focus:bg-theme-secondary">
+          <User className="mr-2 h-4 w-4 text-theme-accent-primary" />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-neon-blue-glow700/50" />
-        <DropdownMenuItem onClick={handleSignOut} variant="destructive" className="text-neon-accent-red hover:bg-dark-tertiary hover:text-neon-accent-red focus:bg-dark-tertiary">
+        <DropdownMenuSeparator className="bg-theme-secondary/50" />
+        <DropdownMenuItem onClick={handleSignOut} variant="destructive" className="text-destructive hover:bg-theme-secondary hover:text-destructive focus:bg-theme-secondary">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

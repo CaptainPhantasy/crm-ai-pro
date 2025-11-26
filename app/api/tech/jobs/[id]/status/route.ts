@@ -3,8 +3,6 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -82,6 +80,7 @@ export async function PATCH(
     // Send email notifications
     let emailSent = false
     if (status === 'en_route' && job.contact?.email && job.tech) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
       await resend.emails.send({
         from: 'CRM-AI PRO <noreply@crm-ai-pro.com>',
         to: job.contact.email,
@@ -95,6 +94,7 @@ export async function PATCH(
     }
 
     if (status === 'completed' && job.contact?.email) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
       await resend.emails.send({
         from: 'CRM-AI PRO <noreply@crm-ai-pro.com>',
         to: job.contact.email,

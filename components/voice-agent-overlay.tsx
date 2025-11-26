@@ -1,36 +1,51 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useEffect, useRef } from 'react'
+import { initializeVoiceWidget, destroyVoiceWidget } from '@/lib/voice-widget-manager'
 
+// TypeScript: Declare the custom ElevenLabs element
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'elevenlabs-convai': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      > & { 'agent-id': string }
+    }
+  }
+}
+
+/**
+ * VoiceAgentOverlay
+ * 
+ * This component acts as a "trigger" to initialize the voice widget.
+ * The actual widget DOM lives OUTSIDE of React entirely (managed by voice-widget-manager.ts).
+ * 
+ * WHY: React's reconciliation can reset custom elements even with React.memo and portals.
+ * The only way to preserve an active call across route changes is complete DOM isolation.
+ * 
+ * This component:
+ * - Calls initializeVoiceWidget() once on mount
+ * - Renders NOTHING (the widget is created by vanilla JS)
+ * - Never causes re-renders that could affect the widget
+ */
 export function VoiceAgentOverlay() {
-  const [mounted, setMounted] = useState(false)
+  const initialized = useRef(false)
 
   useEffect(() => {
-    setMounted(true)
+    // Strict Mode guard - only initialize once
+    if (initialized.current) return
+    initialized.current = true
 
-    // Load ElevenLabs script
-    const script = document.createElement('script')
-    script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed'
-    script.async = true
-    script.type = 'text/javascript'
-    document.head.appendChild(script)
+    // Initialize the widget using vanilla JS (completely outside React)
+    initializeVoiceWidget()
 
-    return () => {
-      // Cleanup script when component unmounts
-      const existingScript = document.querySelector('script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]')
-      if (existingScript) {
-        document.head.removeChild(existingScript)
-      }
-    }
+    // Optional: Cleanup on logout (uncomment if needed)
+    // return () => {
+    //   destroyVoiceWidget()
+    // }
   }, [])
 
-  if (!mounted) return null
-
-  // Render the ElevenLabs widget as a portal to document.body
-  // This ensures it persists across page navigation
-  return createPortal(
-    <elevenlabs-convai agent-id="agent_6501katrbe2re0c834kfes3hvk2d" />,
-    document.body
-  )
+  // Render nothing - the widget DOM is managed by voice-widget-manager.ts
+  return null
 }

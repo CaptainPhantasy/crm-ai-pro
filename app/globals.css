@@ -3,112 +3,230 @@
 @tailwind utilities;
 
 :root {
-  --radius: 0.375rem;
+  --radius: 0.5rem;
   
-  /* NeonOps Design System CSS Variables (Legacy - kept for backward compatibility) */
-  --neonBlue-glow100: #AEEFFF;
-  --neonBlue-glow300: #00E5FF;
-  --neonBlue-glow500: #00B8D4;
-  --neonBlue-glow700: #008BA3;
-  
-  --neonGreen-glow100: #C3F5D1;
-  --neonGreen-glow300: #39FF14;
-  --neonGreen-glow500: #37C856;
-  --neonGreen-glow700: #20B042;
-  
-  --dark-primary: rgba(0, 20, 40, 0.8);
-  --dark-secondary: #001528;
-  --dark-tertiary: #002a50;
-  --dark-panel: rgba(0, 20, 40, 0.9);
-
   /* ============================================
-     WARM MODE (LIGHT THEME) - DEFAULT
+     WARM MODE (LIGHT THEME) - "LATTE"
+     A sophisticated, grounded palette using earthy neutrals and warm accents.
+     Pillars: Cream, Sand, Bronze, Clay, Teal.
      ============================================ */
   
   /* Core Colors */
-  --warm-bg-primary: #f2e4cf;
-  --warm-bg-secondary: #ebd7b8;
-  --warm-bg-surface: rgba(255, 248, 234, 0.68);
-  --warm-text-primary: #2c2218;
-  --warm-text-secondary: rgba(102, 79, 54, 0.78);
-  --warm-text-subtle: rgba(120, 88, 60, 0.55);
-  --warm-border: rgba(198, 142, 84, 0.32);
+  --warm-bg-primary: #FDF8F5;      /* Warm Cream Base */
+  --warm-bg-secondary: #F5EBE0;    /* Sand Secondary */
+  --warm-bg-surface: #FFFDF9;      /* Lighter Surface */
+  --warm-text-primary: #422006;    /* Dark Bronze Text */
+  --warm-text-secondary: #78350F;  /* Medium Bronze */
+  --warm-text-subtle: #92400E;     /* Light Bronze */
+  --warm-border: #E7D5C9;          /* Soft border */
   
   /* Accents & Gradients */
-  --warm-accent-primary: #f7a229;
-  --warm-accent-secondary: #e9803d;
-  --warm-gradient-accent: linear-gradient(135deg, #f7a229, #e9803d);
-  --warm-gradient-surface: linear-gradient(155deg, rgba(247, 193, 118, 0.28), rgba(226, 164, 96, 0.14));
+  --warm-accent-primary: #EA580C;  /* Burnt Orange */
+  --warm-accent-secondary: #0F766E; /* Deep Teal (Complementary) */
+  --warm-gradient-accent: linear-gradient(135deg, #EA580C, #D97706);
+  --warm-gradient-surface: linear-gradient(155deg, rgba(234, 88, 12, 0.08), rgba(217, 119, 6, 0.04));
   
   /* Glass Effects */
-  --warm-glass-border: rgba(194, 146, 104, 0.28);
-  --warm-glass-highlight: rgba(255, 246, 229, 0.22);
-  --warm-glass-overlay: radial-gradient(circle at top left, rgba(255, 214, 153, 0.25), transparent 55%);
+  --warm-glass-border: rgba(231, 213, 201, 0.5);
+  --warm-glass-highlight: rgba(255, 255, 255, 0.4);
+  --warm-glass-overlay: radial-gradient(circle at top left, rgba(253, 248, 245, 0.4), transparent 60%);
   
   /* Shadows */
-  --warm-shadow-elevated: 0 30px 70px -34px rgba(172, 108, 44, 0.4);
-  --warm-shadow-glow: 0 26px 58px -32px rgba(206, 144, 58, 0.5);
-  --warm-shadow-sm: 0 2px 8px rgba(172, 108, 44, 0.12);
+  --warm-shadow-elevated: 0 20px 50px -20px rgba(66, 32, 6, 0.15);
+  --warm-shadow-glow: 0 0 30px -10px rgba(234, 88, 12, 0.3);
+  --warm-shadow-sm: 0 4px 6px -1px rgba(66, 32, 6, 0.05);
   
   /* Component Specific */
-  --warm-card-bg: rgba(242, 212, 176, 0.7);
-  --warm-card-border: rgba(204, 148, 96, 0.32);
-  --warm-input-bg: rgba(244, 218, 184, 0.85);
-  --warm-badge-bg: rgba(251, 191, 36, 0.25);
-  --warm-badge-text: #c2410c;
+  --warm-card-bg: #FFFFFF;
+  --warm-card-border: #E7D5C9;
+  --warm-input-bg: #FDF8F5;
+  --warm-badge-bg: #FFEDD5;
+  --warm-badge-text: #9A3412;
 
   /* ============================================
-     MIDNIGHT MODE (DARK THEME)
+     MIDNIGHT MODE (DARK THEME) - "ABYSS"
+     Professional, deep, and focused.
+     Pillars: Deep Navy, Slate, Electric Blue, Indigo, Amber.
      ============================================ */
   
   /* Core Colors */
-  --midnight-bg-primary: #040816;
-  --midnight-bg-secondary: #101b33;
-  --midnight-bg-surface: rgba(12, 19, 36, 0.72);
-  --midnight-text-primary: #f8fafc;
-  --midnight-text-secondary: rgba(186, 199, 222, 0.78);
-  --midnight-text-subtle: rgba(148, 163, 184, 0.58);
-  --midnight-border: rgba(87, 112, 164, 0.28);
+  --midnight-bg-primary: #020617;     /* Deepest Navy */
+  --midnight-bg-secondary: #0F172A;   /* Slate 900 */
+  --midnight-bg-surface: #1E293B;     /* Slate 800 */
+  --midnight-text-primary: #F8FAFC;   /* Slate 50 */
+  --midnight-text-secondary: #94A3B8; /* Slate 400 */
+  --midnight-text-subtle: #64748B;    /* Slate 500 */
+  --midnight-border: #1E293B;         /* Slate 800 */
   
   /* Accents & Gradients */
-  --midnight-accent-primary: #38bdf8;
-  --midnight-accent-secondary: #818cf8;
-  --midnight-gradient-accent: linear-gradient(135deg, #38bdf8, #818cf8);
-  --midnight-gradient-surface: linear-gradient(155deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.08));
+  --midnight-accent-primary: #3B82F6;   /* Blue 500 */
+  --midnight-accent-secondary: #F59E0B; /* Amber 500 (Complementary Pop) */
+  --midnight-gradient-accent: linear-gradient(135deg, #3B82F6, #2563EB);
+  --midnight-gradient-surface: linear-gradient(155deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05));
   
   /* Glass Effects */
-  --midnight-glass-border: rgba(148, 172, 229, 0.22);
-  --midnight-glass-highlight: rgba(255, 255, 255, 0.18);
-  --midnight-glass-overlay: radial-gradient(circle at top left, rgba(148, 197, 255, 0.22), transparent 55%);
+  --midnight-glass-border: rgba(255, 255, 255, 0.1);
+  --midnight-glass-highlight: rgba(255, 255, 255, 0.05);
+  --midnight-glass-overlay: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15), transparent 60%);
   
   /* Shadows */
-  --midnight-shadow-elevated: 0 30px 80px -36px rgba(15, 23, 42, 0.9);
-  --midnight-shadow-glow: 0 24px 60px -32px rgba(56, 189, 248, 0.55);
-  --midnight-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --midnight-shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --midnight-shadow-glow: 0 0 40px -10px rgba(59, 130, 246, 0.4);
+  --midnight-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   
   /* Component Specific */
-  --midnight-card-bg: rgba(8, 14, 31, 0.6);
-  --midnight-card-border: rgba(255, 255, 255, 0.08);
-  --midnight-input-bg: rgba(1, 10, 28, 0.65);
-  --midnight-badge-bg: rgba(56, 189, 248, 0.15);
-  --midnight-badge-text: #38bdf8;
+  --midnight-card-bg: #0F172A;
+  --midnight-card-border: #1E293B;
+  --midnight-input-bg: #020617;
+  --midnight-badge-bg: rgba(59, 130, 246, 0.1);
+  --midnight-badge-text: #60A5FA;
+
+  /* ============================================
+     LIGHT THEME - "SOLARIS" ☀️
+     Energetic, bright, and inviting.
+     Pillars: White, Light Grey, Orange, Yellow, Rose.
+     ============================================ */
+  
+  --light-bg-primary: #FFFFFF;
+  --light-bg-secondary: #F3F4F6;
+  --light-bg-surface: #F9FAFB;
+  --light-text-primary: #111827;
+  --light-text-secondary: #4B5563;
+  --light-text-subtle: #9CA3AF;
+  --light-border: #E5E7EB;
+  --light-accent-primary: #F97316;   /* Orange 500 */
+  --light-accent-secondary: #EAB308; /* Yellow 500 */
+  --light-gradient-accent: linear-gradient(135deg, #F97316, #EAB308);
+  --light-gradient-surface: linear-gradient(155deg, rgba(249, 115, 22, 0.08), rgba(234, 179, 8, 0.04));
+  --light-card-bg: #FFFFFF;
+  --light-card-border: #E5E7EB;
+  --light-input-bg: #F9FAFB;
+  --light-badge-bg: #FFF7ED;
+  --light-badge-text: #C2410C;
+  --light-shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --light-shadow-glow: 0 0 20px rgba(249, 115, 22, 0.2);
+  --light-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* ============================================
+     DARK THEME - "OPUS" (Claude Style)
+     Warm, matte, and literary.
+     Pillars: Charcoal, Warm Grey, Cream, Terracotta.
+     ============================================ */
+  
+  --dark-bg-primary: #211F1E;    /* Warm Charcoal */
+  --dark-bg-secondary: #191817;  /* Darker Sidebar */
+  --dark-bg-surface: #2D2B29;    /* Input/Card */
+  --dark-text-primary: #F0EFEA;  /* Cream White */
+  --dark-text-secondary: #9F9D96; /* Warm Grey */
+  --dark-text-subtle: #706E68;    /* Darker Warm Grey */
+  --dark-border: #3E3D39;
+  --dark-accent-primary: #D97757; /* Terracotta */
+  --dark-accent-secondary: #C5A289; /* Sand */
+  --dark-gradient-accent: linear-gradient(135deg, #D97757, #C5A289);
+  --dark-gradient-surface: linear-gradient(155deg, rgba(217, 119, 87, 0.05), rgba(197, 162, 137, 0.02));
+  --dark-card-bg: #2D2B29;
+  --dark-card-border: #3E3D39;
+  --dark-input-bg: #211F1E;
+  --dark-badge-bg: rgba(217, 119, 87, 0.1);
+  --dark-badge-text: #E6B098;
+  --dark-shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --dark-shadow-glow: 0 0 30px rgba(217, 119, 87, 0.1); /* Subtle warm glow */
+  --dark-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+
+  /* ============================================
+     TARO THEME - "AMETHYST" 💜
+     Luxurious, creative, and deep.
+     Pillars: Indigo, Violet, Purple, Pink, Green.
+     ============================================ */
+  
+  --taro-bg-primary: #1E1B4B;    /* Indigo 950 */
+  --taro-bg-secondary: #312E81;  /* Indigo 900 */
+  --taro-bg-surface: #2E1065;    /* Violet 950 */
+  --taro-text-primary: #E0E7FF;  /* Indigo 100 */
+  --taro-text-secondary: #A5B4FC; /* Indigo 300 */
+  --taro-text-subtle: #818CF8;    /* Indigo 400 */
+  --taro-border: #3730A3;        /* Indigo 800 */
+  --taro-accent-primary: #C084FC; /* Purple 400 */
+  --taro-accent-secondary: #4ADE80; /* Green 400 (Complementary) */
+  --taro-gradient-accent: linear-gradient(135deg, #C084FC, #E879F9);
+  --taro-gradient-surface: linear-gradient(155deg, rgba(192, 132, 252, 0.1), rgba(232, 121, 249, 0.05));
+  --taro-card-bg: #312E81;
+  --taro-card-border: #4338CA;
+  --taro-input-bg: #1E1B4B;
+  --taro-badge-bg: rgba(192, 132, 252, 0.15);
+  --taro-badge-text: #D8B4FE;
+  --taro-shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --taro-shadow-glow: 0 0 30px rgba(192, 132, 252, 0.3);
+  --taro-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+
+  /* ============================================
+     MATCHA THEME - "FOREST" 🍵
+     Fresh, natural, and balanced.
+     Pillars: Forest Green, Lime, Emerald, Mint.
+     ============================================ */
+  
+  --matcha-bg-primary: #F0FDF4;   /* Green 50 */
+  --matcha-bg-secondary: #DCFCE7; /* Green 100 */
+  --matcha-bg-surface: #FFFFFF;
+  --matcha-text-primary: #14532D; /* Green 900 */
+  --matcha-text-secondary: #166534; /* Green 800 */
+  --matcha-text-subtle: #15803D;  /* Green 700 */
+  --matcha-border: #BBF7D0;       /* Green 200 */
+  --matcha-accent-primary: #16A34A; /* Green 600 */
+  --matcha-accent-secondary: #84CC16; /* Lime 500 */
+  --matcha-gradient-accent: linear-gradient(135deg, #16A34A, #84CC16);
+  --matcha-gradient-surface: linear-gradient(155deg, rgba(22, 163, 74, 0.08), rgba(132, 204, 22, 0.04));
+  --matcha-card-bg: #FFFFFF;
+  --matcha-card-border: #BBF7D0;
+  --matcha-input-bg: #F0FDF4;
+  --matcha-badge-bg: #DCFCE7;
+  --matcha-badge-text: #15803D;
+  --matcha-shadow-elevated: 0 20px 25px -5px rgba(20, 83, 45, 0.1);
+  --matcha-shadow-glow: 0 0 20px rgba(22, 163, 74, 0.2);
+  --matcha-shadow-sm: 0 1px 2px 0 rgba(20, 83, 45, 0.05);
+
+  /* ============================================
+     HONEYDEW THEME - "CITRUS" 🍈
+     Zesty, high-energy, and clean.
+     Pillars: Yellow, Lime, Cyan, Dark Brown.
+     ============================================ */
+  
+  --honeydew-bg-primary: #FEFCE8;   /* Yellow 50 */
+  --honeydew-bg-secondary: #FEF9C3; /* Yellow 100 */
+  --honeydew-bg-surface: #FFFFFF;
+  --honeydew-text-primary: #713F12; /* Yellow 900 */
+  --honeydew-text-secondary: #854D0E; /* Yellow 800 */
+  --honeydew-text-subtle: #A16207;  /* Yellow 700 */
+  --honeydew-border: #FEF08A;       /* Yellow 200 */
+  --honeydew-accent-primary: #EAB308; /* Yellow 500 */
+  --honeydew-accent-secondary: #06B6D4; /* Cyan 500 (Split Comp) */
+  --honeydew-gradient-accent: linear-gradient(135deg, #EAB308, #06B6D4);
+  --honeydew-gradient-surface: linear-gradient(155deg, rgba(234, 179, 8, 0.08), rgba(6, 182, 212, 0.04));
+  --honeydew-card-bg: #FFFFFF;
+  --honeydew-card-border: #FEF08A;
+  --honeydew-input-bg: #FEFCE8;
+  --honeydew-badge-bg: #FEF9C3;
+  --honeydew-badge-text: #854D0E;
+  --honeydew-shadow-elevated: 0 20px 25px -5px rgba(113, 63, 18, 0.1);
+  --honeydew-shadow-glow: 0 0 20px rgba(234, 179, 8, 0.2);
+  --honeydew-shadow-sm: 0 1px 2px 0 rgba(113, 63, 18, 0.05);
 
   /* ============================================
      SHARED PROPERTIES
      ============================================ */
   
-  --card-radius: 24px;
-  --button-radius: 12px;
-  --input-radius: 10px;
-  --badge-radius: 6px;
+  --card-radius: 1rem;
+  --button-radius: 0.5rem;
+  --input-radius: 0.5rem;
+  --badge-radius: 9999px;
   
   /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 300ms ease;
-  --transition-slow: 500ms ease;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
   
   /* Backdrop Filters */
-  --backdrop-blur: blur(22px) saturate(135%);
+  --backdrop-blur: blur(16px);
   
   /* Z-Index Scale */
   --z-base: 1;
@@ -178,6 +296,34 @@
   color-scheme: dark;
 }
 
+/* Warm Theme Active */
+[data-theme="warm"] {
+  --color-bg-primary: var(--warm-bg-primary);
+  --color-bg-secondary: var(--warm-bg-secondary);
+  --color-bg-surface: var(--warm-bg-surface);
+  --color-text-primary: var(--warm-text-primary);
+  --color-text-secondary: var(--warm-text-secondary);
+  --color-text-subtle: var(--warm-text-subtle);
+  --color-border: var(--warm-border);
+  --color-accent-primary: var(--warm-accent-primary);
+  --color-accent-secondary: var(--warm-accent-secondary);
+  --gradient-accent: var(--warm-gradient-accent);
+  --gradient-surface: var(--warm-gradient-surface);
+  --glass-border: var(--warm-glass-border);
+  --glass-highlight: var(--warm-glass-highlight);
+  --glass-overlay: var(--warm-glass-overlay);
+  --shadow-elevated: var(--warm-shadow-elevated);
+  --shadow-glow: var(--warm-shadow-glow);
+  --shadow-sm: var(--warm-shadow-sm);
+  --card-bg: var(--warm-card-bg);
+  --card-border: var(--warm-card-border);
+  --input-bg: var(--warm-input-bg);
+  --badge-bg: var(--warm-badge-bg);
+  --badge-text: var(--warm-badge-text);
+  
+  color-scheme: light;
+}
+
 /* System Theme - Auto-detection */
 @media (prefers-color-scheme: dark) {
   [data-theme="system"] {
@@ -192,9 +338,6 @@
     --color-accent-secondary: var(--midnight-accent-secondary);
     --gradient-accent: var(--midnight-gradient-accent);
     --gradient-surface: var(--midnight-gradient-surface);
-    --glass-border: var(--midnight-glass-border);
-    --glass-highlight: var(--midnight-glass-highlight);
-    --glass-overlay: var(--midnight-glass-overlay);
     --shadow-elevated: var(--midnight-shadow-elevated);
     --shadow-glow: var(--midnight-shadow-glow);
     --shadow-sm: var(--midnight-shadow-sm);
@@ -210,31 +353,153 @@
 
 @media (prefers-color-scheme: light) {
   [data-theme="system"] {
-    --color-bg-primary: var(--warm-bg-primary);
-    --color-bg-secondary: var(--warm-bg-secondary);
-    --color-bg-surface: var(--warm-bg-surface);
-    --color-text-primary: var(--warm-text-primary);
-    --color-text-secondary: var(--warm-text-secondary);
-    --color-text-subtle: var(--warm-text-subtle);
-    --color-border: var(--warm-border);
-    --color-accent-primary: var(--warm-accent-primary);
-    --color-accent-secondary: var(--warm-accent-secondary);
-    --gradient-accent: var(--warm-gradient-accent);
-    --gradient-surface: var(--warm-gradient-surface);
-    --glass-border: var(--warm-glass-border);
-    --glass-highlight: var(--warm-glass-highlight);
-    --glass-overlay: var(--warm-glass-overlay);
-    --shadow-elevated: var(--warm-shadow-elevated);
-    --shadow-glow: var(--warm-shadow-glow);
-    --shadow-sm: var(--warm-shadow-sm);
-    --card-bg: var(--warm-card-bg);
-    --card-border: var(--warm-card-border);
-    --input-bg: var(--warm-input-bg);
-    --badge-bg: var(--warm-badge-bg);
-    --badge-text: var(--warm-badge-text);
+    --color-bg-primary: var(--light-bg-primary);
+    --color-bg-secondary: var(--light-bg-secondary);
+    --color-bg-surface: var(--light-bg-surface);
+    --color-text-primary: var(--light-text-primary);
+    --color-text-secondary: var(--light-text-secondary);
+    --color-text-subtle: var(--light-text-subtle);
+    --color-border: var(--light-border);
+    --color-accent-primary: var(--light-accent-primary);
+    --color-accent-secondary: var(--light-accent-secondary);
+    --gradient-accent: var(--light-gradient-accent);
+    --gradient-surface: var(--light-gradient-surface);
+    --shadow-elevated: var(--light-shadow-elevated);
+    --shadow-glow: var(--light-shadow-glow);
+    --shadow-sm: var(--light-shadow-sm);
+    --card-bg: var(--light-card-bg);
+    --card-border: var(--light-card-border);
+    --input-bg: var(--light-input-bg);
+    --badge-bg: var(--light-badge-bg);
+    --badge-text: var(--light-badge-text);
     
     color-scheme: light;
   }
+}
+
+/* Light Theme Active */
+[data-theme="light"] {
+  --color-bg-primary: var(--light-bg-primary);
+  --color-bg-secondary: var(--light-bg-secondary);
+  --color-bg-surface: var(--light-bg-surface);
+  --color-text-primary: var(--light-text-primary);
+  --color-text-secondary: var(--light-text-secondary);
+  --color-text-subtle: var(--light-text-subtle);
+  --color-border: var(--light-border);
+  --color-accent-primary: var(--light-accent-primary);
+  --color-accent-secondary: var(--light-accent-secondary);
+  --gradient-accent: var(--light-gradient-accent);
+  --gradient-surface: var(--light-gradient-surface);
+  --shadow-elevated: var(--light-shadow-elevated);
+  --shadow-glow: var(--light-shadow-glow);
+  --shadow-sm: var(--light-shadow-sm);
+  --card-bg: var(--light-card-bg);
+  --card-border: var(--light-card-border);
+  --input-bg: var(--light-input-bg);
+  --badge-bg: var(--light-badge-bg);
+  --badge-text: var(--light-badge-text);
+  
+  color-scheme: light;
+}
+
+/* Dark Theme Active */
+[data-theme="dark"] {
+  --color-bg-primary: var(--dark-bg-primary);
+  --color-bg-secondary: var(--dark-bg-secondary);
+  --color-bg-surface: var(--dark-bg-surface);
+  --color-text-primary: var(--dark-text-primary);
+  --color-text-secondary: var(--dark-text-secondary);
+  --color-text-subtle: var(--dark-text-subtle);
+  --color-border: var(--dark-border);
+  --color-accent-primary: var(--dark-accent-primary);
+  --color-accent-secondary: var(--dark-accent-secondary);
+  --gradient-accent: var(--dark-gradient-accent);
+  --gradient-surface: var(--dark-gradient-surface);
+  --shadow-elevated: var(--dark-shadow-elevated);
+  --shadow-glow: var(--dark-shadow-glow);
+  --shadow-sm: var(--dark-shadow-sm);
+  --card-bg: var(--dark-card-bg);
+  --card-border: var(--dark-card-border);
+  --input-bg: var(--dark-input-bg);
+  --badge-bg: var(--dark-badge-bg);
+  --badge-text: var(--dark-badge-text);
+  
+  color-scheme: dark;
+}
+
+/* Taro Theme Active */
+[data-theme="taro"] {
+  --color-bg-primary: var(--taro-bg-primary);
+  --color-bg-secondary: var(--taro-bg-secondary);
+  --color-bg-surface: var(--taro-bg-surface);
+  --color-text-primary: var(--taro-text-primary);
+  --color-text-secondary: var(--taro-text-secondary);
+  --color-text-subtle: var(--taro-text-subtle);
+  --color-border: var(--taro-border);
+  --color-accent-primary: var(--taro-accent-primary);
+  --color-accent-secondary: var(--taro-accent-secondary);
+  --gradient-accent: var(--taro-gradient-accent);
+  --gradient-surface: var(--taro-gradient-surface);
+  --shadow-elevated: var(--taro-shadow-elevated);
+  --shadow-glow: var(--taro-shadow-glow);
+  --shadow-sm: var(--taro-shadow-sm);
+  --card-bg: var(--taro-card-bg);
+  --card-border: var(--taro-card-border);
+  --input-bg: var(--taro-input-bg);
+  --badge-bg: var(--taro-badge-bg);
+  --badge-text: var(--taro-badge-text);
+  
+  color-scheme: dark;
+}
+
+/* Matcha Theme Active */
+[data-theme="matcha"] {
+  --color-bg-primary: var(--matcha-bg-primary);
+  --color-bg-secondary: var(--matcha-bg-secondary);
+  --color-bg-surface: var(--matcha-bg-surface);
+  --color-text-primary: var(--matcha-text-primary);
+  --color-text-secondary: var(--matcha-text-secondary);
+  --color-text-subtle: var(--matcha-text-subtle);
+  --color-border: var(--matcha-border);
+  --color-accent-primary: var(--matcha-accent-primary);
+  --color-accent-secondary: var(--matcha-accent-secondary);
+  --gradient-accent: var(--matcha-gradient-accent);
+  --gradient-surface: var(--matcha-gradient-surface);
+  --shadow-elevated: var(--matcha-shadow-elevated);
+  --shadow-glow: var(--matcha-shadow-glow);
+  --shadow-sm: var(--matcha-shadow-sm);
+  --card-bg: var(--matcha-card-bg);
+  --card-border: var(--matcha-card-border);
+  --input-bg: var(--matcha-input-bg);
+  --badge-bg: var(--matcha-badge-bg);
+  --badge-text: var(--matcha-badge-text);
+  
+  color-scheme: light;
+}
+
+/* Honeydew Theme Active */
+[data-theme="honeydew"] {
+  --color-bg-primary: var(--honeydew-bg-primary);
+  --color-bg-secondary: var(--honeydew-bg-secondary);
+  --color-bg-surface: var(--honeydew-bg-surface);
+  --color-text-primary: var(--honeydew-text-primary);
+  --color-text-secondary: var(--honeydew-text-secondary);
+  --color-text-subtle: var(--honeydew-text-subtle);
+  --color-border: var(--honeydew-border);
+  --color-accent-primary: var(--honeydew-accent-primary);
+  --color-accent-secondary: var(--honeydew-accent-secondary);
+  --gradient-accent: var(--honeydew-gradient-accent);
+  --gradient-surface: var(--honeydew-gradient-surface);
+  --shadow-elevated: var(--honeydew-shadow-elevated);
+  --shadow-glow: var(--honeydew-shadow-glow);
+  --shadow-sm: var(--honeydew-shadow-sm);
+  --card-bg: var(--honeydew-card-bg);
+  --card-border: var(--honeydew-card-border);
+  --input-bg: var(--honeydew-input-bg);
+  --badge-bg: var(--honeydew-badge-bg);
+  --badge-text: var(--honeydew-badge-text);
+  
+  color-scheme: light;
 }
 
 @layer base {
@@ -335,39 +600,5 @@
   
   .shadow-sm-theme {
     box-shadow: var(--shadow-sm);
-  }
-  
-  /* Legacy NeonOps utilities (kept for backward compatibility) */
-  .neon-glow-blue {
-    box-shadow: 0 0 10px #00E5FF, 0 0 20px #00E5FF, 0 0 30px rgba(0, 229, 255, 0.5);
-  }
-  
-  .neon-glow-green {
-    box-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
-  }
-  
-  .neon-border-blue {
-    border-color: #00E5FF;
-    box-shadow: 0 0 5px #00E5FF, 0 0 10px #00E5FF;
-  }
-  
-  .neon-border-green {
-    border-color: #39FF14;
-    box-shadow: 0 0 5px #39FF14, 0 0 10px #39FF14;
-  }
-  
-  .circuit-pattern {
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23008BA3' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    background-blend-mode: overlay;
-  }
-  
-  .text-neon-blue {
-    color: #00E5FF;
-    text-shadow: 0 0 10px #00E5FF, 0 0 20px rgba(0, 229, 255, 0.5);
-  }
-  
-  .text-neon-green {
-    color: #39FF14;
-    text-shadow: 0 0 10px #39FF14, 0 0 20px rgba(57, 255, 20, 0.5);
   }
 }

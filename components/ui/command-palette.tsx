@@ -179,16 +179,16 @@ export function CommandPalette({ open, onOpenChange, actions = [] }: CommandPale
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 bg-dark-panel border-neon-blue-glow300">
-        <div className="flex items-center border-b border-neon-blue-glow700/50 px-4 py-3">
-          <Search className="w-4 h-4 text-neon-blue-glow100 mr-3" />
+      <DialogContent className="max-w-2xl p-0 bg-theme-card border-theme-accent-primary">
+        <div className="flex items-center border-b border-theme-border px-4 py-3">
+          <Search className="w-4 h-4 text-theme-subtle mr-3" />
           <Input
             ref={inputRef}
             type="text"
             placeholder="Type a command or search..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-white placeholder:text-neon-blue-glow100/50"
+            className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-white placeholder:text-theme-subtle/50"
           />
           {query && (
             <Badge variant="outline" className="ml-2 text-xs">
@@ -199,13 +199,13 @@ export function CommandPalette({ open, onOpenChange, actions = [] }: CommandPale
         
         <div className="max-h-96 overflow-y-auto p-2">
           {filteredActions.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm text-neon-blue-glow100/70">
+            <div className="px-4 py-8 text-center text-sm text-theme-subtle/70">
               No commands found. Try a different search term.
             </div>
           ) : (
             Object.entries(groupedActions).map(([category, categoryActions]) => (
               <div key={category} className="mb-4">
-                <div className="px-2 py-1.5 text-xs font-semibold text-neon-blue-glow100/70 uppercase mb-1">
+                <div className="px-2 py-1.5 text-xs font-semibold text-theme-subtle/70 uppercase mb-1">
                   {category}
                 </div>
                 {categoryActions.map((action, index) => {
@@ -219,15 +219,15 @@ export function CommandPalette({ open, onOpenChange, actions = [] }: CommandPale
                       className={cn(
                         "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-left",
                         isSelected
-                          ? "bg-neon-blue-glow300/20 text-white border border-neon-blue-glow300/50"
-                          : "text-neon-blue-glow100 hover:bg-dark-tertiary hover:text-white"
+                          ? "bg-theme-accent-primary/20 text-white border border-theme-accent-primary/50"
+                          : "text-theme-subtle hover:bg-theme-secondary hover:text-white"
                       )}
                     >
-                      <div className="text-neon-blue-glow300">{action.icon}</div>
+                      <div className="text-theme-accent-primary">{action.icon}</div>
                       <div className="flex-1">
                         <div className="font-medium">{action.label}</div>
                         {action.description && (
-                          <div className="text-xs text-neon-blue-glow100/70 mt-0.5">
+                          <div className="text-xs text-theme-subtle/70 mt-0.5">
                             {action.description}
                           </div>
                         )}
@@ -245,7 +245,7 @@ export function CommandPalette({ open, onOpenChange, actions = [] }: CommandPale
           )}
         </div>
         
-        <div className="border-t border-neon-blue-glow700/50 px-4 py-2 text-xs text-neon-blue-glow100/50 flex items-center justify-between">
+        <div className="border-t border-theme-border px-4 py-2 text-xs text-theme-subtle/50 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span>↑↓ Navigate</span>
             <span>↵ Select</span>

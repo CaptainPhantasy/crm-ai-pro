@@ -12,13 +12,13 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-neon-blue-glow300 bg-dark-panel text-neon-blue-glow300 [a&]:hover:bg-dark-tertiary neon-glow-blue",
+          "border-theme-accent-primary bg-theme-card text-theme-accent-primary [a&]:hover:bg-theme-secondary shadow-glow",
         secondary:
-          "border-neon-green-glow300 bg-dark-panel text-neon-green-glow300 [a&]:hover:bg-dark-tertiary neon-glow-green",
+          "border-theme-accent-secondary bg-theme-card text-theme-accent-secondary [a&]:hover:bg-theme-secondary shadow-glow",
         destructive:
-          "border-neon-accent-red bg-dark-panel text-neon-accent-red [a&]:hover:bg-dark-tertiary",
+          "border-destructive bg-theme-card text-destructive [a&]:hover:bg-theme-secondary",
         outline:
-          "border-neon-blue-glow700/50 text-white [a&]:hover:bg-dark-tertiary [a&]:hover:border-neon-blue-glow300",
+          "border-theme-border text-white [a&]:hover:bg-theme-secondary [a&]:hover:border-theme-accent-primary",
       },
     },
     defaultVariants: {

@@ -259,7 +259,7 @@ function ContactsPageContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-white">Contacts</h1>
-          <p className="text-sm text-neon-blue-glow100 mt-1">Manage your customer database</p>
+          <p className="text-sm text-theme-subtle mt-1">Manage your customer database</p>
         </div>
         <div className="flex gap-2">
           {contacts.length > 0 && (
@@ -286,11 +286,11 @@ function ContactsPageContent() {
       </div>
 
       {/* Search and Filters */}
-      <Card className="border-neon-blue-glow700/50 bg-dark-panel/50">
+      <Card className="border-theme-border bg-theme-card/50">
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neon-blue-glow300" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-theme-accent-primary" />
               <Input
                 placeholder="Search contacts..."
                 className="pl-10"
@@ -305,7 +305,7 @@ function ContactsPageContent() {
               <Filter className="w-4 h-4 mr-2" />
               Filter
               {(filters.tags.length > 0 || filters.status.length > 0 || filters.dateRange.start || filters.dateRange.end) && (
-                <span className="ml-2 bg-neon-blue-glow300 text-black font-bold rounded-full px-1.5 py-0.5 text-xs">
+                <span className="ml-2 bg-theme-accent-primary text-black font-bold rounded-full px-1.5 py-0.5 text-xs">
                   {filters.tags.length + filters.status.length + (filters.dateRange.start ? 1 : 0) + (filters.dateRange.end ? 1 : 0)}
                 </span>
               )}
@@ -316,31 +316,31 @@ function ContactsPageContent() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-l-4 border-l-neon-green-glow300 shadow-neon-green-md">
+        <Card className="border-l-4 border-l-theme-accent-secondary shadow-elevated">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neon-green-glow100">Total Contacts</CardTitle>
+            <CardTitle className="text-sm font-medium text-theme-subtle">Total Contacts</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-white">{stats.total}</div>
-            <p className="text-xs text-neon-green-glow300 mt-1 font-medium">+8 this week</p>
+            <p className="text-xs text-theme-accent-secondary mt-1 font-medium">+8 this week</p>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-neon-blue-glow500 shadow-neon-blue-md">
+        <Card className="border-l-4 border-l-theme-accent-primary shadow-elevated">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neon-blue-glow100">Active</CardTitle>
+            <CardTitle className="text-sm font-medium text-theme-subtle">Active</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-white">{stats.active}</div>
-            <p className="text-xs text-neon-blue-glow300 mt-1 font-medium">90% active rate</p>
+            <p className="text-xs text-theme-accent-primary mt-1 font-medium">90% active rate</p>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-neon-accent-red shadow-neon-blue-sm">
+        <Card className="border-l-4 border-l-destructive shadow-sm-theme">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-white">New This Month</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-white">{stats.newThisMonth}</div>
-            <p className="text-xs text-neon-accent-red mt-1 font-medium">Growing fast!</p>
+            <p className="text-xs text-destructive mt-1 font-medium">Growing fast!</p>
           </CardContent>
         </Card>
       </div>
@@ -365,10 +365,10 @@ function ContactsPageContent() {
               ))}
             </div>
           ) : contacts.length === 0 ? (
-        <Card className="shadow-md border-neon-blue-glow700/50">
+        <Card className="shadow-md border-theme-border">
           <CardContent className="py-12 text-center">
-            <p className="text-neon-blue-glow100 font-medium">No contacts found</p>
-            <p className="text-sm text-neon-blue-glow100/50 mt-1">
+            <p className="text-theme-subtle font-medium">No contacts found</p>
+            <p className="text-sm text-theme-subtle/50 mt-1">
               {searchQuery ? 'Try a different search term' : 'Create your first contact to get started'}
             </p>
           </CardContent>
@@ -376,12 +376,12 @@ function ContactsPageContent() {
       ) : (
         <div className="space-y-4">
           {contacts.length > 0 && (
-            <div className="flex items-center gap-2 pb-2 border-b border-neon-blue-glow700/50">
+            <div className="flex items-center gap-2 pb-2 border-b border-theme-border">
               <Checkbox
                 checked={selectedContactIds.size === contacts.length && contacts.length > 0}
                 onCheckedChange={handleSelectAllContacts}
               />
-              <span className="text-sm text-neon-blue-glow100">
+              <span className="text-sm text-theme-subtle">
                 {selectedContactIds.size > 0 ? `${selectedContactIds.size} selected` : 'Select all'}
               </span>
             </div>
@@ -391,10 +391,10 @@ function ContactsPageContent() {
               <Card 
                 key={contact.id} 
                 className={cn(
-                  "hover:shadow-neon-blue-md transition-all border-2 shadow-sm relative overflow-hidden",
+                  "hover:shadow-elevated transition-all border-2 shadow-sm relative overflow-hidden",
                   selectedContactIds.has(contact.id) 
-                    ? "border-neon-blue-glow300 bg-neon-blue-glow700/10" 
-                    : "border-neon-blue-glow700/30 hover:border-neon-blue-glow300"
+                    ? "border-theme-accent-primary bg-theme-secondary/10" 
+                    : "border-theme-border hover:border-theme-accent-primary"
                 )}
                 onClick={(e) => {
                     if (
@@ -414,7 +414,7 @@ function ContactsPageContent() {
                       onClick={(e) => e.stopPropagation()}
                     />
                     <Avatar className="w-12 h-12">
-                      <AvatarFallback className="text-neon-blue-glow300">
+                      <AvatarFallback className="text-theme-accent-primary">
                         {contact.first_name?.[0]}{contact.last_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -433,20 +433,20 @@ function ContactsPageContent() {
                 </CardHeader>
               <CardContent className="space-y-2">
                 {contact.email && (
-                  <div className="flex items-center gap-2 text-sm text-neon-blue-glow100/70">
-                    <Mail className="w-4 h-4 text-neon-blue-glow300" />
+                  <div className="flex items-center gap-2 text-sm text-theme-subtle/70">
+                    <Mail className="w-4 h-4 text-theme-accent-primary" />
                     <span className="truncate">{contact.email}</span>
                   </div>
                 )}
                 {contact.phone && (
-                  <div className="flex items-center gap-2 text-sm text-neon-blue-glow100/70">
-                    <Phone className="w-4 h-4 text-neon-green-glow300" />
+                  <div className="flex items-center gap-2 text-sm text-theme-subtle/70">
+                    <Phone className="w-4 h-4 text-theme-accent-secondary" />
                     <span>{contact.phone}</span>
                   </div>
                 )}
                 {contact.address && (
-                  <div className="flex items-center gap-2 text-sm text-neon-blue-glow100/70">
-                    <MapPin className="w-4 h-4 text-neon-accent-red" />
+                  <div className="flex items-center gap-2 text-sm text-theme-subtle/70">
+                    <MapPin className="w-4 h-4 text-destructive" />
                     <span className="truncate">{contact.address}</span>
                   </div>
                 )}
@@ -525,12 +525,12 @@ export default function ContactsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-white">Contacts</h1>
-            <p className="text-sm text-neon-blue-glow100 mt-1">Manage your customer relationships</p>
+            <p className="text-sm text-theme-subtle mt-1">Manage your customer relationships</p>
           </div>
         </div>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-4 p-4 border-2 border-neon-blue-glow700/30 rounded-lg">
+            <div key={i} className="flex items-center gap-4 p-4 border-2 border-theme-border rounded-lg">
               <Skeleton className="h-12 w-12 rounded-lg" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-4 w-48" />

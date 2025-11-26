@@ -4,8 +4,6 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -153,6 +151,7 @@ export async function POST(request: Request) {
 
     // Send email
     try {
+      const resend = new Resend(process.env.RESEND_API_KEY)
       await resend.emails.send({
         from: 'noreply@yourdomain.com', // Should be configured
         to: contact.email,

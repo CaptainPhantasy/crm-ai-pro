@@ -4,9 +4,13 @@ import { NextResponse } from 'next/server'
 import { getAuthenticatedSession } from '@/lib/auth-helper'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
-})
+// Initialize Stripe lazily to prevent build-time errors when env vars are missing
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) return null
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2024-12-18.acacia',
+  })
+}
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -125,7 +129,9 @@ export async function POST(request: Request) {
 
     // Create Stripe payment link
     let paymentLinkUrl = null
-    if (process.env.STRIPE_SECRET_KEY) {
+    const stripe = getStripe()
+    
+    if (stripe) {
       try {
         const paymentLink = await stripe.paymentLinks.create({
           line_items: [

@@ -40,3 +40,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# backup files
+*.bak
+
+# test artifacts
+/test-results/
+/playwright-report/
+
+# log files
+*.log
+ngrok*.log

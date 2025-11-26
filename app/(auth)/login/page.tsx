@@ -31,13 +31,13 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-md relative z-10">
-      <Card className="border-neon-blue-glow300">
+      <Card className="border-theme-accent-primary">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-neon-blue-glow300 flex items-center justify-center text-black font-bold text-[10px] leading-tight neon-glow-blue">
+            <div className="w-8 h-8 rounded-lg bg-theme-accent-primary flex items-center justify-center text-black font-bold text-[10px] leading-tight shadow-glow">
               AI
             </div>
-            <CardTitle className="text-2xl font-bold text-neon-blue-glow300">
+            <CardTitle className="text-2xl font-bold text-theme-accent-primary">
               CRM-AI PRO
             </CardTitle>
           </div>
@@ -69,7 +69,7 @@ export default function LoginPage() {
               />
             </div>
             {error && (
-              <div className="text-sm text-neon-accent-red bg-dark-panel border-2 border-neon-accent-red p-3 rounded-md">
+              <div className="text-sm text-destructive bg-theme-card border-2 border-destructive p-3 rounded-md">
                 {error}
               </div>
             )}

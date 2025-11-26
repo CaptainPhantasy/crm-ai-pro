@@ -64,6 +64,8 @@ export default function RootLayout({
           {children}
           <Toaster />
         </Providers>
+        {/* Voice widget outside Providers - isolated from context changes */}
+        <VoiceAgentOverlay />
       </body>
     </html>
   );

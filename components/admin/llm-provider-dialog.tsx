@@ -27,7 +27,7 @@ interface LLMProviderDialogProps {
 }
 
 const USE_CASES = ['draft', 'summary', 'general', 'complex', 'vision']
-const PROVIDERS = ['openai', 'anthropic', 'google', 'zai']
+const PROVIDERS = ['openai', 'anthropic']
 
 export function LLMProviderDialog({ open, onOpenChange, provider, onSuccess }: LLMProviderDialogProps) {
   const [loading, setLoading] = useState(false)
@@ -170,9 +170,8 @@ export function LLMProviderDialog({ open, onOpenChange, provider, onSuccess }: L
                   onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
                   required
                 >
-                  {PROVIDERS.map(p => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic (Claude)</option>
                 </select>
               </div>
             </div>

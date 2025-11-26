@@ -4,8 +4,6 @@ import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { logAudit } from '@/lib/audit'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -90,6 +88,7 @@ export async function PATCH(
         .single()
 
       if (tech) {
+        const resend = new Resend(process.env.RESEND_API_KEY)
         await resend.emails.send({
           from: 'CRM-AI PRO <noreply@crm-ai-pro.com>',
           to: currentJob.contact.email,
@@ -104,6 +103,7 @@ export async function PATCH(
     }
 
     if (status === 'completed' && currentJob.contact?.email) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
       await resend.emails.send({
         from: '317 Plumber <help@317plumber.com>',
         to: currentJob.contact.email,

@@ -2,9 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { Resend } from 'resend'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Eleven Labs webhook signature verification
 function verifySignature(payload: string, signature: string, secret: string): boolean {

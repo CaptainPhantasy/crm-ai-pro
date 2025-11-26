@@ -95,7 +95,7 @@ export function GlobalSearch() {
     const parts = text.split(new RegExp(`(${query})`, 'gi'))
     return parts.map((part, index) => 
       part.toLowerCase() === query.toLowerCase() ? (
-        <mark key={index} className="bg-neon-blue-glow300/30 text-neon-blue-glow300 px-0.5 rounded">{part}</mark>
+        <mark key={index} className="bg-theme-accent-primary/30 text-theme-accent-primary px-0.5 rounded">{part}</mark>
       ) : (
         part
       )
@@ -109,7 +109,7 @@ export function GlobalSearch() {
   return (
     <div ref={searchRef} className="relative w-full max-w-md">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neon-blue-glow100 z-10" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-theme-subtle z-10" />
         <Input
           ref={inputRef}
           type="text"
@@ -153,14 +153,14 @@ export function GlobalSearch() {
               setResults(null)
               setOpen(false)
             }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neon-blue-glow100 hover:text-neon-blue-glow300 z-10"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-theme-subtle hover:text-theme-accent-primary z-10"
           >
             <X className="w-4 h-4" />
           </button>
         )}
         {loading && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-10">
-            <Loader2 className="w-4 h-4 animate-spin text-neon-blue-glow300" />
+            <Loader2 className="w-4 h-4 animate-spin text-theme-accent-primary" />
           </div>
         )}
       </div>
@@ -173,27 +173,27 @@ export function GlobalSearch() {
       )}
 
       {open && query.length >= 2 && (
-        <Card className="absolute top-full mt-2 w-full z-50 shadow-neon-blue-md max-h-96 overflow-y-auto border-neon-blue-glow300">
-          <CardContent className="p-0 bg-dark-panel">
+        <Card className="absolute top-full mt-2 w-full z-50 shadow-elevated max-h-96 overflow-y-auto border-theme-accent-primary">
+          <CardContent className="p-0 bg-theme-card">
             {loading ? (
-              <div className="p-4 text-center text-sm text-neon-blue-glow100">
+              <div className="p-4 text-center text-sm text-theme-subtle">
                 Searching...
               </div>
             ) : results && totalResults > 0 ? (
-              <div className="divide-y divide-neon-blue-glow700/30">
+              <div className="divide-y divide-theme-accent-primary">
                 {/* Jobs Results */}
                 {results.jobs.length > 0 && (
                   <div className="p-2">
-                    <div className="px-2 py-1 text-xs font-semibold text-neon-blue-glow100 uppercase">
+                    <div className="px-2 py-1 text-xs font-semibold text-theme-subtle uppercase">
                       Jobs ({results.jobs.length})
                     </div>
                     {results.jobs.map((job) => (
                       <button
                         key={job.id}
                         onClick={() => handleResultClick('job', job.id)}
-                        className="w-full text-left px-2 py-2 hover:bg-dark-tertiary rounded flex items-center gap-2 transition-colors"
+                        className="w-full text-left px-2 py-2 hover:bg-theme-secondary rounded flex items-center gap-2 transition-colors"
                       >
-                        <Briefcase className="w-4 h-4 text-neon-blue-glow300 flex-shrink-0" />
+                        <Briefcase className="w-4 h-4 text-theme-accent-primary flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium truncate text-white">
@@ -209,7 +209,7 @@ export function GlobalSearch() {
                             </Badge>
                           </div>
                           {job.description && (
-                            <p className="text-xs text-neon-blue-glow100 truncate mt-1">
+                            <p className="text-xs text-theme-subtle truncate mt-1">
                               {highlightText(job.description, query)}
                             </p>
                           )}
@@ -222,22 +222,22 @@ export function GlobalSearch() {
                 {/* Contacts Results */}
                 {results.contacts.length > 0 && (
                   <div className="p-2">
-                    <div className="px-2 py-1 text-xs font-semibold text-neon-green-glow100 uppercase">
+                    <div className="px-2 py-1 text-xs font-semibold text-theme-subtle uppercase">
                       Contacts ({results.contacts.length})
                     </div>
                     {results.contacts.map((contact) => (
                       <button
                         key={contact.id}
                         onClick={() => handleResultClick('contact', contact.id)}
-                        className="w-full text-left px-2 py-2 hover:bg-dark-tertiary rounded flex items-center gap-2 transition-colors"
+                        className="w-full text-left px-2 py-2 hover:bg-theme-secondary rounded flex items-center gap-2 transition-colors"
                       >
-                        <User className="w-4 h-4 text-neon-green-glow300 flex-shrink-0" />
+                        <User className="w-4 h-4 text-theme-accent-secondary flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-white">
                             {highlightText(`${contact.first_name} ${contact.last_name}`, query)}
                           </div>
                           {contact.email && (
-                            <p className="text-xs text-neon-green-glow100 truncate mt-1">
+                            <p className="text-xs text-theme-subtle truncate mt-1">
                               {highlightText(contact.email, query)}
                             </p>
                           )}
@@ -250,16 +250,16 @@ export function GlobalSearch() {
                 {/* Conversations Results */}
                 {results.conversations.length > 0 && (
                   <div className="p-2">
-                    <div className="px-2 py-1 text-xs font-semibold text-neon-blue-glow100 uppercase">
+                    <div className="px-2 py-1 text-xs font-semibold text-theme-subtle uppercase">
                       Conversations ({results.conversations.length})
                     </div>
                     {results.conversations.map((conversation) => (
                       <button
                         key={conversation.id}
                         onClick={() => handleResultClick('conversation', conversation.id)}
-                        className="w-full text-left px-2 py-2 hover:bg-dark-tertiary rounded flex items-center gap-2 transition-colors"
+                        className="w-full text-left px-2 py-2 hover:bg-theme-secondary rounded flex items-center gap-2 transition-colors"
                       >
-                        <MessageSquare className="w-4 h-4 text-neon-blue-glow300 flex-shrink-0" />
+                        <MessageSquare className="w-4 h-4 text-theme-accent-primary flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium truncate text-white">
@@ -275,7 +275,7 @@ export function GlobalSearch() {
                             </Badge>
                           </div>
                           {conversation.subject && (
-                            <p className="text-xs text-neon-blue-glow100 truncate mt-1">
+                            <p className="text-xs text-theme-subtle truncate mt-1">
                               {highlightText(conversation.subject, query)}
                             </p>
                           )}
@@ -286,7 +286,7 @@ export function GlobalSearch() {
                 )}
               </div>
             ) : query.length >= 2 ? (
-              <div className="p-4 text-center text-sm text-neon-blue-glow100">
+              <div className="p-4 text-center text-sm text-theme-subtle">
                 No results found
               </div>
             ) : null}

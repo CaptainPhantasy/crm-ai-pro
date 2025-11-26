@@ -11,16 +11,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-neon-blue-glow300 text-white hover:bg-neon-blue-glow500 neon-glow-blue focus-visible:ring-neon-blue-glow300/50 border-2 border-neon-blue-glow300",
+        default: "bg-theme-accent-primary text-white hover:bg-theme-accent-primary shadow-glow focus-visible:ring-theme-accent-primary/50 border-2 border-theme-accent-primary",
         destructive:
-          "bg-neon-accent-red text-white hover:bg-red-600 focus-visible:ring-red-500/50 border-2 border-neon-accent-red",
+          "bg-destructive text-white hover:bg-red-600 focus-visible:ring-red-500/50 border-2 border-destructive",
         outline:
-          "border-2 border-neon-blue-glow300 bg-dark-panel text-neon-blue-glow300 hover:bg-dark-tertiary hover:neon-glow-blue focus-visible:ring-neon-blue-glow300/50",
+          "border-2 border-theme-accent-primary bg-theme-card text-theme-accent-primary hover:bg-theme-secondary hover:shadow-glow focus-visible:ring-theme-accent-primary/50",
         secondary:
-          "bg-neon-green-glow300 text-black hover:bg-neon-green-glow500 neon-glow-green focus-visible:ring-neon-green-glow300/50 border-2 border-neon-green-glow300",
+          "bg-theme-accent-secondary text-black hover:bg-theme-accent-secondary shadow-glow focus-visible:ring-theme-accent-secondary/50 border-2 border-theme-accent-secondary",
         ghost:
-          "hover:bg-dark-tertiary hover:text-neon-blue-glow300 text-white border-2 border-transparent hover:border-neon-blue-glow300/50",
-        link: "text-neon-blue-glow300 underline-offset-4 hover:underline hover:text-neon-blue-glow100",
+          "hover:bg-theme-secondary hover:text-theme-accent-primary text-white border-2 border-transparent hover:border-theme-accent-primary/50",
+        link: "text-theme-accent-primary underline-offset-4 hover:underline hover:text-theme-subtle",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

@@ -11,6 +11,7 @@ import { useCompletion } from '@ai-sdk/react'
 import { Send, Sparkles, Briefcase } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CreateJobDialog } from '@/components/jobs/create-job-dialog'
+import { EmailQuickActions } from '@/components/conversations/email-quick-actions'
 import { toast, error as toastError, success as toastSuccess } from '@/lib/toast'
 import { useRouter } from 'next/navigation'
 import { ContactDetailModal } from '@/components/contacts/contact-detail-modal'
@@ -189,17 +190,13 @@ export function MessageThread({ conversationId }: MessageThreadProps) {
           <p className="text-xs text-neutral-500 mt-0.5 truncate">{conversation?.subject || 'No subject'}</p>
         </div>
         <div className="flex gap-2 flex-shrink-0 ml-4">
-          {conversation?.contact?.id && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setCreateJobOpen(true)}
-              className="border-[#56D470] text-[#37C856] hover:bg-[#EAFCF1]"
-            >
-              <Briefcase className="w-4 h-4 mr-1" />
-              Create Job
-            </Button>
-          )}
+          <EmailQuickActions
+            conversationId={conversationId}
+            contactId={conversation?.contact_id}
+            contactEmail={conversation?.contact?.email}
+            contactName={conversation?.contact ? `${conversation.contact.first_name || ''} ${conversation.contact.last_name || ''}`.trim() : undefined}
+            emailBody={messages.length > 0 ? messages[messages.length - 1]?.body_text : undefined}
+          />
           <Button 
             variant="outline" 
             size="sm" 

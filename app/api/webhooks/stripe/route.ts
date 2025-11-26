@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
-})
+// Initialize Stripe lazily
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) return null
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2024-12-18.acacia',
+  })
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,6 +25,12 @@ export async function POST(request: Request) {
 
     if (!signature) {
       return NextResponse.json({ error: 'No signature' }, { status: 400 })
+    }
+
+    const stripe = getStripe()
+    if (!stripe) {
+      console.error('Stripe secret key is missing')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
 
     let event: Stripe.Event

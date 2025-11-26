@@ -30,13 +30,13 @@ export function KeyboardShortcutsHelp({ open, onOpenChange, shortcuts }: Keyboar
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-dark-panel border-neon-blue-glow300">
+      <DialogContent className="max-w-2xl bg-theme-card border-theme-accent-primary">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
-            <Keyboard className="w-5 h-5 text-neon-blue-glow300" />
+            <Keyboard className="w-5 h-5 text-theme-accent-primary" />
             Keyboard Shortcuts
           </DialogTitle>
-          <DialogDescription className="text-neon-blue-glow100/70">
+          <DialogDescription className="text-theme-subtle/70">
             Speed up your workflow with these keyboard shortcuts
           </DialogDescription>
         </DialogHeader>
@@ -44,16 +44,16 @@ export function KeyboardShortcutsHelp({ open, onOpenChange, shortcuts }: Keyboar
         <div className="space-y-6 mt-4">
           {Object.entries(grouped).map(([category, categoryShortcuts]) => (
             <div key={category}>
-              <h3 className="text-sm font-semibold text-neon-blue-glow300 uppercase mb-3">
+              <h3 className="text-sm font-semibold text-theme-accent-primary uppercase mb-3">
                 {category}
               </h3>
               <div className="space-y-2">
                 {categoryShortcuts.map((shortcut, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-dark-tertiary transition-colors"
+                    className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-theme-secondary transition-colors"
                   >
-                    <span className="text-sm text-neon-blue-glow100">
+                    <span className="text-sm text-theme-subtle">
                       {shortcut.description}
                     </span>
                     <Badge variant="outline" className="font-mono text-xs">
@@ -72,7 +72,7 @@ export function KeyboardShortcutsHelp({ open, onOpenChange, shortcuts }: Keyboar
           ))}
         </div>
         
-        <div className="mt-6 pt-4 border-t border-neon-blue-glow700/50 text-xs text-neon-blue-glow100/50 text-center">
+        <div className="mt-6 pt-4 border-t border-theme-border text-xs text-theme-subtle/50 text-center">
           Press <Badge variant="outline" className="font-mono">⌘/</Badge> or <Badge variant="outline" className="font-mono">Ctrl/</Badge> to open this help anytime
         </div>
       </DialogContent>

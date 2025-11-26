@@ -14,9 +14,41 @@ export default defineConfig({
   },
 
   projects: [
+    // Default project (no auth)
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+    },
+    
+    // Role-based test projects
+    // These use storageState files created by auth-helpers.ts
+    {
+      name: 'owner',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/owner.json',
+      },
+    },
+    {
+      name: 'admin',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/admin.json',
+      },
+    },
+    {
+      name: 'dispatcher',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/dispatcher.json',
+      },
+    },
+    {
+      name: 'tech',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/tech.json',
+      },
     },
   ],
 

@@ -19,6 +19,7 @@ import { confirmDialog } from '@/lib/confirm'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { createClient } from '@supabase/supabase-js'
 
 function JobsPageContent() {
   const searchParams = useSearchParams()
@@ -58,6 +59,55 @@ function JobsPageContent() {
 
   useEffect(() => {
     fetchJobs()
+
+    // Set up real-time subscriptions for live updates
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const channel = supabase
+      .channel('jobs_changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'jobs'
+      }, (payload) => {
+        console.log('Job inserted:', payload.new)
+        // Add new job to the list
+        setJobs(prevJobs => [payload.new as Job, ...prevJobs])
+        // Show success notification
+        toastSuccess('New job created')
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'jobs'
+      }, (payload) => {
+        console.log('Job updated:', payload.new)
+        // Update existing job in the list
+        setJobs(prevJobs => prevJobs.map(job =>
+          job.id === payload.new.id ? { ...job, ...payload.new } as Job : job
+        ))
+        // Show update notification
+        toastSuccess('Job updated')
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'jobs'
+      }, (payload) => {
+        console.log('Job deleted:', payload.old)
+        // Remove job from the list
+        setJobs(prevJobs => prevJobs.filter(job => job.id !== payload.old.id))
+        // Show deletion notification
+        toastSuccess('Job deleted')
+      })
+      .subscribe()
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   // Handle query parameter on mount and when it changes

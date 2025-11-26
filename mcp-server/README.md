@@ -53,6 +53,8 @@ In your ElevenLabs agent configuration, add this MCP server:
 - `assign_tech` - Assign technician to job
 - `send_email` - Send email
 - `get_user_email` - Get user's email address
+- `navigate` - Navigate the user to a different page in the CRM (inbox, jobs, contacts, analytics, finance, tech, campaigns, email-templates, tags, settings, integrations)
+- `get_current_page` - Get information about what page the user is currently viewing
 
 ## Usage
 

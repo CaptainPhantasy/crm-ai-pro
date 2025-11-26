@@ -13,8 +13,142 @@ interface VoiceCommandRequest {
   }
 }
 
-// Tool schemas for AI function calling
-const AI_TOOLS = {
+// Helper function to convert MCP tools to OpenAI function calling format
+function convertMCPToolsToOpenAIFormat(mcpTools: any[]): Record<string, any> {
+  const openaiTools: Record<string, any> = {}
+
+  for (const tool of mcpTools) {
+    openaiTools[tool.name] = {
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.inputSchema || {
+          type: 'object',
+          properties: {},
+        },
+      },
+    }
+  }
+
+  return openaiTools
+}
+
+// Helper function to fetch tools from MCP server
+async function fetchMCPTools(supabaseUrl: string, serviceRoleKey: string): Promise<Record<string, any>> {
+  try {
+    const mcpUrl = getNextApiUrl(supabaseUrl, '/mcp')
+    const mcpResponse = await fetch(mcpUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/list',
+      }),
+    })
+
+    if (!mcpResponse.ok) {
+      console.error('Failed to fetch MCP tools:', await mcpResponse.text())
+      return FALLBACK_AI_TOOLS // Use fallback if MCP server is unavailable
+    }
+
+    const mcpData = await mcpResponse.json()
+
+    if (mcpData.error) {
+      console.error('MCP server error:', mcpData.error)
+      return FALLBACK_AI_TOOLS
+    }
+
+    const mcpTools = mcpData.result?.tools || []
+    return convertMCPToolsToOpenAIFormat(mcpTools)
+  } catch (error) {
+    console.error('Error fetching MCP tools:', error)
+    return FALLBACK_AI_TOOLS
+  }
+}
+
+// Helper function to execute tool via MCP server
+async function executeMCPTool(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  toolName: string,
+  args: Record<string, any>
+): Promise<any> {
+  const mcpUrl = getNextApiUrl(supabaseUrl, '/mcp')
+  const mcpResponse = await fetch(mcpUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 2,
+      method: 'tools/call',
+      params: {
+        name: toolName,
+        arguments: args,
+      },
+    }),
+  })
+
+  if (!mcpResponse.ok) {
+    throw new Error(`MCP tool execution failed: ${await mcpResponse.text()}`)
+  }
+
+  const mcpData = await mcpResponse.json()
+
+  if (mcpData.error) {
+    throw new Error(`MCP tool error: ${mcpData.error.message}`)
+  }
+
+  // Extract result from MCP response format
+  const content = mcpData.result?.content?.[0]
+  if (content?.type === 'text') {
+    try {
+      return JSON.parse(content.text)
+    } catch {
+      return { result: content.text }
+    }
+  }
+
+  return mcpData.result
+}
+
+// Fallback tools in case MCP server is unavailable (minimal set for critical operations)
+// NOTE: These are only used as a last resort if the MCP server is unreachable
+const FALLBACK_AI_TOOLS = {
+  list_jobs: {
+    type: 'function',
+    function: {
+      name: 'list_jobs',
+      description: 'List jobs with optional filters',
+      parameters: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', description: 'Filter by status' },
+          date: { type: 'string', description: 'Filter by date' },
+        },
+      },
+    },
+  },
+  list_contacts: {
+    type: 'function',
+    function: {
+      name: 'list_contacts',
+      description: 'List contacts with optional search',
+      parameters: {
+        type: 'object',
+        properties: {
+          search: { type: 'string', description: 'Search query' },
+        },
+      },
+    },
+  },
   create_job: {
     type: 'function',
     function: {
@@ -112,6 +246,24 @@ const AI_TOOLS = {
       },
     },
   },
+}
+
+// ARCHIVED: Old hardcoded tools - now fetched dynamically from MCP server
+// The massive AI_TOOLS object that was here (~850 lines) has been replaced by:
+// 1. Dynamic tool fetching from MCP server via fetchMCPTools()
+// 2. Minimal FALLBACK_AI_TOOLS above (only used if MCP server is unreachable)
+// 3. Tool execution via MCP server's tools/call endpoint
+//
+// This provides:
+// - Single source of truth (MCP tools)
+// - All 68 tools available to voice agent (not just 30)
+// - Easier maintenance (update tools in one place)
+// - Consistent tool definitions across the system
+//
+// Legacy tool execution code is preserved below for backwards compatibility
+// during the migration period.
+
+/* REMOVED OLD TOOLS - NOW USING MCP SERVER
   // Priority 1 - Core Operations
   list_jobs: {
     type: 'function',
@@ -715,6 +867,7 @@ const AI_TOOLS = {
     },
   },
 }
+END OF REMOVED OLD TOOLS */
 
 // Helper function to parse relative dates
 function parseRelativeDate(dateStr: string): string | null {
@@ -910,44 +1063,114 @@ When resolving references:
 
 Always use the most specific tool available. For example, use "list_jobs" with filters rather than "get_job" when user asks for multiple jobs.`
 
-    // Use OpenAI with function calling to parse the command
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Fetch tools from MCP server (single source of truth)
+    const AI_TOOLS = await fetchMCPTools(supabaseUrl, serviceRoleKey)
+
+    // Use LLM Router with function calling to parse the command
+    // VOICE USE CASE: Optimized for low latency (<500ms target)
+    // - Uses 'voice' use case (routes to GPT-4o-mini or Claude Haiku)
+    // - Reduced maxTokens (150) for faster response
+    // - Temperature 0.3 for consistent parsing
+    // - No streaming (faster for short responses)
+    const llmRouterUrl = getNextApiUrl(supabaseUrl, '/llm')
+    const routerResponse = await fetch(llmRouterUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiKey}`,
+        'Authorization': `Bearer ${serviceRoleKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Parse this voice command and call the appropriate tool: "${transcription}"` }
-        ],
-        tools: Object.values(AI_TOOLS),
-        tool_choice: 'auto',
+        accountId,
+        useCase: 'voice', // CHANGED: Use voice use case for low latency
+        prompt: `Parse this voice command and call the appropriate tool: "${transcription}"`,
+        systemPrompt,
+        tools: AI_TOOLS, // Fetched from MCP server
+        toolChoice: 'auto',
+        maxSteps: 1,
         temperature: 0.3,
+        maxTokens: 150, // ADDED: Limit tokens for faster response
+        stream: false,
       }),
     })
 
-    if (!openaiResponse.ok) {
-      throw new Error(`OpenAI API error: ${await openaiResponse.text()}`)
+    if (!routerResponse.ok) {
+      const errorText = await routerResponse.text()
+      throw new Error(`LLM Router error: ${errorText}`)
     }
 
-    const aiData = await openaiResponse.json()
-    const message = aiData.choices[0]?.message
-    const toolCalls = message?.tool_calls || []
+    const routerData = await routerResponse.json()
+    
+    if (!routerData.success) {
+      throw new Error(`LLM Router failed: ${routerData.error || 'Unknown error'}`)
+    }
+
+    // Extract tool calls from router response
+    const toolCalls = routerData.toolCalls || []
 
     const response: any = { action: 'unknown', params: {} }
 
-    // Execute tool calls
+    // Execute tool calls via MCP server
     for (const toolCall of toolCalls) {
-      const functionName = toolCall.function.name
-      const functionArgs = JSON.parse(toolCall.function.arguments || '{}')
-      
+      // Router returns { toolCallId, toolName, args } format
+      const functionName = toolCall.toolName || toolCall.function?.name
+      const functionArgs = toolCall.args || (toolCall.function?.arguments ? JSON.parse(toolCall.function.arguments) : {})
+
       response.action = functionName
       response.params = functionArgs
 
-      // Execute the tool
+      try {
+        // Execute tool via MCP server
+        const toolResult = await executeMCPTool(supabaseUrl, serviceRoleKey, functionName, functionArgs)
+
+        // Process tool result
+        response.result = toolResult
+
+        // Extract specific fields based on tool name for backwards compatibility
+        if (functionName === 'list_jobs' || functionName === 'search_jobs' || functionName === 'filter_jobs') {
+          response.jobs = toolResult.jobs || toolResult
+          response.jobCount = Array.isArray(response.jobs) ? response.jobs.length : 0
+          response.formatted = formatForVoice(response.jobs, 'jobs')
+        } else if (functionName === 'list_contacts' || functionName === 'search_contacts') {
+          response.contacts = toolResult.contacts || toolResult
+          response.contactCount = Array.isArray(response.contacts) ? response.contacts.length : 0
+          response.formatted = formatForVoice(response.contacts, 'contacts')
+        } else if (functionName === 'get_job') {
+          response.job = toolResult.job || toolResult
+        } else if (functionName === 'get_contact') {
+          response.contact = toolResult.contact || toolResult
+        } else if (functionName === 'create_job') {
+          response.jobId = toolResult.job?.id || toolResult.id
+        } else if (functionName === 'create_contact') {
+          response.contactId = toolResult.contact?.id || toolResult.id
+        } else if (functionName === 'list_conversations' || functionName === 'get_conversation') {
+          response.conversations = toolResult.conversations || (toolResult.conversation ? [toolResult.conversation] : [])
+          response.conversationCount = response.conversations.length
+        } else if (functionName === 'navigate') {
+          response.navigation = toolResult
+        }
+
+        // Mark as success if no error
+        if (!toolResult.error) {
+          response.success = true
+        } else {
+          response.error = toolResult.error
+        }
+      } catch (error: any) {
+        console.error(`Error executing tool ${functionName}:`, error)
+        response.error = error.message || 'Failed to execute tool'
+      }
+    }
+
+    // LEGACY FALLBACK: If MCP execution fails, try legacy direct execution for critical tools
+    // This ensures backwards compatibility during the migration
+    if (response.error && toolCalls.length > 0) {
+      const toolCall = toolCalls[0]
+      const functionName = toolCall.toolName || toolCall.function?.name
+      const functionArgs = toolCall.args || (toolCall.function?.arguments ? JSON.parse(toolCall.function.arguments) : {})
+
+      console.warn(`MCP execution failed for ${functionName}, attempting legacy fallback`)
+
+      // Execute the tool using legacy approach
       if (functionName === 'create_job') {
         // If contactId not provided but contact name is, search for contact
         let finalContactId = functionArgs.contactId
@@ -1991,7 +2214,7 @@ Always use the most specific tool available. For example, use "list_jobs" with f
         }
         response.message = `Navigate to ${functionArgs.route}`
       }
-    }
+    } // End of legacy fallback
 
     // Generate natural language response
     if (toolCalls.length > 0) {
@@ -2021,32 +2244,38 @@ Always use the most specific tool available. For example, use "list_jobs" with f
         
         const summaryPrompt = `Based on this information, generate a brief, natural voice response (1-2 sentences max) confirming what was done:\n${responseContext}`
         
-        const summaryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        // Use LLM Router for response generation (prefer Haiku for speed/cost)
+        const summaryRouterResponse = await fetch(llmRouterUrl, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${openaiKey}`,
+            'Authorization': `Bearer ${serviceRoleKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: 'Generate a brief, natural voice response (1-2 sentences). Be conversational and friendly.' },
-              { role: 'user', content: summaryPrompt }
-            ],
-            max_tokens: 150,
+            accountId,
+            useCase: 'summary', // Use summary use case (routes to Haiku)
+            prompt: summaryPrompt,
+            systemPrompt: 'Generate a brief, natural voice response (1-2 sentences). Be conversational and friendly.',
+            maxTokens: 150,
             temperature: 0.7,
+            stream: false,
           }),
         })
 
-        if (summaryResponse.ok) {
-          const summaryData = await summaryResponse.json()
-          response.response = summaryData.choices[0]?.message?.content || 'Done.'
+        if (summaryRouterResponse.ok) {
+          const summaryData = await summaryRouterResponse.json()
+          if (summaryData.success && summaryData.text) {
+            response.response = summaryData.text
+          } else {
+            response.response = response.message || 'Operation completed.'
+          }
         } else {
           response.response = response.message || 'Operation completed.'
         }
       }
     } else {
-      response.response = message?.content || "I didn't understand that command. You can ask me to create jobs, list contacts, update job status, search for information, and much more. What would you like to do?"
+      // No tool calls - use router's text response if available
+      response.response = routerData.text || "I didn't understand that command. You can ask me to create jobs, list contacts, update job status, search for information, and much more. What would you like to do?"
     }
 
     return new Response(

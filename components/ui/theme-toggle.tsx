@@ -18,13 +18,13 @@ interface ThemeToggleProps {
 }
 
 const themes: Array<{ value: Theme; label: string; icon: React.ReactNode; description: string }> = [
-  { value: 'light', label: 'Light', icon: <Sun className="w-4 h-4" />, description: 'Sunrise Energy ☀️' },
-  { value: 'dark', label: 'Dark', icon: <Moon className="w-4 h-4" />, description: 'Midnight Aurora 🌌' },
-  { value: 'warm', label: 'Warm', icon: <Sun className="w-4 h-4" />, description: 'Vintage Sepia 🌅' },
-  { value: 'midnight', label: 'Midnight', icon: <Moon className="w-4 h-4" />, description: 'Deep Navy 🌙' },
-  { value: 'taro', label: 'Taro', icon: <Palette className="w-4 h-4" />, description: 'Purple Bubble Tea 💜' },
-  { value: 'matcha', label: 'Matcha', icon: <Palette className="w-4 h-4" />, description: 'Green Tea 🍵' },
-  { value: 'honeydew', label: 'Honeydew', icon: <Palette className="w-4 h-4" />, description: 'Yellow-Green 🍈' },
+  { value: 'light', label: 'Solaris', icon: <Sun className="w-4 h-4" />, description: 'Daybreak Energy ☀️' },
+  { value: 'dark', label: 'Opus', icon: <Moon className="w-4 h-4" />, description: 'Literary Warmth 📜' },
+  { value: 'warm', label: 'Latte', icon: <Sun className="w-4 h-4" />, description: 'Earthy & Grounded ☕' },
+  { value: 'midnight', label: 'Abyss', icon: <Moon className="w-4 h-4" />, description: 'Deepest Navy 🌙' },
+  { value: 'taro', label: 'Amethyst', icon: <Palette className="w-4 h-4" />, description: 'Royal Purple 💜' },
+  { value: 'matcha', label: 'Forest', icon: <Palette className="w-4 h-4" />, description: 'Natural Green 🌲' },
+  { value: 'honeydew', label: 'Citrus', icon: <Palette className="w-4 h-4" />, description: 'Zesty Yellow 🍋' },
   { value: 'system', label: 'System', icon: <Monitor className="w-4 h-4" />, description: 'Auto-detect' },
 ]
 

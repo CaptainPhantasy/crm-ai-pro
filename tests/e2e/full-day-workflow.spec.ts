@@ -12,72 +12,37 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const TEST_EMAIL = 'test@317plumber.com'
 const TEST_PASSWORD = 'TestPassword123!'
 
-// Helper function to authenticate via Supabase
+// Helper function to authenticate via login page
 async function authenticateUser(page: any) {
-  // Use service role to get session token
-  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+  // Navigate to login page
+  await page.goto(`${BASE_URL}/login`)
+  await page.waitForLoadState('networkidle', { timeout: 10000 })
   
-  const { data: authData, error } = await supabase.auth.signInWithPassword({
-    email: TEST_EMAIL,
-    password: TEST_PASSWORD,
+  // Fill in login form
+  const emailInput = page.locator('input[type="email"], input[id="email"]').first()
+  const passwordInput = page.locator('input[type="password"], input[id="password"]').first()
+  const submitButton = page.locator('button[type="submit"]').first()
+  
+  await emailInput.fill(TEST_EMAIL)
+  await passwordInput.fill(TEST_PASSWORD)
+  await submitButton.click()
+  
+  // Wait for redirect to inbox (login page just redirects currently)
+  await page.waitForURL(new RegExp(`${BASE_URL}/inbox`), { timeout: 10000 }).catch(async () => {
+    // If redirect didn't happen, check if we're already on a dashboard page
+    const currentUrl = page.url()
+    if (!currentUrl.includes('/inbox') && !currentUrl.includes('/login')) {
+      await page.goto(`${BASE_URL}/inbox`, { waitUntil: 'networkidle' })
+    }
   })
   
-  if (error || !authData.session) {
-    console.error('Auth error:', error)
-    throw new Error(`Authentication failed: ${error?.message || 'No session'}`)
-  }
+  // Wait for dashboard to load
+  await page.waitForLoadState('networkidle', { timeout: 15000 })
   
-  // Navigate to app and inject session via localStorage (Supabase client-side auth)
-  await page.goto(BASE_URL)
-  
-  // Inject Supabase session into localStorage (how Supabase client-side auth works)
-  await page.evaluate((session: any) => {
-    localStorage.setItem('supabase.auth.token', JSON.stringify({
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
-      expires_at: session.expires_at,
-      expires_in: session.expires_in,
-      token_type: session.token_type,
-      user: session.user
-    }))
-  }, authData.session)
-  
-  // Also set cookies that Supabase SSR uses
-  await page.context().addCookies([
-    {
-      name: `sb-${SUPABASE_URL.split('//')[1].split('.')[0]}-auth-token`,
-      value: JSON.stringify({
-        access_token: authData.session.access_token,
-        refresh_token: authData.session.refresh_token,
-        expires_at: authData.session.expires_at,
-        expires_in: authData.session.expires_in,
-        token_type: authData.session.token_type,
-        user: authData.session.user
-      }),
-      domain: 'localhost',
-      path: '/',
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-    },
-  ])
-  
-  // Reload page to pick up auth
-  await page.reload({ waitUntil: 'networkidle', timeout: 15000 })
-  
-  // Wait for page to load - check for any dashboard content
-  await page.waitForLoadState('domcontentloaded', { timeout: 10000 })
-  
-  // Verify we're logged in by checking for dashboard elements
-  const hasContent = await Promise.race([
-    page.locator('nav, [role="navigation"]').first().isVisible({ timeout: 5000 }).then(() => true),
-    page.locator('h1, h2').first().isVisible({ timeout: 5000 }).then(() => true),
-    page.waitForTimeout(5000).then(() => false)
-  ])
-  
-  if (!hasContent) {
-    // Try one more time with a direct navigation
-    await page.goto(`${BASE_URL}/inbox`, { waitUntil: 'networkidle', timeout: 15000 })
+  // Verify we're logged in
+  const navExists = await page.locator('nav, [role="navigation"]').first().isVisible({ timeout: 5000 }).catch(() => false)
+  if (!navExists) {
+    throw new Error('Failed to authenticate - navigation not found')
   }
 }
 

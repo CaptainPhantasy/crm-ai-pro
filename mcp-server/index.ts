@@ -162,6 +162,38 @@ const tools: Tool[] = [
       required: [],
     },
   },
+  {
+    name: 'navigate',
+    description: 'Navigate the user to a different page in the CRM application. Use this when the user asks to go to a specific section like Jobs, Inbox, Contacts, etc.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        page: {
+          type: 'string',
+          enum: ['inbox', 'jobs', 'contacts', 'analytics', 'finance', 'tech', 'campaigns', 'email-templates', 'tags', 'settings', 'integrations'],
+          description: 'The page to navigate to: inbox, jobs, contacts, analytics, finance, tech (technician dashboard), campaigns, email-templates, tags, settings, or integrations',
+        },
+        jobId: {
+          type: 'string',
+          description: 'Optional: If navigating to view a specific job, provide the job ID',
+        },
+        contactId: {
+          type: 'string',
+          description: 'Optional: If navigating to view a specific contact, provide the contact ID',
+        },
+      },
+      required: ['page'],
+    },
+  },
+  {
+    name: 'get_current_page',
+    description: 'Get information about what page the user is currently viewing in the CRM',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
 ]
 
 // Tool implementations
@@ -390,6 +422,91 @@ async function getUserEmail(): Promise<any> {
   }
 }
 
+// Page URL mappings
+const pageRoutes: Record<string, string> = {
+  'inbox': '/inbox',
+  'jobs': '/jobs',
+  'contacts': '/contacts',
+  'analytics': '/analytics',
+  'finance': '/finance/dashboard',
+  'tech': '/tech/dashboard',
+  'campaigns': '/marketing/campaigns',
+  'email-templates': '/marketing/email-templates',
+  'tags': '/marketing/tags',
+  'settings': '/admin/settings',
+  'integrations': '/settings/integrations',
+}
+
+async function navigate(args: any): Promise<any> {
+  const { page, jobId, contactId } = args
+
+  // Validate page
+  if (!pageRoutes[page]) {
+    return { 
+      error: `Invalid page: ${page}. Valid pages are: ${Object.keys(pageRoutes).join(', ')}` 
+    }
+  }
+
+  // Build the full path
+  let fullPath = pageRoutes[page]
+  
+  // Handle specific item navigation
+  if (page === 'jobs' && jobId) {
+    fullPath = `/jobs/${jobId}`
+  } else if (page === 'contacts' && contactId) {
+    fullPath = `/contacts/${contactId}`
+  }
+
+  // Insert navigation command into Supabase
+  const { data, error } = await supabase
+    .from('voice_navigation_commands')
+    .insert({
+      account_id: accountId,
+      page: fullPath,
+      params: { jobId, contactId },
+      executed: false,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    return { error: `Failed to send navigation command: ${error.message}` }
+  }
+
+  return {
+    success: true,
+    message: `Navigating to ${page}${jobId ? ` (Job: ${jobId.substring(0, 8)})` : ''}${contactId ? ` (Contact: ${contactId.substring(0, 8)})` : ''}`,
+    path: fullPath,
+    commandId: data?.id,
+  }
+}
+
+async function getCurrentPage(): Promise<any> {
+  // Get the most recent executed navigation command to know where user is
+  // This is a best-effort - the frontend will have the actual current page
+  const { data } = await supabase
+    .from('voice_navigation_commands')
+    .select('page, executed_at')
+    .eq('account_id', accountId)
+    .eq('executed', true)
+    .order('executed_at', { ascending: false })
+    .limit(1)
+
+  if (data && data.length > 0) {
+    const pageName = Object.entries(pageRoutes).find(([_, path]) => path === data[0].page)?.[0] || data[0].page
+    return {
+      currentPage: pageName,
+      path: data[0].page,
+      lastNavigated: data[0].executed_at,
+    }
+  }
+
+  return {
+    currentPage: 'unknown',
+    message: 'Unable to determine current page. The user may not have navigated via voice commands yet.',
+  }
+}
+
 // Main server setup
 async function main() {
   const server = new Server(
@@ -437,6 +554,12 @@ async function main() {
           break
         case 'get_user_email':
           result = await getUserEmail()
+          break
+        case 'navigate':
+          result = await navigate(args)
+          break
+        case 'get_current_page':
+          result = await getCurrentPage()
           break
         default:
           return {
