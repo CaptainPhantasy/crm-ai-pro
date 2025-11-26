@@ -10,10 +10,16 @@ const getStripe = () => {
   })
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Initialize Supabase lazily (not at build time)
+const getSupabase = () => {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return null
+  }
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+}
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -30,6 +36,12 @@ export async function POST(request: Request) {
     const stripe = getStripe()
     if (!stripe) {
       console.error('Stripe secret key is missing')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    }
+
+    const supabase = getSupabase()
+    if (!supabase) {
+      console.error('Supabase configuration is missing')
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
 
