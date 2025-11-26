@@ -15,11 +15,11 @@ export const ROLE_ROUTES: Record<UserRole, string> = {
 }
 
 export const MOBILE_ROUTES: Record<UserRole, string> = {
-  tech: '/tech/dashboard',
-  sales: '/sales/dashboard',
-  dispatcher: '/office/dashboard',
+  tech: '/m/tech/dashboard',
+  sales: '/m/sales/dashboard',
+  dispatcher: '/m/office/dashboard',
   admin: '/inbox',
-  owner: '/owner/dashboard',
+  owner: '/m/owner/dashboard',
 }
 
 /**
@@ -28,6 +28,21 @@ export const MOBILE_ROUTES: Record<UserRole, string> = {
 export function getRouteForRole(role: UserRole | string | null): string {
   if (!role) return '/inbox'
   return ROLE_ROUTES[role as UserRole] || '/inbox'
+}
+
+/**
+ * Get the mobile PWA route for a user based on their role
+ */
+export function getMobileRouteForRole(role: UserRole | string | null): string {
+  if (!role) return '/inbox'
+  return MOBILE_ROUTES[role as UserRole] || '/inbox'
+}
+
+/**
+ * Alias for backwards compatibility
+ */
+export function getRoleRedirectPath(role: string): string {
+  return getRouteForRole(role as UserRole)
 }
 
 /**
