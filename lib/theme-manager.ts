@@ -6,7 +6,7 @@
 export type Theme = 'light' | 'dark' | 'warm' | 'midnight' | 'taro' | 'matcha' | 'honeydew' | 'system'
 
 const THEME_STORAGE_KEY = 'theme-preference'
-const DEFAULT_THEME: Theme = 'system'
+const DEFAULT_THEME: Theme = 'dark'
 
 class ThemeManager {
   private currentTheme: Theme
@@ -184,7 +184,7 @@ export function getThemeManager(): ThemeManager {
       setTheme: () => {},
       onThemeChange: () => () => {},
       getTheme: () => DEFAULT_THEME,
-      getEffectiveTheme: () => 'warm',
+      getEffectiveTheme: () => 'dark',
     } as unknown as ThemeManager
   }
 

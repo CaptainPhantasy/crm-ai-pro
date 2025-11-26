@@ -1,86 +1,76 @@
+import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
-export async function GET(request: Request) {
-  try {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll()
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              )
-            } catch {}
-          },
-        },
-      }
-    )
-
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET() {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: (cookies) => cookies.forEach(c => cookieStore.set(c.name, c.value, c.options)),
+      },
     }
+  )
 
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
-    const date = searchParams.get('date') || new Date().toISOString().split('T')[0]
-
-    // Get user's jobs
-    let query = supabase
-      .from('jobs')
-      .select('*, contact:contacts(*), conversation:conversations(*)')
-      .eq('tech_assigned_id', session.user.id)
-      .order('scheduled_start', { ascending: true })
-
-    if (status) {
-      query = query.eq('status', status)
-    }
-    if (date) {
-      const startOfDay = new Date(date).toISOString()
-      const endOfDay = new Date(date)
-      endOfDay.setHours(23, 59, 59, 999)
-      query = query.gte('scheduled_start', startOfDay).lte('scheduled_start', endOfDay.toISOString())
-    }
-
-    const { data: jobs, error } = await query
-
-    if (error) {
-      console.error('Error fetching tech jobs:', error)
-      return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 })
-    }
-
-    // Calculate stats
-    const today = new Date().toISOString().split('T')[0]
-    const { data: todayJobs } = await supabase
-      .from('jobs')
-      .select('status, total_amount')
-      .eq('tech_assigned_id', session.user.id)
-      .gte('scheduled_start', `${today}T00:00:00`)
-      .lte('scheduled_start', `${today}T23:59:59`)
-
-    const stats = {
-      today: todayJobs?.length || 0,
-      completed: todayJobs?.filter(j => j.status === 'completed').length || 0,
-      inProgress: todayJobs?.filter(j => j.status === 'in_progress').length || 0,
-      revenue: todayJobs?.reduce((sum, j) => sum + (j.total_amount || 0), 0) || 0,
-    }
-
-    return NextResponse.json({ jobs: jobs || [], stats })
-  } catch (error: any) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-}
 
+  // Get today's date range
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  // Fetch jobs assigned to this tech for today
+  const { data: jobs, error } = await supabase
+    .from('jobs')
+    .select(`
+      id,
+      description,
+      status,
+      scheduled_start,
+      scheduled_end,
+      notes,
+      contact:contacts (
+        id,
+        first_name,
+        last_name,
+        address,
+        phone,
+        email
+      )
+    `)
+    .eq('tech_assigned_id', user.id)
+    .gte('scheduled_start', today.toISOString())
+    .lt('scheduled_start', tomorrow.toISOString())
+    .order('scheduled_start', { ascending: true })
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Transform to camelCase
+  const transformedJobs = jobs?.map(job => ({
+    id: job.id,
+    description: job.description,
+    status: job.status,
+    scheduledStart: job.scheduled_start,
+    scheduledEnd: job.scheduled_end,
+    notes: job.notes,
+    contact: job.contact ? {
+      id: (job.contact as any).id,
+      firstName: (job.contact as any).first_name,
+      lastName: (job.contact as any).last_name,
+      address: (job.contact as any).address,
+      phone: (job.contact as any).phone,
+      email: (job.contact as any).email,
+    } : null,
+  }))
+
+  return NextResponse.json({ jobs: transformedJobs })
+}

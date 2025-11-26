@@ -14,6 +14,15 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "CRM-AI PRO",
   description: "AI-Native Business Operating System",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "CRM-AI PRO",
+  },
+  icons: {
+    apple: "/icon-192.png",
+  },
 };
 
 export default function RootLayout({
@@ -53,6 +62,20 @@ export default function RootLayout({
                   // Silently fail if localStorage is not available
                 }
               })();
+            `,
+          }}
+        />
+        {/* Service Worker Registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('SW registered:', reg.scope))
+                    .catch((err) => console.log('SW registration failed:', err));
+                });
+              }
             `,
           }}
         />

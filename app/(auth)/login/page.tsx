@@ -6,6 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { createClient } from '@/lib/supabase/client'
+
+// Role-based routing map
+const ROLE_ROUTES: Record<string, string> = {
+  tech: '/tech/dashboard',
+  sales: '/sales/dashboard',
+  dispatcher: '/office/dashboard',
+  admin: '/inbox',
+  owner: '/owner/dashboard',
+}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -19,12 +29,57 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
+    const supabase = createClient()
+
     try {
-      // For now, just redirect to inbox
-      // In production, you'd authenticate here
-      router.push('/inbox')
-    } catch (err) {
-      setError('Failed to sign in. Please try again.')
+      // Authenticate with Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (authError) {
+        throw authError
+      }
+
+      if (!authData.user) {
+        throw new Error('Login failed')
+      }
+
+      // Fetch user role
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+
+      if (userError) {
+        console.error('Failed to fetch user role:', userError)
+        // Default to inbox if role lookup fails
+        router.push('/inbox')
+        return
+      }
+
+      // Redirect based on role
+      const role = userData?.role || 'admin'
+      const targetRoute = ROLE_ROUTES[role] || '/inbox'
+      
+      // Check if mobile device - redirect to mobile routes
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      
+      if (isMobile && ['tech', 'sales'].includes(role)) {
+        // Mobile users with field roles go to mobile dashboards
+        router.push(targetRoute)
+      } else if (role === 'tech' || role === 'sales') {
+        // Desktop tech/sales still go to their mobile-optimized dashboards
+        router.push(targetRoute)
+      } else {
+        // Office roles go to desktop dashboard
+        router.push(targetRoute)
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to sign in'
+      setError(message)
       setLoading(false)
     }
   }
@@ -86,4 +141,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

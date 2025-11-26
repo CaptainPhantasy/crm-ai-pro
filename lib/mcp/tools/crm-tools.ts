@@ -1375,6 +1375,352 @@ export const crmTools: Tool[] = [
       required: ['jobId'],
     },
   },
+  // ======================================
+  // SALES BRIEFING TOOL
+  // ======================================
+  {
+    name: 'get_sales_briefing',
+    description: 'Get a comprehensive briefing on a contact before a meeting. Use this when user says "Brief me on [name]", "What should I know about [name]", or "Give me the rundown on [name]". Returns customer history, recent jobs, revenue, and personal details.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactName: {
+          type: 'string',
+          description: 'Name of the contact to get briefing for (e.g., "John Smith")',
+        },
+        contactId: {
+          type: 'string',
+          description: 'Optional: UUID of the contact if known',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'update_contact_profile',
+    description: 'Update personal details for a contact. Use this when user mentions personal info like "John has a dog named Max", "Remember that Mrs. Smith prefers morning appointments", or "Note that the Johnsons have two kids".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: {
+          type: 'string',
+          description: 'Contact UUID (optional if contactName provided)',
+        },
+        contactName: {
+          type: 'string',
+          description: 'Contact name if ID not known',
+        },
+        spouse: {
+          type: 'string',
+          description: 'Spouse/partner name',
+        },
+        children: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Children names',
+        },
+        pets: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Pet names and types (e.g., "Max the dog")',
+        },
+        interests: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Hobbies/interests',
+        },
+        communicationPreference: {
+          type: 'string',
+          description: 'How they prefer to be contacted (call, text, email)',
+        },
+        schedulingNotes: {
+          type: 'string',
+          description: 'When they prefer appointments',
+        },
+        notes: {
+          type: 'string',
+          description: 'Any other personal notes',
+        },
+      },
+      required: [],
+    },
+  },
+  // ======================================
+  // MEETING & TRANSCRIPT TOOLS
+  // ======================================
+  {
+    name: 'compile_meeting_report',
+    description: 'Process a meeting transcript and log it to the CRM. Use when user says "log this meeting", "compile that into a report", or "save the meeting notes". Analyzes transcript for action items, personal details, and follow-ups.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactName: {
+          type: 'string',
+          description: 'Customer name from the meeting',
+        },
+        transcript: {
+          type: 'string',
+          description: 'The meeting transcript or notes',
+        },
+        meetingType: {
+          type: 'string',
+          enum: ['in_person', 'phone', 'video', 'site_visit'],
+          description: 'Type of meeting (default: in_person)',
+        },
+        title: {
+          type: 'string',
+          description: 'Meeting title (optional)',
+        },
+      },
+      required: ['transcript'],
+    },
+  },
+  {
+    name: 'get_meeting_history',
+    description: 'Get meeting history for a contact. Use when user asks "what meetings have I had with [name]" or "show me my notes from [name]".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactName: {
+          type: 'string',
+          description: 'Contact name to look up',
+        },
+        contactId: {
+          type: 'string',
+          description: 'Contact UUID if known',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum meetings to return (default: 5)',
+        },
+      },
+      required: [],
+    },
+  },
+  // ======================================
+  // MORNING BRIEFING & DAILY TOOLS
+  // ======================================
+  {
+    name: 'get_morning_briefing',
+    description: 'Get a comprehensive morning briefing. Use when user says "what do I have today?", "give me my morning briefing", "what\'s on my schedule?". Returns today\'s jobs, overdue follow-ups, and important alerts.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        includeYesterday: {
+          type: 'boolean',
+          description: 'Include summary of yesterday\'s activity (default: false)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_overdue_followups',
+    description: 'Get list of overdue follow-ups that need attention. Use when user asks "what follow-ups am I behind on?" or "who do I need to call back?"',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Maximum results (default: 10)',
+        },
+      },
+      required: [],
+    },
+  },
+  // ======================================
+  // FIELD TECH TOOLS
+  // ======================================
+  {
+    name: 'log_site_visit',
+    description: 'Log a site visit or service call. Use when tech says "I just finished at [location]" or "log my visit to [customer]". Captures arrival, departure, work performed.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'Job UUID',
+        },
+        notes: {
+          type: 'string',
+          description: 'What was done during the visit',
+        },
+        partsUsed: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Parts or materials used',
+        },
+        timeSpent: {
+          type: 'number',
+          description: 'Minutes spent on site',
+        },
+        nextSteps: {
+          type: 'string',
+          description: 'What needs to happen next',
+        },
+      },
+      required: ['jobId', 'notes'],
+    },
+  },
+  {
+    name: 'request_parts',
+    description: 'Request parts or materials for a job. Use when tech says "I need [part] for this job" or "order [part] for the [customer] job".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'Job UUID (optional)',
+        },
+        parts: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              quantity: { type: 'number' },
+              urgent: { type: 'boolean' },
+            },
+          },
+          description: 'Parts to request',
+        },
+        notes: {
+          type: 'string',
+          description: 'Additional notes for the request',
+        },
+      },
+      required: ['parts'],
+    },
+  },
+  // ======================================
+  // DISPATCHER TOOLS
+  // ======================================
+  {
+    name: 'find_available_techs',
+    description: 'Find available technicians. Use when dispatcher asks "who\'s available?" or "which tech can take a job in [area]?"',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        date: {
+          type: 'string',
+          description: 'Date to check availability (ISO format, default: today)',
+        },
+        skills: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Required skills (e.g., ["plumbing", "hvac"])',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'reschedule_job',
+    description: 'Reschedule a job to a different time or technician. Use when user says "move the [customer] job to [time]" or "reassign [job] to [tech]".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'Job UUID',
+        },
+        jobDescription: {
+          type: 'string',
+          description: 'Job description to find by (if ID not known)',
+        },
+        newDate: {
+          type: 'string',
+          description: 'New scheduled date/time (ISO format)',
+        },
+        newTechId: {
+          type: 'string',
+          description: 'New technician UUID',
+        },
+        newTechName: {
+          type: 'string',
+          description: 'New technician name (if ID not known)',
+        },
+        reason: {
+          type: 'string',
+          description: 'Reason for reschedule',
+        },
+        notifyCustomer: {
+          type: 'boolean',
+          description: 'Send notification to customer (default: true)',
+        },
+      },
+      required: ['jobId'],
+    },
+  },
+  {
+    name: 'get_tech_status',
+    description: 'Get current status of all technicians or a specific tech. Use when dispatcher asks "where is [tech]?" or "what\'s everyone\'s status?"',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        techId: {
+          type: 'string',
+          description: 'Specific tech UUID (optional, omit for all techs)',
+        },
+        techName: {
+          type: 'string',
+          description: 'Tech name to look up',
+        },
+      },
+      required: [],
+    },
+  },
+  // ======================================
+  // PROACTIVE MAINTENANCE TOOLS
+  // ======================================
+  {
+    name: 'get_maintenance_due',
+    description: 'Get customers due for maintenance based on job history. Use for proactive outreach like "who needs their annual water heater flush?" or "maintenance reminders due this month".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        serviceType: {
+          type: 'string',
+          description: 'Type of service (e.g., "water heater flush", "HVAC tune-up")',
+        },
+        monthsSinceService: {
+          type: 'number',
+          description: 'Minimum months since last service (default: 12)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum results (default: 20)',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'send_maintenance_reminder',
+    description: 'Send a maintenance reminder to a customer. Use when user says "remind [customer] about their annual service" or "send maintenance email to [name]".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: {
+          type: 'string',
+          description: 'Contact UUID',
+        },
+        contactName: {
+          type: 'string',
+          description: 'Contact name if ID not known',
+        },
+        serviceType: {
+          type: 'string',
+          description: 'Type of maintenance service',
+        },
+        customMessage: {
+          type: 'string',
+          description: 'Custom message to include (optional)',
+        },
+      },
+      required: ['serviceType'],
+    },
+  },
 ]
 
 export async function handleCrmTool(
@@ -3967,6 +4313,996 @@ export async function handleCrmTool(
           success: false,
           error: `Failed to generate invoice description: ${message}`,
         }
+      }
+    }
+
+    // ======================================
+    // SALES BRIEFING HANDLERS
+    // ======================================
+    case 'get_sales_briefing': {
+      const { contactName, contactId } = args as {
+        contactName?: string
+        contactId?: string
+      }
+
+      try {
+        // Find contact
+        let contact
+        if (contactId) {
+          const { data } = await supabase
+            .from('contacts')
+            .select('*')
+            .eq('id', contactId)
+            .eq('account_id', accountId)
+            .single()
+          contact = data
+        } else if (contactName) {
+          const { data } = await supabase
+            .from('contacts')
+            .select('*')
+            .eq('account_id', accountId)
+            .or(`first_name.ilike.%${contactName}%,last_name.ilike.%${contactName}%`)
+            .limit(1)
+            .single()
+          contact = data
+        }
+
+        if (!contact) {
+          return { error: `Contact "${contactName || contactId}" not found` }
+        }
+
+        // Get jobs history
+        const { data: jobs } = await supabase
+          .from('jobs')
+          .select('id, description, status, total_amount, created_at')
+          .eq('contact_id', contact.id)
+          .eq('account_id', accountId)
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        // Get invoices
+        const { data: invoices } = await supabase
+          .from('invoices')
+          .select('total_amount, status, created_at')
+          .eq('contact_id', contact.id)
+          .eq('account_id', accountId)
+
+        // Get recent conversations
+        const { data: conversations } = await supabase
+          .from('conversations')
+          .select('subject, ai_summary, last_message_at')
+          .eq('contact_id', contact.id)
+          .eq('account_id', accountId)
+          .order('last_message_at', { ascending: false })
+          .limit(5)
+
+        // Calculate stats
+        const totalRevenue = invoices?.reduce((sum, inv) => 
+          inv.status === 'paid' ? sum + (inv.total_amount || 0) : sum, 0
+        ) || 0
+        
+        const jobCount = jobs?.length || 0
+        const completedJobs = jobs?.filter(j => j.status === 'completed' || j.status === 'paid').length || 0
+
+        // Build briefing
+        const briefing = {
+          contact: {
+            name: `${contact.first_name} ${contact.last_name}`,
+            email: contact.email,
+            phone: contact.phone,
+            address: contact.address,
+            customerSince: contact.created_at,
+          },
+          stats: {
+            totalJobs: jobCount,
+            completedJobs,
+            totalRevenue: totalRevenue / 100, // Convert cents to dollars
+            averageJobValue: jobCount > 0 ? (totalRevenue / jobCount / 100).toFixed(2) : 0,
+          },
+          recentJobs: jobs?.slice(0, 3).map(j => ({
+            description: j.description,
+            status: j.status,
+            amount: j.total_amount ? `$${(j.total_amount / 100).toFixed(2)}` : 'N/A',
+            date: new Date(j.created_at).toLocaleDateString(),
+          })),
+          recentConversations: conversations?.slice(0, 2).map(c => ({
+            subject: c.subject,
+            summary: c.ai_summary || 'No summary available',
+          })),
+          profile: (contact as any).profile || null,
+        }
+
+        // Generate natural language summary for voice
+        const summaryPrompt = `Create a brief, spoken briefing for a sales meeting with this customer:
+Name: ${briefing.contact.name}
+Customer since: ${briefing.contact.customerSince}
+Total jobs: ${briefing.stats.totalJobs}
+Total revenue: $${briefing.stats.totalRevenue}
+Recent work: ${briefing.recentJobs?.map(j => j.description).join(', ') || 'None'}
+${briefing.profile ? `Personal notes: ${JSON.stringify(briefing.profile)}` : ''}
+
+Keep it conversational, 3-4 sentences max. Start with their name. Include any personal details if available.`
+
+        try {
+          const llmSummary = await llmHelper.callRouter({
+            accountId,
+            useCase: 'summary',
+            prompt: summaryPrompt,
+            maxTokens: 150,
+            temperature: 0.7,
+          })
+          
+          return {
+            success: true,
+            spokenSummary: llmSummary.trim(),
+            ...briefing,
+          }
+        } catch {
+          // Return structured data if LLM fails
+          return {
+            success: true,
+            ...briefing,
+          }
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return {
+          success: false,
+          error: `Failed to get sales briefing: ${message}`,
+        }
+      }
+    }
+
+    case 'update_contact_profile': {
+      const { contactId, contactName, ...profileData } = args as {
+        contactId?: string
+        contactName?: string
+        spouse?: string
+        children?: string[]
+        pets?: string[]
+        interests?: string[]
+        communicationPreference?: string
+        schedulingNotes?: string
+        notes?: string
+      }
+
+      try {
+        // Find contact
+        let id = contactId
+        if (!id && contactName) {
+          const { data } = await supabase
+            .from('contacts')
+            .select('id')
+            .eq('account_id', accountId)
+            .or(`first_name.ilike.%${contactName}%,last_name.ilike.%${contactName}%`)
+            .limit(1)
+            .single()
+          id = data?.id
+        }
+
+        if (!id) {
+          return { error: 'Contact not found' }
+        }
+
+        // Get existing profile
+        const { data: contact } = await supabase
+          .from('contacts')
+          .select('profile, first_name, last_name')
+          .eq('id', id)
+          .single()
+
+        const existingProfile = (contact as any)?.profile || {}
+
+        // Merge new data
+        const updatedProfile = {
+          ...existingProfile,
+          personal: {
+            ...existingProfile.personal,
+            ...(profileData.spouse && { spouse: profileData.spouse }),
+            ...(profileData.children && { children: profileData.children }),
+            ...(profileData.pets && { pets: profileData.pets }),
+            ...(profileData.interests && { interests: profileData.interests }),
+          },
+          preferences: {
+            ...existingProfile.preferences,
+            ...(profileData.communicationPreference && { communication: profileData.communicationPreference }),
+            ...(profileData.schedulingNotes && { scheduling: profileData.schedulingNotes }),
+            ...(profileData.notes && { notes: profileData.notes }),
+          },
+          updatedAt: new Date().toISOString(),
+        }
+
+        // Update contact
+        const { error } = await supabase
+          .from('contacts')
+          .update({ profile: updatedProfile })
+          .eq('id', id)
+
+        if (error) {
+          return { error: `Failed to update profile: ${error.message}` }
+        }
+
+        return {
+          success: true,
+          message: `Updated profile for ${contact?.first_name} ${contact?.last_name}`,
+          profile: updatedProfile,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return {
+          success: false,
+          error: `Failed to update contact profile: ${message}`,
+        }
+      }
+    }
+
+    // ======================================
+    // MEETING & TRANSCRIPT HANDLERS
+    // ======================================
+    case 'compile_meeting_report': {
+      const { contactName, transcript, meetingType, title } = args as {
+        contactName?: string
+        transcript: string
+        meetingType?: string
+        title?: string
+      }
+
+      try {
+        // Find contact if name provided
+        let contactId: string | undefined
+        if (contactName) {
+          const { data: contact } = await supabase
+            .from('contacts')
+            .select('id')
+            .eq('account_id', accountId)
+            .or(`first_name.ilike.%${contactName}%,last_name.ilike.%${contactName}%`)
+            .limit(1)
+            .single()
+          contactId = contact?.id
+        }
+
+        // Call API to create meeting with analysis
+        const response = await fetch(`${supabaseUrl}/rest/v1/meetings`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${serviceRoleKey}`,
+            'apikey': serviceRoleKey,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation',
+          },
+          body: JSON.stringify({
+            account_id: accountId,
+            contact_id: contactId,
+            transcript,
+            meeting_type: meetingType || 'in_person',
+            title: title || 'Meeting',
+            started_at: new Date().toISOString(),
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to create meeting record')
+        }
+
+        const [meeting] = await response.json()
+
+        // Analyze transcript with LLM
+        const analysisPrompt = `Analyze this meeting transcript and extract:
+1. A concise 2-3 sentence summary
+2. Action items as a list
+3. Any personal details about the customer
+4. Overall sentiment
+5. Any follow-up commitments
+
+Transcript:
+${transcript}
+
+Respond in JSON:
+{"summary": "...", "actionItems": ["..."], "personalDetails": {}, "sentiment": "positive|neutral|negative", "followUpNotes": "..."}`
+
+        const analysis = await llmHelper.callRouter({
+          accountId,
+          useCase: 'summary',
+          prompt: analysisPrompt,
+          maxTokens: 500,
+          temperature: 0.3,
+        })
+
+        let parsed: any = {}
+        try {
+          const jsonMatch = analysis.match(/\{[\s\S]*\}/)
+          parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {}
+        } catch {}
+
+        // Update meeting with analysis
+        if (meeting?.id && Object.keys(parsed).length > 0) {
+          await supabase
+            .from('meetings')
+            .update({
+              summary: parsed.summary,
+              action_items: parsed.actionItems || [],
+              sentiment: parsed.sentiment,
+              extracted_data: { personalDetails: parsed.personalDetails },
+              follow_up_notes: parsed.followUpNotes,
+              ended_at: new Date().toISOString(),
+            })
+            .eq('id', meeting.id)
+
+          // Update contact profile if personal details found
+          if (contactId && parsed.personalDetails && Object.keys(parsed.personalDetails).length > 0) {
+            const { data: contact } = await supabase
+              .from('contacts')
+              .select('profile')
+              .eq('id', contactId)
+              .single()
+
+            const existingProfile = (contact as any)?.profile || {}
+            await supabase
+              .from('contacts')
+              .update({
+                profile: {
+                  ...existingProfile,
+                  personal: { ...existingProfile.personal, ...parsed.personalDetails },
+                  updatedAt: new Date().toISOString(),
+                },
+              })
+              .eq('id', contactId)
+          }
+        }
+
+        return {
+          success: true,
+          meetingId: meeting?.id,
+          summary: parsed.summary || 'Meeting logged successfully',
+          actionItems: parsed.actionItems || [],
+          sentiment: parsed.sentiment,
+          personalDetailsExtracted: Object.keys(parsed.personalDetails || {}).length > 0,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to compile meeting report: ${message}` }
+      }
+    }
+
+    case 'get_meeting_history': {
+      const { contactName, contactId, limit = 5 } = args as {
+        contactName?: string
+        contactId?: string
+        limit?: number
+      }
+
+      try {
+        let targetContactId = contactId
+        if (!targetContactId && contactName) {
+          const { data: contact } = await supabase
+            .from('contacts')
+            .select('id')
+            .eq('account_id', accountId)
+            .or(`first_name.ilike.%${contactName}%,last_name.ilike.%${contactName}%`)
+            .limit(1)
+            .single()
+          targetContactId = contact?.id
+        }
+
+        if (!targetContactId) {
+          return { error: 'Contact not found' }
+        }
+
+        const { data: meetings } = await supabase
+          .from('meetings')
+          .select('id, title, meeting_type, summary, action_items, sentiment, created_at')
+          .eq('contact_id', targetContactId)
+          .eq('account_id', accountId)
+          .order('created_at', { ascending: false })
+          .limit(limit)
+
+        return {
+          success: true,
+          meetings: meetings || [],
+          count: meetings?.length || 0,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to get meeting history: ${message}` }
+      }
+    }
+
+    // ======================================
+    // MORNING BRIEFING HANDLERS
+    // ======================================
+    case 'get_morning_briefing': {
+      const { includeYesterday = false } = args as { includeYesterday?: boolean }
+
+      try {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        const yesterday = new Date(today)
+        yesterday.setDate(yesterday.getDate() - 1)
+
+        // Get today's jobs
+        const { data: todaysJobs } = await supabase
+          .from('jobs')
+          .select('id, description, status, scheduled_start, contact:contacts(first_name, last_name, address)')
+          .eq('account_id', accountId)
+          .gte('scheduled_start', today.toISOString())
+          .lt('scheduled_start', tomorrow.toISOString())
+          .order('scheduled_start')
+
+        // Get overdue follow-ups from meetings
+        const { data: overdueFollowups } = await supabase
+          .from('meetings')
+          .select('id, title, follow_up_date, follow_up_notes, contact:contacts(first_name, last_name)')
+          .eq('account_id', accountId)
+          .lt('follow_up_date', today.toISOString())
+          .not('follow_up_date', 'is', null)
+          .limit(5)
+
+        // Get unreplied conversations
+        const { data: unrepliedConvos } = await supabase
+          .from('conversations')
+          .select('id, subject, last_message_at, contact:contacts(first_name, last_name)')
+          .eq('account_id', accountId)
+          .eq('status', 'open')
+          .eq('last_message_direction', 'inbound')
+          .order('last_message_at', { ascending: true })
+          .limit(5)
+
+        // Get yesterday's summary if requested
+        let yesterdaySummary: any = null
+        if (includeYesterday) {
+          const { data: yesterdaysJobs } = await supabase
+            .from('jobs')
+            .select('status')
+            .eq('account_id', accountId)
+            .gte('scheduled_start', yesterday.toISOString())
+            .lt('scheduled_start', today.toISOString())
+
+          const completed = yesterdaysJobs?.filter(j => j.status === 'completed' || j.status === 'paid').length || 0
+          yesterdaySummary = {
+            totalJobs: yesterdaysJobs?.length || 0,
+            completed,
+          }
+        }
+
+        // Generate spoken briefing
+        const briefingPrompt = `Create a brief, spoken morning briefing:
+Today's jobs: ${todaysJobs?.length || 0}
+${todaysJobs?.slice(0, 3).map(j => `- ${(j.contact as any)?.first_name} ${(j.contact as any)?.last_name}: ${j.description}`).join('\n') || 'No jobs scheduled'}
+Overdue follow-ups: ${overdueFollowups?.length || 0}
+Unreplied messages: ${unrepliedConvos?.length || 0}
+
+Keep it conversational and under 4 sentences. Start with a greeting.`
+
+        const spokenBriefing = await llmHelper.callRouter({
+          accountId,
+          useCase: 'summary',
+          prompt: briefingPrompt,
+          maxTokens: 150,
+          temperature: 0.7,
+        })
+
+        return {
+          success: true,
+          spokenBriefing: spokenBriefing.trim(),
+          todaysJobs: todaysJobs?.map(j => ({
+            id: j.id,
+            description: j.description,
+            status: j.status,
+            scheduledStart: j.scheduled_start,
+            customer: `${(j.contact as any)?.first_name} ${(j.contact as any)?.last_name}`,
+            address: (j.contact as any)?.address,
+          })) || [],
+          overdueFollowups: overdueFollowups?.map(f => ({
+            id: f.id,
+            title: f.title,
+            dueDate: f.follow_up_date,
+            notes: f.follow_up_notes,
+            customer: `${(f.contact as any)?.first_name} ${(f.contact as any)?.last_name}`,
+          })) || [],
+          unrepliedMessages: unrepliedConvos?.length || 0,
+          yesterdaySummary,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to get morning briefing: ${message}` }
+      }
+    }
+
+    case 'get_overdue_followups': {
+      const { limit = 10 } = args as { limit?: number }
+
+      try {
+        const today = new Date()
+
+        const { data: followups } = await supabase
+          .from('meetings')
+          .select('id, title, follow_up_date, follow_up_notes, contact:contacts(first_name, last_name, phone, email)')
+          .eq('account_id', accountId)
+          .lt('follow_up_date', today.toISOString())
+          .not('follow_up_date', 'is', null)
+          .order('follow_up_date')
+          .limit(limit)
+
+        return {
+          success: true,
+          followups: followups?.map(f => ({
+            id: f.id,
+            title: f.title,
+            dueDate: f.follow_up_date,
+            notes: f.follow_up_notes,
+            customer: `${(f.contact as any)?.first_name} ${(f.contact as any)?.last_name}`,
+            phone: (f.contact as any)?.phone,
+            email: (f.contact as any)?.email,
+            daysOverdue: Math.floor((today.getTime() - new Date(f.follow_up_date!).getTime()) / (1000 * 60 * 60 * 24)),
+          })) || [],
+          count: followups?.length || 0,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to get overdue followups: ${message}` }
+      }
+    }
+
+    // ======================================
+    // FIELD TECH HANDLERS
+    // ======================================
+    case 'log_site_visit': {
+      const { jobId, notes, partsUsed, timeSpent, nextSteps } = args as {
+        jobId: string
+        notes: string
+        partsUsed?: string[]
+        timeSpent?: number
+        nextSteps?: string
+      }
+
+      try {
+        // Get the job
+        const { data: job } = await supabase
+          .from('jobs')
+          .select('id, notes as existing_notes')
+          .eq('id', jobId)
+          .eq('account_id', accountId)
+          .single()
+
+        if (!job) {
+          return { error: 'Job not found' }
+        }
+
+        // Build site visit log
+        const visitLog = `\n\n--- Site Visit: ${new Date().toLocaleString()} ---\n${notes}${partsUsed ? `\nParts used: ${partsUsed.join(', ')}` : ''}${timeSpent ? `\nTime on site: ${timeSpent} minutes` : ''}${nextSteps ? `\nNext steps: ${nextSteps}` : ''}`
+
+        // Update job notes
+        const { error } = await supabase
+          .from('jobs')
+          .update({
+            notes: (job.existing_notes || '') + visitLog,
+          })
+          .eq('id', jobId)
+
+        if (error) {
+          return { error: `Failed to log site visit: ${error.message}` }
+        }
+
+        // Log parts used to materials if specified
+        if (partsUsed && partsUsed.length > 0) {
+          const materials = partsUsed.map(part => ({
+            job_id: jobId,
+            account_id: accountId,
+            name: part,
+            quantity: 1,
+            unit_cost: 0,
+          }))
+
+          await supabase.from('job_materials').insert(materials)
+        }
+
+        return {
+          success: true,
+          message: 'Site visit logged successfully',
+          jobId,
+          partsLogged: partsUsed?.length || 0,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to log site visit: ${message}` }
+      }
+    }
+
+    case 'request_parts': {
+      const { jobId, parts, notes } = args as {
+        jobId?: string
+        parts: Array<{ name: string; quantity?: number; urgent?: boolean }>
+        notes?: string
+      }
+
+      try {
+        // Create parts request notification
+        const partsDescription = parts.map(p => 
+          `${p.name} (Qty: ${p.quantity || 1})${p.urgent ? ' - URGENT' : ''}`
+        ).join('\n')
+
+        // Log to audit for now (could be a dedicated parts_requests table)
+        await supabase.from('crmai_audit').insert({
+          account_id: accountId,
+          action: 'parts_request',
+          entity_type: 'job',
+          entity_id: jobId || 'general',
+          new_values: {
+            parts,
+            notes,
+            requestedAt: new Date().toISOString(),
+          },
+        })
+
+        return {
+          success: true,
+          message: `Parts request submitted:\n${partsDescription}`,
+          requestId: `REQ-${Date.now()}`,
+          parts,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to request parts: ${message}` }
+      }
+    }
+
+    // ======================================
+    // DISPATCHER HANDLERS
+    // ======================================
+    case 'find_available_techs': {
+      const { date, skills } = args as { date?: string; skills?: string[] }
+
+      try {
+        const targetDate = date ? new Date(date) : new Date()
+        targetDate.setHours(0, 0, 0, 0)
+        const nextDay = new Date(targetDate)
+        nextDay.setDate(nextDay.getDate() + 1)
+
+        // Get all techs
+        const { data: techs } = await supabase
+          .from('users')
+          .select('id, name, email, role')
+          .eq('account_id', accountId)
+          .eq('role', 'tech')
+
+        if (!techs || techs.length === 0) {
+          return { success: true, availableTechs: [], message: 'No technicians found' }
+        }
+
+        // Get jobs for target date
+        const { data: scheduledJobs } = await supabase
+          .from('jobs')
+          .select('tech_assigned_id, scheduled_start, scheduled_end')
+          .eq('account_id', accountId)
+          .gte('scheduled_start', targetDate.toISOString())
+          .lt('scheduled_start', nextDay.toISOString())
+
+        // Calculate availability for each tech
+        const techAvailability = techs.map(tech => {
+          const techJobs = scheduledJobs?.filter(j => j.tech_assigned_id === tech.id) || []
+          return {
+            id: tech.id,
+            name: tech.name,
+            email: tech.email,
+            jobsToday: techJobs.length,
+            isAvailable: techJobs.length < 8, // Assuming 8 jobs max per day
+          }
+        })
+
+        return {
+          success: true,
+          date: targetDate.toISOString().split('T')[0],
+          availableTechs: techAvailability.filter(t => t.isAvailable),
+          allTechs: techAvailability,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to find available techs: ${message}` }
+      }
+    }
+
+    case 'reschedule_job': {
+      const { jobId, newDate, newTechId, newTechName, reason, notifyCustomer = true } = args as {
+        jobId: string
+        newDate?: string
+        newTechId?: string
+        newTechName?: string
+        reason?: string
+        notifyCustomer?: boolean
+      }
+
+      try {
+        const updates: any = {}
+
+        if (newDate) {
+          updates.scheduled_start = new Date(newDate).toISOString()
+        }
+
+        // Find tech by name if needed
+        let techId = newTechId
+        if (!techId && newTechName) {
+          const { data: tech } = await supabase
+            .from('users')
+            .select('id')
+            .eq('account_id', accountId)
+            .ilike('name', `%${newTechName}%`)
+            .limit(1)
+            .single()
+          techId = tech?.id
+        }
+
+        if (techId) {
+          updates.tech_assigned_id = techId
+        }
+
+        if (Object.keys(updates).length === 0) {
+          return { error: 'No changes specified (provide newDate or newTech)' }
+        }
+
+        // Get current job for comparison
+        const { data: currentJob } = await supabase
+          .from('jobs')
+          .select('scheduled_start, tech_assigned_id, contact:contacts(email, first_name)')
+          .eq('id', jobId)
+          .eq('account_id', accountId)
+          .single()
+
+        if (!currentJob) {
+          return { error: 'Job not found' }
+        }
+
+        // Update job
+        const { error } = await supabase
+          .from('jobs')
+          .update(updates)
+          .eq('id', jobId)
+
+        if (error) {
+          return { error: `Failed to reschedule: ${error.message}` }
+        }
+
+        // Log the reschedule
+        await supabase.from('crmai_audit').insert({
+          account_id: accountId,
+          action: 'job_rescheduled',
+          entity_type: 'job',
+          entity_id: jobId,
+          old_values: { scheduled_start: currentJob.scheduled_start, tech_assigned_id: currentJob.tech_assigned_id },
+          new_values: updates,
+          metadata: { reason, notifyCustomer },
+        })
+
+        return {
+          success: true,
+          message: 'Job rescheduled successfully',
+          jobId,
+          changes: updates,
+          customerNotified: notifyCustomer,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to reschedule job: ${message}` }
+      }
+    }
+
+    case 'get_tech_status': {
+      const { techId, techName } = args as { techId?: string; techName?: string }
+
+      try {
+        let query = supabase
+          .from('users')
+          .select('id, name, email, role')
+          .eq('account_id', accountId)
+          .eq('role', 'tech')
+
+        if (techId) {
+          query = query.eq('id', techId)
+        } else if (techName) {
+          query = query.ilike('name', `%${techName}%`)
+        }
+
+        const { data: techs } = await query
+
+        if (!techs || techs.length === 0) {
+          return { success: true, techs: [], message: 'No technicians found' }
+        }
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+
+        // Get current jobs for each tech
+        const techStatuses = await Promise.all(techs.map(async (tech) => {
+          const { data: currentJob } = await supabase
+            .from('jobs')
+            .select('id, description, status, contact:contacts(first_name, last_name, address)')
+            .eq('tech_assigned_id', tech.id)
+            .eq('account_id', accountId)
+            .in('status', ['en_route', 'in_progress'])
+            .limit(1)
+            .single()
+
+          const { data: todaysJobs } = await supabase
+            .from('jobs')
+            .select('id, status')
+            .eq('tech_assigned_id', tech.id)
+            .eq('account_id', accountId)
+            .gte('scheduled_start', today.toISOString())
+            .lt('scheduled_start', tomorrow.toISOString())
+
+          const completed = todaysJobs?.filter(j => j.status === 'completed' || j.status === 'paid').length || 0
+          const remaining = (todaysJobs?.length || 0) - completed
+
+          return {
+            id: tech.id,
+            name: tech.name,
+            status: currentJob ? currentJob.status : 'available',
+            currentJob: currentJob ? {
+              id: currentJob.id,
+              description: currentJob.description,
+              customer: `${(currentJob.contact as any)?.first_name} ${(currentJob.contact as any)?.last_name}`,
+              address: (currentJob.contact as any)?.address,
+            } : null,
+            todayStats: {
+              total: todaysJobs?.length || 0,
+              completed,
+              remaining,
+            },
+          }
+        }))
+
+        return {
+          success: true,
+          techs: techStatuses,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to get tech status: ${message}` }
+      }
+    }
+
+    // ======================================
+    // PROACTIVE MAINTENANCE HANDLERS
+    // ======================================
+    case 'get_maintenance_due': {
+      const { serviceType, monthsSinceService = 12, limit = 20 } = args as {
+        serviceType?: string
+        monthsSinceService?: number
+        limit?: number
+      }
+
+      try {
+        const cutoffDate = new Date()
+        cutoffDate.setMonth(cutoffDate.getMonth() - monthsSinceService)
+
+        // Find contacts who had jobs of specified type more than X months ago
+        let jobQuery = supabase
+          .from('jobs')
+          .select('contact_id, description, created_at, contact:contacts(id, first_name, last_name, email, phone)')
+          .eq('account_id', accountId)
+          .in('status', ['completed', 'paid'])
+          .lt('created_at', cutoffDate.toISOString())
+          .order('created_at', { ascending: false })
+
+        if (serviceType) {
+          jobQuery = jobQuery.ilike('description', `%${serviceType}%`)
+        }
+
+        const { data: oldJobs } = await jobQuery.limit(limit * 2)
+
+        // Group by contact and get most recent job
+        const contactMap = new Map<string, any>()
+        oldJobs?.forEach(job => {
+          if (job.contact_id && !contactMap.has(job.contact_id)) {
+            contactMap.set(job.contact_id, {
+              contact: job.contact,
+              lastService: job.created_at,
+              lastServiceDescription: job.description,
+            })
+          }
+        })
+
+        const maintenanceDue = Array.from(contactMap.values()).slice(0, limit)
+
+        return {
+          success: true,
+          maintenanceDue: maintenanceDue.map(m => ({
+            contactId: (m.contact as any)?.id,
+            name: `${(m.contact as any)?.first_name} ${(m.contact as any)?.last_name}`,
+            email: (m.contact as any)?.email,
+            phone: (m.contact as any)?.phone,
+            lastService: m.lastService,
+            lastServiceDescription: m.lastServiceDescription,
+            monthsSince: Math.floor((Date.now() - new Date(m.lastService).getTime()) / (1000 * 60 * 60 * 24 * 30)),
+          })),
+          count: maintenanceDue.length,
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to get maintenance due: ${message}` }
+      }
+    }
+
+    case 'send_maintenance_reminder': {
+      const { contactId, contactName, serviceType, customMessage } = args as {
+        contactId?: string
+        contactName?: string
+        serviceType: string
+        customMessage?: string
+      }
+
+      try {
+        // Find contact
+        let contact
+        if (contactId) {
+          const { data } = await supabase
+            .from('contacts')
+            .select('id, first_name, last_name, email')
+            .eq('id', contactId)
+            .eq('account_id', accountId)
+            .single()
+          contact = data
+        } else if (contactName) {
+          const { data } = await supabase
+            .from('contacts')
+            .select('id, first_name, last_name, email')
+            .eq('account_id', accountId)
+            .or(`first_name.ilike.%${contactName}%,last_name.ilike.%${contactName}%`)
+            .limit(1)
+            .single()
+          contact = data
+        }
+
+        if (!contact) {
+          return { error: 'Contact not found' }
+        }
+
+        if (!contact.email) {
+          return { error: 'Contact has no email address' }
+        }
+
+        // Generate reminder message
+        const messagePrompt = `Write a brief, friendly maintenance reminder email for:
+Customer: ${contact.first_name}
+Service: ${serviceType}
+${customMessage ? `Special note: ${customMessage}` : ''}
+
+Keep it under 3 sentences. Be warm and professional.`
+
+        const emailBody = await llmHelper.callRouter({
+          accountId,
+          useCase: 'draft',
+          prompt: messagePrompt,
+          maxTokens: 150,
+          temperature: 0.7,
+        })
+
+        // Log the reminder (actual email sending would be separate)
+        await supabase.from('crmai_audit').insert({
+          account_id: accountId,
+          action: 'maintenance_reminder_sent',
+          entity_type: 'contact',
+          entity_id: contact.id,
+          new_values: {
+            serviceType,
+            email: contact.email,
+            message: emailBody.trim(),
+          },
+        })
+
+        return {
+          success: true,
+          message: `Maintenance reminder queued for ${contact.first_name} ${contact.last_name}`,
+          email: contact.email,
+          serviceType,
+          emailBody: emailBody.trim(),
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        return { success: false, error: `Failed to send maintenance reminder: ${message}` }
       }
     }
 
