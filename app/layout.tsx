@@ -65,6 +65,28 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Remove old ElevenLabs embed widget if it exists */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Remove old widget container
+                const oldWidget = document.getElementById('elevenlabs-voice-widget-root');
+                if (oldWidget) {
+                  oldWidget.remove();
+                }
+                // Remove any elevenlabs-convai elements
+                const convaiElements = document.querySelectorAll('elevenlabs-convai');
+                convaiElements.forEach(el => el.remove());
+                // Remove embed script
+                const embedScript = document.querySelector('script[src*="elevenlabs"][src*="convai-widget-embed"]');
+                if (embedScript) {
+                  embedScript.remove();
+                }
+              })();
+            `,
+          }}
+        />
         {/* Service Worker Registration */}
         <script
           dangerouslySetInnerHTML={{
@@ -87,7 +109,7 @@ export default function RootLayout({
           {children}
           <Toaster />
         </Providers>
-        {/* Voice widget outside Providers - isolated from context changes */}
+        {/* Old embed widget cleanup - removes any existing instances */}
         <VoiceAgentOverlay />
       </body>
     </html>

@@ -33,17 +33,32 @@ export function VoiceAgentOverlay() {
   const initialized = useRef(false)
 
   useEffect(() => {
+    // DISABLED: Using React SDK instead of embed widget
+    // The voice agent is now implemented using @elevenlabs/react in VoiceAgentWidget
+    // and integrated directly into the sidebar navigation
+    
     // Strict Mode guard - only initialize once
     if (initialized.current) return
     initialized.current = true
 
-    // Initialize the widget using vanilla JS (completely outside React)
-    initializeVoiceWidget()
-
-    // Optional: Cleanup on logout (uncomment if needed)
-    // return () => {
-    //   destroyVoiceWidget()
-    // }
+    // Destroy any existing old embed widget instances
+    destroyVoiceWidget()
+    
+    // Also remove any widget containers that might exist in the DOM
+    const existingContainer = document.getElementById('elevenlabs-voice-widget-root')
+    if (existingContainer) {
+      existingContainer.remove()
+    }
+    
+    // Remove any elevenlabs-convai elements that might be floating around
+    const convaiElements = document.querySelectorAll('elevenlabs-convai')
+    convaiElements.forEach(el => el.remove())
+    
+    // Remove the ElevenLabs embed script if it exists
+    const embedScript = document.querySelector('script[src*="elevenlabs"][src*="convai-widget-embed"]')
+    if (embedScript) {
+      embedScript.remove()
+    }
   }, [])
 
   // Render nothing - the widget DOM is managed by voice-widget-manager.ts

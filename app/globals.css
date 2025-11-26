@@ -2,6 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   TYPOGRAPHY - Inter Font System
+   Clean, professional SaaS typography
+   ============================================ */
+
+html {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Scale */
+h1, .h1 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+h2, .h2 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+h3, .h3 {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+h4, .h4 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+/* Body text improvements */
+p, .body-text {
+  line-height: 1.6;
+}
+
+/* Small text */
+.text-sm, small {
+  line-height: 1.5;
+}
+
 :root {
   --radius: 0.5rem;
   
@@ -133,83 +179,8 @@
   --dark-shadow-glow: 0 0 30px rgba(217, 119, 87, 0.1); /* Subtle warm glow */
   --dark-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 
-  /* ============================================
-     TARO THEME - "AMETHYST" 💜
-     Luxurious, creative, and deep.
-     Pillars: Indigo, Violet, Purple, Pink, Green.
-     ============================================ */
-  
-  --taro-bg-primary: #1E1B4B;    /* Indigo 950 */
-  --taro-bg-secondary: #312E81;  /* Indigo 900 */
-  --taro-bg-surface: #2E1065;    /* Violet 950 */
-  --taro-text-primary: #E0E7FF;  /* Indigo 100 */
-  --taro-text-secondary: #A5B4FC; /* Indigo 300 */
-  --taro-text-subtle: #818CF8;    /* Indigo 400 */
-  --taro-border: #3730A3;        /* Indigo 800 */
-  --taro-accent-primary: #C084FC; /* Purple 400 */
-  --taro-accent-secondary: #4ADE80; /* Green 400 (Complementary) */
-  --taro-gradient-accent: linear-gradient(135deg, #C084FC, #E879F9);
-  --taro-gradient-surface: linear-gradient(155deg, rgba(192, 132, 252, 0.1), rgba(232, 121, 249, 0.05));
-  --taro-card-bg: #312E81;
-  --taro-card-border: #4338CA;
-  --taro-input-bg: #1E1B4B;
-  --taro-badge-bg: rgba(192, 132, 252, 0.15);
-  --taro-badge-text: #D8B4FE;
-  --taro-shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  --taro-shadow-glow: 0 0 30px rgba(192, 132, 252, 0.3);
-  --taro-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 
-  /* ============================================
-     MATCHA THEME - "FOREST" 🍵
-     Fresh, natural, and balanced.
-     Pillars: Forest Green, Lime, Emerald, Mint.
-     ============================================ */
-  
-  --matcha-bg-primary: #F0FDF4;   /* Green 50 */
-  --matcha-bg-secondary: #DCFCE7; /* Green 100 */
-  --matcha-bg-surface: #FFFFFF;
-  --matcha-text-primary: #14532D; /* Green 900 */
-  --matcha-text-secondary: #166534; /* Green 800 */
-  --matcha-text-subtle: #15803D;  /* Green 700 */
-  --matcha-border: #BBF7D0;       /* Green 200 */
-  --matcha-accent-primary: #16A34A; /* Green 600 */
-  --matcha-accent-secondary: #84CC16; /* Lime 500 */
-  --matcha-gradient-accent: linear-gradient(135deg, #16A34A, #84CC16);
-  --matcha-gradient-surface: linear-gradient(155deg, rgba(22, 163, 74, 0.08), rgba(132, 204, 22, 0.04));
-  --matcha-card-bg: #FFFFFF;
-  --matcha-card-border: #BBF7D0;
-  --matcha-input-bg: #F0FDF4;
-  --matcha-badge-bg: #DCFCE7;
-  --matcha-badge-text: #15803D;
-  --matcha-shadow-elevated: 0 20px 25px -5px rgba(20, 83, 45, 0.1);
-  --matcha-shadow-glow: 0 0 20px rgba(22, 163, 74, 0.2);
-  --matcha-shadow-sm: 0 1px 2px 0 rgba(20, 83, 45, 0.05);
 
-  /* ============================================
-     HONEYDEW THEME - "CITRUS" 🍈
-     Zesty, high-energy, and clean.
-     Pillars: Yellow, Lime, Cyan, Dark Brown.
-     ============================================ */
-  
-  --honeydew-bg-primary: #FEFCE8;   /* Yellow 50 */
-  --honeydew-bg-secondary: #FEF9C3; /* Yellow 100 */
-  --honeydew-bg-surface: #FFFFFF;
-  --honeydew-text-primary: #713F12; /* Yellow 900 */
-  --honeydew-text-secondary: #854D0E; /* Yellow 800 */
-  --honeydew-text-subtle: #A16207;  /* Yellow 700 */
-  --honeydew-border: #FEF08A;       /* Yellow 200 */
-  --honeydew-accent-primary: #EAB308; /* Yellow 500 */
-  --honeydew-accent-secondary: #06B6D4; /* Cyan 500 (Split Comp) */
-  --honeydew-gradient-accent: linear-gradient(135deg, #EAB308, #06B6D4);
-  --honeydew-gradient-surface: linear-gradient(155deg, rgba(234, 179, 8, 0.08), rgba(6, 182, 212, 0.04));
-  --honeydew-card-bg: #FFFFFF;
-  --honeydew-card-border: #FEF08A;
-  --honeydew-input-bg: #FEFCE8;
-  --honeydew-badge-bg: #FEF9C3;
-  --honeydew-badge-text: #854D0E;
-  --honeydew-shadow-elevated: 0 20px 25px -5px rgba(113, 63, 18, 0.1);
-  --honeydew-shadow-glow: 0 0 20px rgba(234, 179, 8, 0.2);
-  --honeydew-shadow-sm: 0 1px 2px 0 rgba(113, 63, 18, 0.05);
 
   /* ============================================
      SHARED PROPERTIES
@@ -427,79 +398,63 @@
   color-scheme: dark;
 }
 
-/* Taro Theme Active */
-[data-theme="taro"] {
-  --color-bg-primary: var(--taro-bg-primary);
-  --color-bg-secondary: var(--taro-bg-secondary);
-  --color-bg-surface: var(--taro-bg-surface);
-  --color-text-primary: var(--taro-text-primary);
-  --color-text-secondary: var(--taro-text-secondary);
-  --color-text-subtle: var(--taro-text-subtle);
-  --color-border: var(--taro-border);
-  --color-accent-primary: var(--taro-accent-primary);
-  --color-accent-secondary: var(--taro-accent-secondary);
-  --gradient-accent: var(--taro-gradient-accent);
-  --gradient-surface: var(--taro-gradient-surface);
-  --shadow-elevated: var(--taro-shadow-elevated);
-  --shadow-glow: var(--taro-shadow-glow);
-  --shadow-sm: var(--taro-shadow-sm);
-  --card-bg: var(--taro-card-bg);
-  --card-border: var(--taro-card-border);
-  --input-bg: var(--taro-input-bg);
-  --badge-bg: var(--taro-badge-bg);
-  --badge-text: var(--taro-badge-text);
+
+
+
+/* ============================================
+   OPS THEME - Service Industry Professional
+   Pillars: Deep Navy, Slate, Orange, Dark Mode
+   ============================================ */
+
+--ops-bg-primary: #0f1115;     /* Deepest Navy */
+--ops-bg-secondary: #151820;   /* Slate 900 */
+--ops-bg-surface: #1c2029;     /* Slate 800 */
+--ops-text-primary: #f5f5f7;   /* Slate 50 */
+--ops-text-secondary: #9ca3af; /* Slate 400 */
+--ops-text-subtle: #64748b;    /* Slate 500 */
+--ops-border: #262b36;         /* Custom border */
+--ops-accent-primary: #ff6a3c; /* Burnt Orange */
+--ops-accent-secondary: #22c55e; /* Green 500 */
+--ops-gradient-accent: linear-gradient(135deg, #ff6a3c, #ea580c);
+--ops-gradient-surface: linear-gradient(155deg, rgba(255, 106, 60, 0.1), rgba(234, 88, 12, 0.05));
+--ops-card-bg: #1c2029;
+--ops-card-border: #262b36;
+--ops-input-bg: #0f1115;
+--ops-badge-bg: rgba(255, 106, 60, 0.1);
+--ops-badge-text: #ff8a65;
+--ops-shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+--ops-shadow-glow: 0 0 30px rgba(255, 106, 60, 0.2);
+--ops-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+--ops-glass-border: rgba(255, 255, 255, 0.1);
+--ops-glass-highlight: rgba(255, 255, 255, 0.05);
+--ops-glass-overlay: radial-gradient(circle at top left, rgba(255, 106, 60, 0.15), transparent 60%);
+
+/* Ops Theme Active */
+[data-theme="ops"] {
+  --color-bg-primary: var(--ops-bg-primary);
+  --color-bg-secondary: var(--ops-bg-secondary);
+  --color-bg-surface: var(--ops-bg-surface);
+  --color-text-primary: var(--ops-text-primary);
+  --color-text-secondary: var(--ops-text-secondary);
+  --color-text-subtle: var(--ops-text-subtle);
+  --color-border: var(--ops-border);
+  --color-accent-primary: var(--ops-accent-primary);
+  --color-accent-secondary: var(--ops-accent-secondary);
+  --gradient-accent: var(--ops-gradient-accent);
+  --gradient-surface: var(--ops-gradient-surface);
+  --shadow-elevated: var(--ops-shadow-elevated);
+  --shadow-glow: var(--ops-shadow-glow);
+  --shadow-sm: var(--ops-shadow-sm);
+  --card-bg: var(--ops-card-bg);
+  --card-border: var(--ops-card-border);
+  --input-bg: var(--ops-input-bg);
+  --badge-bg: var(--ops-badge-bg);
+  --badge-text: var(--ops-badge-text);
+  --glass-border: var(--ops-glass-border);
+  --glass-highlight: var(--ops-glass-highlight);
+  --glass-overlay: var(--ops-glass-overlay);
   
   color-scheme: dark;
-}
-
-/* Matcha Theme Active */
-[data-theme="matcha"] {
-  --color-bg-primary: var(--matcha-bg-primary);
-  --color-bg-secondary: var(--matcha-bg-secondary);
-  --color-bg-surface: var(--matcha-bg-surface);
-  --color-text-primary: var(--matcha-text-primary);
-  --color-text-secondary: var(--matcha-text-secondary);
-  --color-text-subtle: var(--matcha-text-subtle);
-  --color-border: var(--matcha-border);
-  --color-accent-primary: var(--matcha-accent-primary);
-  --color-accent-secondary: var(--matcha-accent-secondary);
-  --gradient-accent: var(--matcha-gradient-accent);
-  --gradient-surface: var(--matcha-gradient-surface);
-  --shadow-elevated: var(--matcha-shadow-elevated);
-  --shadow-glow: var(--matcha-shadow-glow);
-  --shadow-sm: var(--matcha-shadow-sm);
-  --card-bg: var(--matcha-card-bg);
-  --card-border: var(--matcha-card-border);
-  --input-bg: var(--matcha-input-bg);
-  --badge-bg: var(--matcha-badge-bg);
-  --badge-text: var(--matcha-badge-text);
-  
-  color-scheme: light;
-}
-
-/* Honeydew Theme Active */
-[data-theme="honeydew"] {
-  --color-bg-primary: var(--honeydew-bg-primary);
-  --color-bg-secondary: var(--honeydew-bg-secondary);
-  --color-bg-surface: var(--honeydew-bg-surface);
-  --color-text-primary: var(--honeydew-text-primary);
-  --color-text-secondary: var(--honeydew-text-secondary);
-  --color-text-subtle: var(--honeydew-text-subtle);
-  --color-border: var(--honeydew-border);
-  --color-accent-primary: var(--honeydew-accent-primary);
-  --color-accent-secondary: var(--honeydew-accent-secondary);
-  --gradient-accent: var(--honeydew-gradient-accent);
-  --gradient-surface: var(--honeydew-gradient-surface);
-  --shadow-elevated: var(--honeydew-shadow-elevated);
-  --shadow-glow: var(--honeydew-shadow-glow);
-  --shadow-sm: var(--honeydew-shadow-sm);
-  --card-bg: var(--honeydew-card-bg);
-  --card-border: var(--honeydew-card-border);
-  --input-bg: var(--honeydew-input-bg);
-  --badge-bg: var(--honeydew-badge-bg);
-  --badge-text: var(--honeydew-badge-text);
-  
-  color-scheme: light;
 }
 
 @layer base {
@@ -601,4 +556,13 @@
   .shadow-sm-theme {
     box-shadow: var(--shadow-sm);
   }
+}
+
+/* Hide old ElevenLabs embed widget - we're using React SDK now */
+#elevenlabs-voice-widget-root,
+elevenlabs-convai {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
