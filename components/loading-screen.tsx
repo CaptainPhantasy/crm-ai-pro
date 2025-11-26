@@ -39,7 +39,7 @@ export function LoadingScreen() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-theme-secondary overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#c9920a' }}>
       <video
         ref={videoRef}
         autoPlay
@@ -47,7 +47,7 @@ export function LoadingScreen() {
         muted
         playsInline
         preload="auto"
-        className="w-full h-full object-contain"
+        className="w-full h-full object-cover"
         aria-label="Loading CRM-AI PRO"
         onError={(e) => {
           console.error('Video loading error:', e)

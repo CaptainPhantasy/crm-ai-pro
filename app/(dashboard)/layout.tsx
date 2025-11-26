@@ -12,6 +12,7 @@ import { useKeyboardShortcuts, type KeyboardShortcut } from '@/lib/keyboard-shor
 import { cn } from '@/lib/utils'
 import { BarChart3, DollarSign, Settings as SettingsIcon } from 'lucide-react'
 import { VoiceNavigationProvider } from '@/hooks/use-voice-navigation'
+import { AppShell } from '@/components/layout/app-shell'
 
 export default function DashboardLayout({
   children,
@@ -140,117 +141,21 @@ export default function DashboardLayout({
   useKeyboardShortcuts(shortcuts)
 
   return (
-    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden bg-theme-primary">
-      <div className="w-full flex-none md:w-64 bg-theme-surface border-r-2 border-theme-border p-4 flex flex-col relative overflow-hidden">
-        <div className="font-semibold text-lg text-theme-primary mb-4 flex items-center gap-2 relative z-10">
-          <div className="w-8 h-8 rounded-lg bg-theme-accent-primary flex items-center justify-center text-black font-bold text-[10px] leading-tight shadow-glow">
-            AI
-          </div>
-          <span className="text-theme-primary">CRM-AI PRO</span>
-        </div>
-        <div className="mb-4">
+    <AppShell>
+      {/* Header with global search and user controls */}
+      <header className="flex-none h-16 bg-theme-surface border-b border-theme-border px-6 flex items-center justify-between">
+        <div className="flex-1">
           <GlobalSearch />
         </div>
-        <nav className="space-y-1 flex-1 relative z-10">
-          <Link 
-            href="/inbox" 
-            className={getNavLinkClasses('/inbox', 'blue')}
-          >
-            <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
-            Inbox
-          </Link>
-          <Link 
-            href="/jobs" 
-            className={getNavLinkClasses('/jobs', 'blue')}
-          >
-            <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
-            Jobs
-          </Link>
-          <Link 
-            href="/contacts" 
-            className={getNavLinkClasses('/contacts', 'green')}
-          >
-            <div className="w-2 h-2 rounded-full bg-theme-accent-secondary shadow-glow"></div>
-            Contacts
-          </Link>
-          <Link 
-            href="/analytics" 
-            className={getNavLinkClasses('/analytics', 'blue')}
-          >
-            <BarChart3 className="w-4 h-4 text-theme-accent-primary" />
-            Analytics
-          </Link>
-          <Link 
-            href="/finance/dashboard" 
-            className={getNavLinkClasses('/finance', 'green')}
-          >
-            <DollarSign className="w-4 h-4 text-theme-accent-secondary" />
-            Finance
-          </Link>
-          <Link 
-            href="/tech/dashboard" 
-            className={getNavLinkClasses('/tech/dashboard', 'blue')}
-          >
-            <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
-            Tech View
-          </Link>
-          <div className="pt-2 mt-2 border-t-2 border-theme-border">
-            <div className="px-3 py-1 text-xs font-semibold text-theme-secondary uppercase mb-1">
-              Marketing
-            </div>
-            <Link 
-              href="/marketing/campaigns" 
-              className={getNavLinkClasses('/marketing/campaigns', 'blue')}
-            >
-              <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
-              Campaigns
-            </Link>
-            <Link 
-              href="/marketing/email-templates" 
-              className={getNavLinkClasses('/marketing/email-templates', 'blue')}
-            >
-              <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
-              Templates
-            </Link>
-            <Link 
-              href="/marketing/tags" 
-              className={getNavLinkClasses('/marketing/tags', 'green')}
-            >
-              <div className="w-2 h-2 rounded-full bg-theme-accent-secondary shadow-glow"></div>
-              Tags
-            </Link>
-          </div>
-          <div className="pt-2 mt-2 border-t-2 border-theme-border">
-            <Link 
-              href="/admin/settings" 
-              className={getNavLinkClasses('/settings', 'blue')}
-            >
-              <SettingsIcon className="w-4 h-4 text-theme-accent-primary" />
-              Settings
-            </Link>
-            <Link 
-              href="/settings/integrations" 
-              className={getNavLinkClasses('/settings/integrations', 'blue')}
-            >
-              <div className="w-2 h-2 rounded-full bg-theme-accent-primary shadow-glow"></div>
-              Integrations
-            </Link>
-          </div>
-        </nav>
-      </div>
-      <div className="flex-grow flex flex-col md:overflow-hidden bg-theme-primary">
-        <header className="flex-none h-16 bg-theme-surface border-b-2 border-theme-border px-6 flex items-center justify-between">
-          <div className="flex-1"></div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <UserMenu />
           </div>
         </header>
 
-
-        <div className="flex-1 md:overflow-y-auto bg-theme-primary">
+      {/* Main content area - extra padding on outer edges for shadow breathing room */}
+      <div className="flex-1 overflow-y-auto bg-theme-primary px-4">
           {children}
-        </div>
       </div>
       
       {/* Command Palette */}
@@ -268,7 +173,7 @@ export default function DashboardLayout({
       
       {/* Voice Navigation - listens for commands from the voice agent */}
       <VoiceNavigationProvider />
-    </div>
+    </AppShell>
   )
 }
 

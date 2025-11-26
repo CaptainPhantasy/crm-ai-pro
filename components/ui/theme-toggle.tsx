@@ -22,9 +22,7 @@ const themes: Array<{ value: Theme; label: string; icon: React.ReactNode; descri
   { value: 'dark', label: 'Opus', icon: <Moon className="w-4 h-4" />, description: 'Literary Warmth 📜' },
   { value: 'warm', label: 'Latte', icon: <Sun className="w-4 h-4" />, description: 'Earthy & Grounded ☕' },
   { value: 'midnight', label: 'Abyss', icon: <Moon className="w-4 h-4" />, description: 'Deepest Navy 🌙' },
-  { value: 'taro', label: 'Amethyst', icon: <Palette className="w-4 h-4" />, description: 'Royal Purple 💜' },
-  { value: 'matcha', label: 'Forest', icon: <Palette className="w-4 h-4" />, description: 'Natural Green 🌲' },
-  { value: 'honeydew', label: 'Citrus', icon: <Palette className="w-4 h-4" />, description: 'Zesty Yellow 🍋' },
+  { value: 'ops', label: 'Ops Pro', icon: <Sparkles className="w-4 h-4" />, description: 'Service Industry 🔧' },
   { value: 'system', label: 'System', icon: <Monitor className="w-4 h-4" />, description: 'Auto-detect' },
 ]
 

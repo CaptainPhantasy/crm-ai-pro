@@ -60,15 +60,15 @@ export default function CampaignsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-800">Campaigns</h1>
-          <p className="text-sm text-neutral-500 mt-1">Manage your email marketing campaigns</p>
+          <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Campaigns</h1>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">Manage your email marketing campaigns</p>
         </div>
         <Button
           onClick={() => {
             setEditingCampaign(null)
             setEditorOpen(true)
           }}
-          className="bg-[#4B79FF] hover:bg-[#3366FF] text-white"
+          className="bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-primary)]/90 text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Campaign
@@ -76,15 +76,15 @@ export default function CampaignsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="bg-[var(--card-bg)] border-[var(--card-border)]">
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Status</label>
+              <label className="text-sm font-medium mb-2 block text-[var(--color-text-primary)]">Status</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md text-sm bg-[var(--input-bg)] text-[var(--color-text-primary)]"
               >
                 <option value="all">All Statuses</option>
                 <option value="draft">Draft</option>
@@ -100,14 +100,14 @@ export default function CampaignsPage() {
 
       {/* Campaigns List */}
       {loading ? (
-        <div className="text-center py-8 text-neutral-500">Loading campaigns...</div>
+        <div className="text-center py-8 text-[var(--color-text-secondary)]">Loading campaigns...</div>
       ) : campaigns.length === 0 ? (
-        <Card>
+        <Card className="bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardContent className="pt-6">
             <div className="text-center py-8">
-              <Mail className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-              <p className="text-neutral-600 font-medium mb-2">No campaigns found</p>
-              <p className="text-sm text-neutral-500 mb-4">Create your first email campaign</p>
+              <Mail className="w-12 h-12 text-[var(--color-text-subtle)] mx-auto mb-4" />
+              <p className="text-[var(--color-text-primary)] font-medium mb-2">No campaigns found</p>
+              <p className="text-sm text-[var(--color-text-secondary)] mb-4">Create your first email campaign</p>
               <Button
                 onClick={() => {
                   setEditingCampaign(null)
@@ -126,13 +126,13 @@ export default function CampaignsPage() {
           {campaigns.map((campaign) => (
             <Card
               key={campaign.id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
+              className="hover:shadow-md transition-shadow cursor-pointer bg-[var(--card-bg)] border-[var(--card-border)]"
               onClick={() => router.push(`/marketing/campaigns/${campaign.id}`)}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                    <CardTitle className="text-lg text-[var(--color-text-primary)]">{campaign.name}</CardTitle>
                     <CardDescription className="mt-1">
                       {campaign.campaign_type === 'email' ? 'Email Campaign' : campaign.campaign_type}
                     </CardDescription>
@@ -146,20 +146,20 @@ export default function CampaignsPage() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <div className="text-neutral-500 text-xs">Sent</div>
-                      <div className="font-semibold">{campaign.sent_count || 0}</div>
+                      <div className="text-[var(--color-text-secondary)] text-xs">Sent</div>
+                      <div className="font-semibold text-[var(--color-text-primary)]">{campaign.sent_count || 0}</div>
                     </div>
                     <div>
-                      <div className="text-neutral-500 text-xs">Opened</div>
-                      <div className="font-semibold">{campaign.opened_count || 0}</div>
+                      <div className="text-[var(--color-text-secondary)] text-xs">Opened</div>
+                      <div className="font-semibold text-[var(--color-text-primary)]">{campaign.opened_count || 0}</div>
                     </div>
                     <div>
-                      <div className="text-neutral-500 text-xs">Clicked</div>
-                      <div className="font-semibold">{campaign.clicked_count || 0}</div>
+                      <div className="text-[var(--color-text-secondary)] text-xs">Clicked</div>
+                      <div className="font-semibold text-[var(--color-text-primary)]">{campaign.clicked_count || 0}</div>
                     </div>
                     <div>
-                      <div className="text-neutral-500 text-xs">Rate</div>
-                      <div className="font-semibold">
+                      <div className="text-[var(--color-text-secondary)] text-xs">Rate</div>
+                      <div className="font-semibold text-[var(--color-text-primary)]">
                         {campaign.sent_count
                           ? `${Math.round(((campaign.opened_count || 0) / campaign.sent_count) * 100)}%`
                           : '0%'}

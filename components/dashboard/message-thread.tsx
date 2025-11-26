@@ -180,16 +180,16 @@ export function MessageThread({ conversationId }: MessageThreadProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full w-full bg-[var(--card-bg)]">
       {/* Header */}
-      <div className="p-4 border-b border-neutral-200 flex items-center justify-between bg-gradient-to-r from-[#EBF0FF] to-white flex-shrink-0">
+      <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between bg-gradient-to-r from-[#EBF0FF] to-white flex-shrink-0">
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-lg text-[#3366FF] truncate">
             {conversation?.contact?.first_name || 'Unknown'} {conversation?.contact?.last_name || ''}
           </h3>
           <p className="text-xs text-neutral-500 mt-0.5 truncate">{conversation?.subject || 'No subject'}</p>
         </div>
-        <div className="flex gap-2 flex-shrink-0 ml-4">
+        <div className="flex gap-2 flex-shrink-0">
           <EmailQuickActions
             conversationId={conversationId}
             contactId={conversation?.contact_id}
@@ -216,7 +216,7 @@ export function MessageThread({ conversationId }: MessageThreadProps) {
       {/* Messages */}
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="flex flex-col gap-4 p-4 min-h-full">
+          <div className="flex flex-col gap-4 px-4 py-4 min-h-full">
             {messages.length === 0 ? (
               <div className="flex-1 flex items-center justify-center text-neutral-400">
                 <div className="text-center">
@@ -255,8 +255,8 @@ export function MessageThread({ conversationId }: MessageThreadProps) {
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white border-t border-neutral-200 flex-shrink-0">
-        <div className="flex gap-2 flex-col">
+      <div className="px-0 py-4 bg-white border-t border-neutral-200 flex-shrink-0">
+        <div className="flex gap-2 flex-col px-4">
           <div className="flex justify-end">
             <Button 
               variant="ghost" 

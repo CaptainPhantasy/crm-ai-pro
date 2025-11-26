@@ -44,7 +44,7 @@ export default function FinanceDashboardPage() {
   if (loading) {
     return (
       <div className="p-6">
-        <div className="text-center py-8 text-neutral-500">Loading financial data...</div>
+        <div className="text-center py-8 text-[var(--color-text-secondary)]">Loading financial data...</div>
       </div>
     )
   }
@@ -52,48 +52,48 @@ export default function FinanceDashboardPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-neutral-800">Financial Dashboard</h1>
-        <p className="text-sm text-neutral-500 mt-1">Revenue and payment analytics</p>
+        <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Financial Dashboard</h1>
+        <p className="text-sm text-[var(--color-text-secondary)] mt-1">Revenue and payment analytics</p>
       </div>
 
       {/* Revenue Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-l-4 shadow-md" style={{ borderLeftColor: '#56D470' }}>
+        <Card className="shadow-card bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-500">Today</CardTitle>
+            <CardTitle className="text-sm font-medium text-[var(--color-text-secondary)]">Today</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-neutral-800">
+            <div className="text-2xl font-semibold text-[var(--color-text-primary)]">
               ${((stats?.revenue.today || 0) / 100).toFixed(2)}
             </div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 shadow-md" style={{ borderLeftColor: '#4B79FF' }}>
+        <Card className="shadow-card bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-500">This Week</CardTitle>
+            <CardTitle className="text-sm font-medium text-[var(--color-text-secondary)]">This Week</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-neutral-800">
+            <div className="text-2xl font-semibold text-[var(--color-text-primary)]">
               ${((stats?.revenue.thisWeek || 0) / 100).toFixed(2)}
             </div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 shadow-md" style={{ borderLeftColor: '#6938EF' }}>
+        <Card className="shadow-card bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-500">This Month</CardTitle>
+            <CardTitle className="text-sm font-medium text-[var(--color-text-secondary)]">This Month</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-neutral-800">
+            <div className="text-2xl font-semibold text-[var(--color-text-primary)]">
               ${((stats?.revenue.thisMonth || 0) / 100).toFixed(2)}
             </div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 shadow-md" style={{ borderLeftColor: '#FFA24D' }}>
+        <Card className="shadow-card bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-500">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium text-[var(--color-text-secondary)]">Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-neutral-800">
+            <div className="text-2xl font-semibold text-[var(--color-text-primary)]">
               ${((stats?.revenue.total || 0) / 100).toFixed(2)}
             </div>
           </CardContent>
@@ -102,52 +102,52 @@ export default function FinanceDashboardPage() {
 
       {/* Financial Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="shadow-md">
+        <Card className="shadow-card bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
+              <FileText className="w-5 h-5 text-[var(--color-accent-primary)]" />
               Outstanding Invoices
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold text-neutral-800">
+            <div className="text-3xl font-semibold text-[var(--color-text-primary)]">
               {stats?.outstanding.count || 0}
             </div>
-            <div className="text-sm text-neutral-500 mt-2">
+            <div className="text-sm text-[var(--color-text-secondary)] mt-2">
               ${((stats?.outstanding.amount || 0) / 100).toFixed(2)} total
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-md">
+        <Card className="shadow-card bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
+              <TrendingUp className="w-5 h-5 text-[var(--color-accent-primary)]" />
               Payment Rate
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold text-neutral-800">
+            <div className="text-3xl font-semibold text-[var(--color-text-primary)]">
               {(stats?.paymentRate || 0).toFixed(1)}%
             </div>
-            <div className="text-sm text-neutral-500 mt-2">
+            <div className="text-sm text-[var(--color-text-secondary)] mt-2">
               Of invoices paid on time
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-md">
+        <Card className="shadow-card bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
+              <DollarSign className="w-5 h-5 text-[var(--color-accent-primary)]" />
               Average Invoice
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold text-neutral-800">
+            <div className="text-3xl font-semibold text-[var(--color-text-primary)]">
               ${((stats?.averageInvoice || 0) / 100).toFixed(2)}
             </div>
-            <div className="text-sm text-neutral-500 mt-2">
+            <div className="text-sm text-[var(--color-text-secondary)] mt-2">
               Per invoice
             </div>
           </CardContent>

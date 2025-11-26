@@ -2,25 +2,16 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Mail, Phone, MapPin, Search, UserPlus, Download, Trash2, Filter } from 'lucide-react'
 import { Contact } from '@/types'
 import { ContactDetailModal } from '@/components/contacts/contact-detail-modal'
 import { AddContactDialog } from '@/components/contacts/add-contact-dialog'
 import { useRouter } from 'next/navigation'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ExportButton } from '@/components/export/export-button'
+import { ContactsLayout } from '@/components/layout/contacts-layout'
 import { useModalState } from '@/hooks/use-modal-state'
 import { toast, error as toastError, success as toastSuccess } from '@/lib/toast'
 import { confirmDialog } from '@/lib/confirm'
 import { ContactsFilterDialog, type ContactFilters } from '@/components/contacts/contacts-filter-dialog'
 import { ErrorBoundary } from '@/components/error-boundary'
-import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
 
 function ContactsPageContent() {
   const router = useRouter()
@@ -253,234 +244,27 @@ function ContactsPageContent() {
     }
   }
 
+  const activeFilterCount = filters.tags.length + filters.status.length + (filters.dateRange.start ? 1 : 0) + (filters.dateRange.end ? 1 : 0)
+
   return (
     <ErrorBoundary context="contacts">
-      <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-white">Contacts</h1>
-          <p className="text-sm text-theme-subtle mt-1">Manage your customer database</p>
-        </div>
-        <div className="flex gap-2">
-          {contacts.length > 0 && (
-            <ExportButton endpoint="contacts" />
-          )}
-          {selectedContactIds.size > 0 && (
-            <Button 
-              onClick={handleBulkDelete}
-              variant="destructive"
-              disabled={bulkDeleting}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete ({selectedContactIds.size})
-            </Button>
-          )}
-          <Button 
-            onClick={handleAddContact}
-            variant="default"
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Add Contact
-          </Button>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <Card className="border-theme-border bg-theme-card/50">
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-theme-accent-primary" />
-              <Input
-                placeholder="Search contacts..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button 
-              variant="outline" 
-              onClick={() => setFilterDialogOpen(true)}
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filter
-              {(filters.tags.length > 0 || filters.status.length > 0 || filters.dateRange.start || filters.dateRange.end) && (
-                <span className="ml-2 bg-theme-accent-primary text-black font-bold rounded-full px-1.5 py-0.5 text-xs">
-                  {filters.tags.length + filters.status.length + (filters.dateRange.start ? 1 : 0) + (filters.dateRange.end ? 1 : 0)}
-                </span>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-l-4 border-l-theme-accent-secondary shadow-elevated">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-theme-subtle">Total Contacts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-white">{stats.total}</div>
-            <p className="text-xs text-theme-accent-secondary mt-1 font-medium">+8 this week</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-theme-accent-primary shadow-elevated">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-theme-subtle">Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-white">{stats.active}</div>
-            <p className="text-xs text-theme-accent-primary mt-1 font-medium">90% active rate</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-destructive shadow-sm-theme">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-white">New This Month</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-white">{stats.newThisMonth}</div>
-            <p className="text-xs text-destructive mt-1 font-medium">Growing fast!</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Contacts Grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Card key={i}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-24" />
-                      </div>
-                    </div>
-                    <Skeleton className="h-3 w-full mb-2" />
-                    <Skeleton className="h-8 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : contacts.length === 0 ? (
-        <Card className="shadow-md border-theme-border">
-          <CardContent className="py-12 text-center">
-            <p className="text-theme-subtle font-medium">No contacts found</p>
-            <p className="text-sm text-theme-subtle/50 mt-1">
-              {searchQuery ? 'Try a different search term' : 'Create your first contact to get started'}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {contacts.length > 0 && (
-            <div className="flex items-center gap-2 pb-2 border-b border-theme-border">
-              <Checkbox
-                checked={selectedContactIds.size === contacts.length && contacts.length > 0}
-                onCheckedChange={handleSelectAllContacts}
-              />
-              <span className="text-sm text-theme-subtle">
-                {selectedContactIds.size > 0 ? `${selectedContactIds.size} selected` : 'Select all'}
-              </span>
-            </div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {contacts.map((contact) => (
-              <Card 
-                key={contact.id} 
-                className={cn(
-                  "hover:shadow-elevated transition-all border-2 shadow-sm relative overflow-hidden",
-                  selectedContactIds.has(contact.id) 
-                    ? "border-theme-accent-primary bg-theme-secondary/10" 
-                    : "border-theme-border hover:border-theme-accent-primary"
-                )}
-                onClick={(e) => {
-                    if (
-                        e.target instanceof HTMLElement && 
-                        !e.target.closest('button') && 
-                        !e.target.closest('[role="checkbox"]')
-                      ) {
-                         handleToggleContactSelection(contact.id)
-                      }
-                }}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <Checkbox
-                      checked={selectedContactIds.has(contact.id)}
-                      onCheckedChange={() => handleToggleContactSelection(contact.id)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <Avatar className="w-12 h-12">
-                      <AvatarFallback className="text-theme-accent-primary">
-                        {contact.first_name?.[0]}{contact.last_name?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <CardTitle className="text-base text-white">
-                        {contact.first_name} {contact.last_name}
-                      </CardTitle>
-                    <Badge 
-                      variant="secondary"
-                      className="mt-1"
-                    >
-                      active
-                    </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-              <CardContent className="space-y-2">
-                {contact.email && (
-                  <div className="flex items-center gap-2 text-sm text-theme-subtle/70">
-                    <Mail className="w-4 h-4 text-theme-accent-primary" />
-                    <span className="truncate">{contact.email}</span>
-                  </div>
-                )}
-                {contact.phone && (
-                  <div className="flex items-center gap-2 text-sm text-theme-subtle/70">
-                    <Phone className="w-4 h-4 text-theme-accent-secondary" />
-                    <span>{contact.phone}</span>
-                  </div>
-                )}
-                {contact.address && (
-                  <div className="flex items-center gap-2 text-sm text-theme-subtle/70">
-                    <MapPin className="w-4 h-4 text-destructive" />
-                    <span className="truncate">{contact.address}</span>
-                  </div>
-                )}
-                <div className="pt-2 flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        handleViewContact(contact.id)
-                    }}
-                  >
-                    View
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="default"
-                    className="flex-1"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        handleMessageContact(contact.id, contact.email || '')
-                    }}
-                  >
-                    Message
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          </div>
-        </div>
-      )}
-
+      <ContactsLayout
+        contacts={contacts}
+        loading={loading}
+        searchQuery={searchQuery}
+        selectedContactIds={selectedContactIds}
+        bulkDeleting={bulkDeleting}
+        stats={stats}
+        onSearchChange={setSearchQuery}
+        onToggleContactSelection={handleToggleContactSelection}
+        onSelectAllContacts={handleSelectAllContacts}
+        onBulkDelete={handleBulkDelete}
+        onViewContact={handleViewContact}
+        onMessageContact={handleMessageContact}
+        onAddContact={handleAddContact}
+        onOpenFilters={() => setFilterDialogOpen(true)}
+        activeFilterCount={activeFilterCount}
+      >
       {/* Contact Detail Modal */}
       <ContactDetailModal
         open={detailModalOpen}
@@ -513,7 +297,7 @@ function ContactsPageContent() {
           fetchContacts(searchQuery)
         }}
       />
-      </div>
+      </ContactsLayout>
     </ErrorBoundary>
   )
 }
@@ -521,23 +305,32 @@ function ContactsPageContent() {
 export default function ContactsPage() {
   return (
     <Suspense fallback={
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col h-full">
+        <header className="flex items-center justify-between border-b border-ops-border px-4 py-3 bg-ops-surface">
           <div>
-            <h1 className="text-2xl font-semibold text-white">Contacts</h1>
-            <p className="text-sm text-theme-subtle mt-1">Manage your customer relationships</p>
+            <div className="h-5 bg-ops-surfaceSoft rounded animate-pulse w-16 mb-1" />
+            <div className="h-3 bg-ops-surfaceSoft rounded animate-pulse w-48" />
+          </div>
+        </header>
+        <div className="flex flex-1 overflow-hidden px-4 py-4">
+          <div className="flex-1 bg-ops-surface rounded-lg border border-ops-border shadow-card overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-ops-surfaceSoft border border-ops-border rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="h-12 w-12 rounded-full bg-ops-bg animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-32 bg-ops-bg rounded animate-pulse" />
+                      <div className="h-3 w-24 bg-ops-bg rounded animate-pulse" />
           </div>
         </div>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-4 p-4 border-2 border-theme-border rounded-lg">
-              <Skeleton className="h-12 w-12 rounded-lg" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-3 w-32" />
+                  <div className="h-3 w-full bg-ops-bg rounded animate-pulse mb-2" />
+                  <div className="h-8 w-full bg-ops-bg rounded animate-pulse" />
               </div>
+              ))}
             </div>
-          ))}
+          </div>
+          <div className="w-80 ml-4 border border-ops-border bg-ops-surfaceSoft rounded-lg shadow-card" />
         </div>
       </div>
     }>

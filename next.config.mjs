@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // output: 'standalone', <--- REMOVED
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -14,4 +14,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-

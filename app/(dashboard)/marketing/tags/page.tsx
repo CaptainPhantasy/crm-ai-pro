@@ -115,24 +115,24 @@ export default function TagsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-800">Contact Tags</h1>
-          <p className="text-sm text-neutral-500 mt-1">Organize your contacts with tags</p>
+          <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Contact Tags</h1>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">Organize your contacts with tags</p>
         </div>
-        <Button onClick={handleCreate} className="bg-[#4B79FF] hover:bg-[#3366FF] text-white">
+        <Button onClick={handleCreate} className="bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-primary)]/90 text-white">
           <Plus className="w-4 h-4 mr-2" />
           New Tag
         </Button>
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-neutral-500">Loading tags...</div>
+        <div className="text-center py-8 text-[var(--color-text-secondary)]">Loading tags...</div>
       ) : tags.length === 0 ? (
-        <Card>
+        <Card className="bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardContent className="pt-6">
             <div className="text-center py-8">
-              <Tag className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-              <p className="text-neutral-600 font-medium mb-2">No tags found</p>
-              <p className="text-sm text-neutral-500 mb-4">Create your first tag to organize contacts</p>
+              <Tag className="w-12 h-12 text-[var(--color-text-subtle)] mx-auto mb-4" />
+              <p className="text-[var(--color-text-primary)] font-medium mb-2">No tags found</p>
+              <p className="text-sm text-[var(--color-text-secondary)] mb-4">Create your first tag to organize contacts</p>
               <Button onClick={handleCreate} variant="outline">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Tag
@@ -143,7 +143,7 @@ export default function TagsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tags.map((tag) => (
-            <Card key={tag.id} className="hover:shadow-md transition-shadow">
+            <Card key={tag.id} className="hover:shadow-md transition-shadow bg-[var(--card-bg)] border-[var(--card-border)]">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export default function TagsPage() {
                       className="w-4 h-4 rounded-full"
                       style={{ backgroundColor: tag.color || '#4B79FF' }}
                     />
-                    <CardTitle className="text-lg">{tag.name}</CardTitle>
+                    <CardTitle className="text-lg text-[var(--color-text-primary)]">{tag.name}</CardTitle>
                   </div>
                 </div>
                 {tag.description && (
@@ -185,9 +185,9 @@ export default function TagsPage() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-[var(--card-bg)] border-[var(--card-border)]">
           <DialogHeader>
-            <DialogTitle>{selectedTag ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
+            <DialogTitle className="text-[var(--color-text-primary)]">{selectedTag ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
             <DialogDescription>
               {selectedTag ? 'Update tag details' : 'Create a new tag to organize your contacts'}
             </DialogDescription>
@@ -195,41 +195,43 @@ export default function TagsPage() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Tag Name</Label>
+              <Label htmlFor="name" className="text-[var(--color-text-primary)]">Tag Name</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., VIP, Lead, Customer"
+                className="bg-[var(--input-bg)] border-[var(--color-border)] text-[var(--color-text-primary)]"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="color">Color</Label>
+              <Label htmlFor="color" className="text-[var(--color-text-primary)]">Color</Label>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
                   id="color"
                   value={formData.color}
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  className="w-16 h-10 rounded border border-neutral-300 cursor-pointer"
+                  className="w-16 h-10 rounded border border-[var(--color-border)] cursor-pointer"
                 />
                 <Input
                   value={formData.color}
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                   placeholder="#4B79FF"
-                  className="flex-1"
+                  className="flex-1 bg-[var(--input-bg)] border-[var(--color-border)] text-[var(--color-text-primary)]"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="description" className="text-[var(--color-text-primary)]">Description (Optional)</Label>
               <Input
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Tag description..."
+                className="bg-[var(--input-bg)] border-[var(--color-border)] text-[var(--color-text-primary)]"
               />
             </div>
 
@@ -237,7 +239,7 @@ export default function TagsPage() {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} className="bg-[#4B79FF] hover:bg-[#3366FF]">
+              <Button onClick={handleSubmit} className="bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-primary)]/90 text-white">
                 {selectedTag ? 'Update' : 'Create'}
               </Button>
             </div>

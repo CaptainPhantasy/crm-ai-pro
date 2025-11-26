@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Conversation, Contact } from '@/types'
@@ -19,15 +19,21 @@ interface ConversationListProps {
 export function ConversationList() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createBrowserClient(
+  const [errorCount, setErrorCount] = useState(0)
+  const supabase = useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ), [])
   const router = useRouter()
   const searchParams = useSearchParams()
   const selectedId = searchParams.get('id') || searchParams.get('conversation')
+  const fetchRef = useRef(false)
 
   useEffect(() => {
+    // Prevent multiple simultaneous fetches
+    if (fetchRef.current) return
+    fetchRef.current = true
+
     fetchConversations()
 
     const channel = supabase
@@ -47,29 +53,47 @@ export function ConversationList() {
       .subscribe()
 
     return () => {
+      fetchRef.current = false
       supabase.removeChannel(channel)
     }
-  }, [supabase])
+  }, []) // Empty deps - only run once
 
   async function fetchConversations() {
+    // Stop retrying after 3 consecutive errors to prevent DoS
+    if (errorCount >= 3) {
+      console.warn('Too many errors, stopping fetch attempts')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
       // Use API endpoint which bypasses RLS for development
-      const response = await fetch('/api/conversations')
+      const response = await fetch('/api/conversations', {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
       if (response.ok) {
         const apiData = await response.json()
         setConversations((apiData.conversations || []) as Conversation[])
+        setErrorCount(0) // Reset error count on success
       } else {
         // Handle unauthorized gracefully - user might not be logged in
         if (response.status === 401) {
           console.warn('Not authenticated - conversations will be empty')
           setConversations([])
+          setErrorCount(0) // Don't count auth errors
         } else {
-        console.error('Failed to fetch conversations:', response.statusText)
+          console.error('Failed to fetch conversations:', response.status, response.statusText)
+          setErrorCount(prev => prev + 1)
+          setConversations([])
         }
       }
     } catch (error) {
       console.error('Error fetching conversations:', error)
+      setErrorCount(prev => prev + 1)
       // Don't crash the page - just show empty state
       setConversations([])
     } finally {
@@ -99,7 +123,7 @@ export function ConversationList() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-theme-primary border-r border-theme-border">
+    <div className="w-full h-full flex flex-col bg-[var(--card-bg)]">
       <div className="p-4 border-b border-theme-border bg-theme-card flex-shrink-0">
         <h2 className="text-lg font-semibold text-theme-accent-primary mb-3">Inbox</h2>
         <div className="relative">

@@ -39,11 +39,20 @@ export async function GET(request: Request) {
     )
 
     // Get user's account_id
-    const { data: user } = await supabase
+    const { data: user, error: userError } = await supabase
       .from('users')
       .select('account_id')
       .eq('id', session.user.id)
       .single()
+
+    if (userError) {
+      console.error('Supabase error fetching user:', userError)
+      // 406 errors from Supabase usually mean RLS or format issue
+      if (userError.code === 'PGRST116' || userError.message?.includes('406')) {
+        return NextResponse.json({ error: 'Database query failed' }, { status: 500 })
+      }
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })

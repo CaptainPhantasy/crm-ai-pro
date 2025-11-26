@@ -38,11 +38,24 @@ export async function GET() {
       .eq('id', session.user.id)
       .single()
 
-    if (error || !user) {
+    if (error) {
+      console.error('Supabase error fetching user:', error)
+      // 406 errors from Supabase usually mean RLS or format issue
+      if (error.code === 'PGRST116' || error.message?.includes('406')) {
+        return NextResponse.json({ error: 'Database query failed' }, { status: 500 })
+      }
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ user })
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ user }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

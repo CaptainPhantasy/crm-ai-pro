@@ -96,25 +96,25 @@ export default function EmailTemplatesPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-800">Email Templates</h1>
-          <p className="text-sm text-neutral-500 mt-1">Manage your email templates for campaigns and communications</p>
+          <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Email Templates</h1>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">Manage your email templates for campaigns and communications</p>
         </div>
-        <Button onClick={handleCreate} className="bg-[#4B79FF] hover:bg-[#3366FF] text-white">
+        <Button onClick={handleCreate} className="bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-primary)]/90 text-white">
           <Plus className="w-4 h-4 mr-2" />
           New Template
         </Button>
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="bg-[var(--card-bg)] border-[var(--card-border)]">
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Template Type</label>
+              <label className="text-sm font-medium mb-2 block text-[var(--color-text-primary)]">Template Type</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md text-sm bg-[var(--input-bg)] text-[var(--color-text-primary)]"
               >
                 <option value="all">All Types</option>
                 <option value="review_request">Review Request</option>
@@ -124,11 +124,11 @@ export default function EmailTemplatesPage() {
               </select>
             </div>
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Status</label>
+              <label className="text-sm font-medium mb-2 block text-[var(--color-text-primary)]">Status</label>
               <select
                 value={filterActive}
                 onChange={(e) => setFilterActive(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md text-sm bg-[var(--input-bg)] text-[var(--color-text-primary)]"
               >
                 <option value="all">All</option>
                 <option value="true">Active</option>
@@ -141,14 +141,14 @@ export default function EmailTemplatesPage() {
 
       {/* Templates List */}
       {loading ? (
-        <div className="text-center py-8 text-neutral-500">Loading templates...</div>
+        <div className="text-center py-8 text-[var(--color-text-secondary)]">Loading templates...</div>
       ) : templates.length === 0 ? (
-        <Card>
+        <Card className="bg-[var(--card-bg)] border-[var(--card-border)]">
           <CardContent className="pt-6">
             <div className="text-center py-8">
-              <FileText className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-              <p className="text-neutral-600 font-medium mb-2">No templates found</p>
-              <p className="text-sm text-neutral-500 mb-4">Create your first email template to get started</p>
+              <FileText className="w-12 h-12 text-[var(--color-text-subtle)] mx-auto mb-4" />
+              <p className="text-[var(--color-text-primary)] font-medium mb-2">No templates found</p>
+              <p className="text-sm text-[var(--color-text-secondary)] mb-4">Create your first email template to get started</p>
               <Button onClick={handleCreate} variant="outline">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Template
@@ -159,11 +159,11 @@ export default function EmailTemplatesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {templates.map((template) => (
-            <Card key={template.id} className="hover:shadow-md transition-shadow">
+            <Card key={template.id} className="hover:shadow-md transition-shadow bg-[var(--card-bg)] border-[var(--card-border)]">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-lg">{template.name}</CardTitle>
+                    <CardTitle className="text-lg text-[var(--color-text-primary)]">{template.name}</CardTitle>
                     <CardDescription className="mt-1">{template.subject}</CardDescription>
                   </div>
                   {template.is_active ? (

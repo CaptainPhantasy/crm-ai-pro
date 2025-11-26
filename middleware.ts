@@ -55,8 +55,6 @@ export async function middleware(req: NextRequest) {
   }
 
   return response
-
-  return response
 }
 
 export const config = {
