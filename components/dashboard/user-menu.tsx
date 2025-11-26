@@ -31,13 +31,24 @@ export function UserMenu() {
 
   async function fetchUser() {
     try {
-      const response = await fetch('/api/users/me')
+      const response = await fetch('/api/users/me', {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
       if (response.ok) {
         const data = await response.json()
         setUser(data.user)
+      } else if (response.status === 401) {
+        // Not authenticated - that's okay, just show default
+        console.warn('Not authenticated')
+      } else {
+        console.error('Failed to fetch user:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Error fetching user:', error)
+      // Don't retry on network errors to prevent loops
     } finally {
       setLoading(false)
     }
@@ -110,7 +121,7 @@ export function UserMenu() {
           </Avatar>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-theme-card border-2 border-theme-border">
+      <DropdownMenuContent align="end" className="w-56 bg-[var(--card-bg)] border-2 border-theme-border opacity-100 !opacity-100">
         <DropdownMenuLabel className="text-white">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none text-white">
