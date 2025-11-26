@@ -62,20 +62,22 @@ export default function LoginPage() {
 
       // Redirect based on role
       const role = userData?.role || 'admin'
-      const targetRoute = ROLE_ROUTES[role] || '/inbox'
       
       // Check if mobile device - redirect to mobile routes
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       
-      if (isMobile && ['tech', 'sales'].includes(role)) {
+      if (isMobile && role === 'owner') {
+        // Mobile owners go to mobile dashboard
+        router.push('/m/owner/dashboard')
+      } else if (role === 'owner') {
+        // Desktop owners go to inbox (no desktop owner dashboard exists)
+        router.push('/inbox')
+      } else if (isMobile && ['tech', 'sales'].includes(role)) {
         // Mobile users with field roles go to mobile dashboards
-        router.push(targetRoute)
-      } else if (role === 'tech' || role === 'sales') {
-        // Desktop tech/sales still go to their mobile-optimized dashboards
-        router.push(targetRoute)
+        router.push(ROLE_ROUTES[role] || '/inbox')
       } else {
-        // Office roles go to desktop dashboard
-        router.push(targetRoute)
+        // All other roles use their standard routes
+        router.push(ROLE_ROUTES[role] || '/inbox')
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to sign in'

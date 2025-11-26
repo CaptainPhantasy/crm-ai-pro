@@ -119,19 +119,23 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
 
   if (loading) {
     return (
-      <div className="hidden xl:block w-80 border-l bg-white p-4 flex-shrink-0">
-        <div className="text-sm font-semibold text-neutral-500 mb-4">CONTACT DETAILS</div>
-        <div className="p-4 text-center text-neutral-400 text-sm">Loading...</div>
+      <div className="hidden xl:block w-80 flex-shrink-0">
+        <div className="p-3">
+          <div className="text-sm font-semibold text-neutral-500 mb-4">CONTACT DETAILS</div>
+          <div className="p-4 text-center text-neutral-400 text-sm">Loading...</div>
+        </div>
       </div>
     )
   }
 
   if (!contact) {
     return (
-      <div className="hidden xl:block w-80 border-l bg-white p-4 flex-shrink-0">
-        <div className="text-sm font-semibold text-neutral-500 mb-4">CONTACT DETAILS</div>
-        <div className="p-4 border border-dashed rounded text-center text-neutral-400 text-sm">
-          No contact information available
+      <div className="hidden xl:block w-80 flex-shrink-0">
+        <div className="p-3">
+          <div className="text-sm font-semibold text-neutral-500 mb-4">CONTACT DETAILS</div>
+          <div className="p-4 border border-dashed rounded text-center text-neutral-400 text-sm">
+            No contact information available
+          </div>
         </div>
       </div>
     )
@@ -139,18 +143,18 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
 
   return (
     <>
-      <div className="hidden xl:block w-80 border-l bg-white flex-shrink-0 overflow-hidden flex flex-col">
+      <div className="w-full flex-shrink-0 overflow-hidden flex flex-col">
         <ScrollArea className="flex-1">
-          <div className="p-4 space-y-6">
+          <div className="p-3 space-y-3">
             {/* Header */}
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-sm font-semibold text-neutral-500">CONTACT DETAILS</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-semibold text-neutral-500">CONTACT DETAILS</div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setContactDetailOpen(true)}
-                  className="h-7 text-xs"
+                  className="h-6 text-xs px-2"
                 >
                   <ExternalLink className="w-3 h-3 mr-1" />
                   View Full
@@ -158,16 +162,16 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
               </div>
               
               {/* Contact Info */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-gradient-to-br from-[#EBF0FF] to-[#C8D7FF] text-[#3366FF] text-sm font-semibold">
+              <Card className="py-2">
+                <CardHeader className="pb-2 px-4 pt-3">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-7 h-7">
+                      <AvatarFallback className="bg-gradient-to-br from-[#EBF0FF] to-[#C8D7FF] text-[#3366FF] text-xs font-semibold">
                         {contact.first_name?.[0] || contact.email?.[0] || '?'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base truncate">
+                      <CardTitle className="text-sm truncate">
                         {contact.first_name} {contact.last_name}
                       </CardTitle>
                       {contact.email && (
@@ -176,16 +180,16 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-2 text-sm">
+                <CardContent className="space-y-1.5 text-xs px-4 pb-3">
                   {contact.phone && (
-                    <div className="flex items-center gap-2 text-neutral-600">
-                      <Phone className="w-4 h-4 text-neutral-400" />
-                      <span>{contact.phone}</span>
+                    <div className="flex items-center gap-1.5 text-neutral-600">
+                      <Phone className="w-3 h-3 text-neutral-400" />
+                      <span className="text-xs">{contact.phone}</span>
                     </div>
                   )}
                   {contact.address && (
-                    <div className="flex items-start gap-2 text-neutral-600">
-                      <MapPin className="w-4 h-4 text-neutral-400 mt-0.5" />
+                    <div className="flex items-start gap-1.5 text-neutral-600">
+                      <MapPin className="w-3 h-3 text-neutral-400 mt-0.5" />
                       <span className="text-xs">{contact.address}</span>
                     </div>
                   )}
@@ -193,13 +197,13 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
               </Card>
             </div>
 
-            <Separator />
+            <Separator className="my-2" />
 
             {/* Tags */}
             <div>
-              <div className="text-xs font-semibold text-neutral-500 mb-2">TAGS</div>
+              <div className="text-xs font-semibold text-neutral-500 mb-1.5">TAGS</div>
               {tags.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {tags.map((tag) => (
                     <Badge
                       key={tag.id}
@@ -209,7 +213,7 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
                         borderColor: tag.color || '#3366FF',
                         borderWidth: '1px',
                       }}
-                      className="text-xs"
+                      className="text-xs px-1.5 py-0.5"
                     >
                       {tag.name}
                     </Badge>
@@ -220,30 +224,30 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
               )}
             </div>
 
-            <Separator />
+            <Separator className="my-2" />
 
             {/* Related Jobs */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="text-xs font-semibold text-neutral-500">RELATED JOBS</div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => router.push(`/jobs?contactId=${contact.id}`)}
-                  className="h-6 text-xs"
+                  className="h-5 text-xs px-2"
                 >
                   View All
                 </Button>
               </div>
               {jobs.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {jobs.map((job) => (
                     <Card
                       key={job.id}
-                      className="cursor-pointer hover:bg-neutral-50 transition-colors"
+                      className="cursor-pointer hover:bg-neutral-50 transition-colors py-1"
                       onClick={() => router.push(`/jobs?id=${job.id}`)}
                     >
-                      <CardContent className="p-3">
+                      <CardContent className="p-2">
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
                             <div className="text-xs font-medium text-neutral-800 truncate">
@@ -253,7 +257,7 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
                               {job.status?.replace('_', ' ') || 'N/A'}
                             </div>
                           </div>
-                          <Briefcase className="w-4 h-4 text-neutral-400 ml-2" />
+                          <Briefcase className="w-3 h-3 text-neutral-400 ml-1.5" />
                         </div>
                       </CardContent>
                     </Card>
@@ -264,16 +268,16 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
               )}
             </div>
 
-            <Separator />
+            <Separator className="my-2" />
 
             {/* Notes */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="text-xs font-semibold text-neutral-500">NOTES</div>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-6 text-xs"
+                  className="h-5 text-xs px-2"
                   onClick={() => {
                     const content = prompt('Enter note:')
                     if (content && content.trim()) {
@@ -298,12 +302,12 @@ export function ConversationSidebar({ conversationId }: ConversationSidebarProps
                 </Button>
               </div>
               {notes.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {notes.map((note) => (
-                    <Card key={note.id}>
-                      <CardContent className="p-3">
+                    <Card key={note.id} className="py-1">
+                      <CardContent className="p-2">
                         <p className="text-xs text-neutral-600">{note.content}</p>
-                        <p className="text-xs text-neutral-400 mt-1">
+                        <p className="text-xs text-neutral-400 mt-0.5">
                           {new Date(note.created_at).toLocaleDateString()}
                         </p>
                       </CardContent>

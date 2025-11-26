@@ -11,7 +11,7 @@ export const ROLE_ROUTES: Record<UserRole, string> = {
   sales: '/sales/dashboard',
   dispatcher: '/office/dashboard',
   admin: '/inbox',
-  owner: '/owner/dashboard',
+  owner: '/inbox', // Desktop owners go to inbox (mobile route is /m/owner/dashboard)
 }
 
 export const MOBILE_ROUTES: Record<UserRole, string> = {
