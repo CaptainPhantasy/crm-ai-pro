@@ -71,11 +71,8 @@ export function SidebarNav() {
   return (
     <aside className="w-60 border-r border-theme-border bg-theme-surface flex flex-col">
       {/* Logo */}
-      <div className="flex items-center gap-2 px-3 py-4 border-b border-theme-border">
-        <div className="h-8 w-8 rounded-lg bg-theme-accent-secondary/20 flex items-center justify-center text-theme-accent-primary font-bold">
-          AI
-        </div>
-        <span className="font-semibold tracking-tight text-theme-primary">CRM-AI PRO</span>
+      <div className="flex items-center px-3 py-4 border-b border-theme-border">
+        <span className="text-2xl font-bold tracking-tight text-theme-primary">CRM-AI PRO</span>
       </div>
 
       {/* Navigation */}
