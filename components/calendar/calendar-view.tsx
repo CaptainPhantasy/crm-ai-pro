@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns'
+import { cachedFetch } from '@/lib/api/cache'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 interface CalendarEvent {
   id: string
@@ -41,35 +43,41 @@ export function CalendarView({ onEventClick, onCreateEvent, className }: Calenda
       const startDate = startOfMonth(currentDate).toISOString()
       const endDate = endOfMonth(currentDate).toISOString()
 
-      const response = await fetch(
-        `/api/calendar/events?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
+      // Use cached fetch with 30 second TTL
+      const data = await cachedFetch(
+        `/api/calendar/events?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
+        {},
+        30000 // 30 seconds cache
       )
 
-      if (response.ok) {
-        const data = await response.json()
-        setEvents(data.events || [])
-      }
+      setEvents(data.events || [])
     } catch (error) {
       console.error('Error fetching calendar events:', error)
+      setEvents([])
     } finally {
       setLoading(false)
     }
   }
 
-  const monthStart = startOfMonth(currentDate)
-  const monthEnd = endOfMonth(currentDate)
-  const calendarStart = startOfWeek(monthStart)
-  const calendarEnd = endOfWeek(monthEnd)
-  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
+  // Memoize expensive date calculations
+  const { days, eventsByDate } = useMemo(() => {
+    const monthStart = startOfMonth(currentDate)
+    const monthEnd = endOfMonth(currentDate)
+    const calendarStart = startOfWeek(monthStart)
+    const calendarEnd = endOfWeek(monthEnd)
+    const calculatedDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
 
-  const eventsByDate = events.reduce((acc, event) => {
-    const date = format(new Date(event.startTime), 'yyyy-MM-dd')
-    if (!acc[date]) {
-      acc[date] = []
-    }
-    acc[date].push(event)
-    return acc
-  }, {} as Record<string, CalendarEvent[]>)
+    const calculatedEventsByDate = events.reduce((acc, event) => {
+      const date = format(new Date(event.startTime), 'yyyy-MM-dd')
+      if (!acc[date]) {
+        acc[date] = []
+      }
+      acc[date].push(event)
+      return acc
+    }, {} as Record<string, CalendarEvent[]>)
+
+    return { days: calculatedDays, eventsByDate: calculatedEventsByDate }
+  }, [currentDate, events])
 
   function getEventsForDate(date: Date): CalendarEvent[] {
     const dateKey = format(date, 'yyyy-MM-dd')
@@ -124,9 +132,7 @@ export function CalendarView({ onEventClick, onCreateEvent, className }: Calenda
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-center py-8 text-theme-subtle/70">
-            Loading calendar...
-          </div>
+          <LoadingSpinner message="Loading calendar..." />
         ) : (
           <div className="grid grid-cols-7 gap-1">
             {/* Day headers */}
@@ -160,8 +166,8 @@ export function CalendarView({ onEventClick, onCreateEvent, className }: Calenda
                       isToday
                         ? "text-theme-accent-primary font-bold"
                         : isCurrentMonth
-                        ? "text-white"
-                        : "text-theme-subtle/50"
+                          ? "text-white"
+                          : "text-theme-subtle/50"
                     )}
                   >
                     {format(day, 'd')}
