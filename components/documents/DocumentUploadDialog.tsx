@@ -336,15 +336,15 @@ export function DocumentUploadDialog({
             className={cn(
               'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
               isDragging
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-300 hover:border-gray-400'
+                ? 'border-theme-accent-primary bg-theme-accent-primary/10'
+                : 'border-[var(--card-border)] hover:border-theme-accent-primary'
             )}
           >
-            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-sm font-medium text-gray-700">
+            <Upload className="mx-auto h-12 w-12 text-[var(--color-text-subtle)] mb-4" />
+            <p className="text-sm font-medium text-[var(--color-text-primary)]">
               Drop files here or click to browse
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--color-text-subtle)] mt-1">
               Supports images, PDFs, and documents
             </p>
           </div>
@@ -378,7 +378,7 @@ export function DocumentUploadDialog({
                         className="w-12 h-12 object-cover rounded"
                       />
                     ) : (
-                      <FileIcon className="w-12 h-12 text-gray-400" />
+                      <FileIcon className="w-12 h-12 text-[var(--color-text-subtle)]" />
                     )}
                   </div>
 
