@@ -146,7 +146,7 @@ export default function ReportsPage() {
             <Plus className="h-4 w-4" />
             Custom Report
           </Button>
-          {report && (
+          {report && selectedTemplate && (
             <>
               <Button variant="outline" onClick={handleRefresh} disabled={loading}>
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -154,7 +154,7 @@ export default function ReportsPage() {
               </Button>
               <ReportExportButton
                 report={report}
-                type={selectedTemplate!.id}
+                type={selectedTemplate.id}
                 filters={filters}
               />
             </>

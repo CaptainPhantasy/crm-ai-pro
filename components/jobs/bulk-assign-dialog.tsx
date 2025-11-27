@@ -63,7 +63,7 @@ export function BulkAssignDialog({ open, onOpenChange, jobs, onSuccess }: BulkAs
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    
+
     if (selectedJobIds.size === 0) {
       setError('Please select at least one job')
       return
@@ -138,12 +138,11 @@ export function BulkAssignDialog({ open, onOpenChange, jobs, onSuccess }: BulkAs
             )}
 
             {results && (
-              <div className={`p-3 text-sm rounded ${
-                results.failed === 0 
-                  ? 'text-green-600 bg-green-50 border border-green-200' 
+              <div className={`p-3 text-sm rounded ${results.failed === 0
+                  ? 'text-green-600 bg-green-50 border border-green-200'
                   : 'text-yellow-600 bg-yellow-50 border border-yellow-200'
-              }`}>
-                {results.failed === 0 
+                }`}>
+                {results.failed === 0
                   ? `✅ Successfully assigned ${results.success} job(s)`
                   : `⚠️ Assigned ${results.success} job(s), ${results.failed} failed`
                 }
@@ -163,7 +162,7 @@ export function BulkAssignDialog({ open, onOpenChange, jobs, onSuccess }: BulkAs
                 </SelectTrigger>
                 <SelectContent>
                   {technicians.length === 0 ? (
-                    <SelectItem value="" disabled>No technicians available</SelectItem>
+                    <SelectItem value="no-techs" disabled>No technicians available</SelectItem>
                   ) : (
                     technicians.map((tech) => (
                       <SelectItem key={tech.id} value={tech.id}>
@@ -234,8 +233,8 @@ export function BulkAssignDialog({ open, onOpenChange, jobs, onSuccess }: BulkAs
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={loading || selectedJobIds.size === 0 || !selectedTechId}
               className="bg-[#4B79FF] hover:bg-[#3366FF]"
             >

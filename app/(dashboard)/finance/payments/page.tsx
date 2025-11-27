@@ -54,7 +54,7 @@ export default function PaymentsPage() {
     try {
       setLoading(true)
       const params = new URLSearchParams()
-      if (filters.status) params.append('status', filters.status)
+      if (filters.status && filters.status !== 'all') params.append('status', filters.status)
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom)
       if (filters.dateTo) params.append('dateTo', filters.dateTo)
 
@@ -152,7 +152,7 @@ export default function PaymentsPage() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="processing">Processing</SelectItem>

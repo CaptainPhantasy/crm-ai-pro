@@ -104,13 +104,13 @@ export function AdvancedFilters({
                       <label className="text-sm font-medium">{config.label}</label>
                       <Select
                         value={Array.isArray(value) ? value[0] : (value as string) || ''}
-                        onValueChange={(val) => updateFilter(config.key, val || undefined)}
+                        onValueChange={(val) => updateFilter(config.key, val === 'all' ? undefined : val || undefined)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder={config.placeholder || `Select ${config.label}`} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All</SelectItem>
+                          <SelectItem value="all">All</SelectItem>
                           {config.options?.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}

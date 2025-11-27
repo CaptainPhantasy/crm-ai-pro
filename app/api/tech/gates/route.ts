@@ -21,19 +21,19 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { 
-    jobId, 
-    stageName, 
-    metadata = {}, 
+  const {
+    jobId,
+    stageName,
+    metadata = {},
     requiresException = false,
     satisfactionRating,
     reviewRequested,
     discountApplied,
   } = body
 
-  // Get user's profile for completed_by reference
-  const { data: profile } = await supabase
-    .from('profiles')
+  // Get user's data for completed_by reference
+  const { data: userData } = await supabase
+    .from('users')
     .select('id')
     .eq('id', user.id)
     .single()
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       status: requiresException ? 'pending' : 'completed',
       metadata,
       completed_at: new Date().toISOString(),
-      completed_by: profile?.id || user.id,
+      completed_by: userData?.id || user.id,
       requires_exception: requiresException,
       satisfaction_rating: satisfactionRating,
       review_requested: reviewRequested,

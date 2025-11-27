@@ -91,7 +91,7 @@ export function CampaignEditorDialog({
         name: formData.name,
         campaignType: formData.campaignType,
         status: formData.status,
-        emailTemplateId: formData.emailTemplateId || undefined,
+        emailTemplateId: formData.emailTemplateId && formData.emailTemplateId !== 'none' ? formData.emailTemplateId : undefined,
         scheduledStart: formData.scheduledStart || undefined,
         scheduledEnd: formData.scheduledEnd || undefined,
       }
@@ -191,7 +191,7 @@ export function CampaignEditorDialog({
                   <SelectValue placeholder={loadingTemplates ? 'Loading...' : 'Select a template'} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {templates.map((template) => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.name}

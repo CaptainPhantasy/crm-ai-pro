@@ -59,8 +59,8 @@ function AuditPageContent() {
     try {
       const params = new URLSearchParams()
       if (filters.search) params.append('search', filters.search)
-      if (filters.action) params.append('action', filters.action)
-      if (filters.entityType) params.append('entityType', filters.entityType)
+      if (filters.action && filters.action !== 'all') params.append('action', filters.action)
+      if (filters.entityType && filters.entityType !== 'all') params.append('entityType', filters.entityType)
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom)
       if (filters.dateTo) params.append('dateTo', filters.dateTo)
 
@@ -122,7 +122,7 @@ function AuditPageContent() {
                   <SelectValue placeholder="All actions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All actions</SelectItem>
+                  <SelectItem value="all">All actions</SelectItem>
                   <SelectItem value="create">Create</SelectItem>
                   <SelectItem value="update">Update</SelectItem>
                   <SelectItem value="delete">Delete</SelectItem>
@@ -141,7 +141,7 @@ function AuditPageContent() {
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All types</SelectItem>
+                  <SelectItem value="all">All types</SelectItem>
                   <SelectItem value="contact">Contact</SelectItem>
                   <SelectItem value="job">Job</SelectItem>
                   <SelectItem value="conversation">Conversation</SelectItem>
