@@ -20,7 +20,7 @@ function ContactsPageContent() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
-  
+
   // Use modal state hook to sync with URL query parameter
   const { isOpen: detailModalOpen, modalId: urlContactId, open: openModal, close: closeModal } = useModalState('id', {
     onOpen: (id) => {
@@ -30,7 +30,7 @@ function ContactsPageContent() {
       setSelectedContactId(null)
     }
   })
-  
+
   // Sync selectedContactId with URL param
   useEffect(() => {
     if (urlContactId && urlContactId !== selectedContactId) {
@@ -66,7 +66,7 @@ function ContactsPageContent() {
       setSelectedContactId(contactIdParam)
       openModal(contactIdParam)
     }
-  }, [searchParams])
+  }, [searchParams.get('id')]) // Only depend on the actual param value
 
   useEffect(() => {
     // Debounce search
@@ -74,12 +74,12 @@ function ContactsPageContent() {
       fetchContacts(searchQuery)
     }, 300)
     return () => clearTimeout(timer)
-  }, [searchQuery, filters])
+  }, [searchQuery, JSON.stringify(filters)]) // Stringify filters to avoid reference changes
 
   async function fetchContacts(search = '') {
     try {
       setLoading(true)
-      const url = search 
+      const url = search
         ? `/api/contacts?search=${encodeURIComponent(search)}`
         : '/api/contacts'
       // Add cache control for faster subsequent loads
@@ -89,7 +89,7 @@ function ContactsPageContent() {
           'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60'
         }
       })
-      
+
       if (!response.ok) {
         // API failed, but continue with empty state
         console.warn('API call failed, using empty state')
@@ -97,30 +97,30 @@ function ContactsPageContent() {
         setStats({ total: 0, active: 0, newThisMonth: 0 })
         return
       }
-      
+
       if (response.ok) {
-      const data = await response.json()
-      const contactsArray = data.contacts || []
-      setContacts(contactsArray)
-      
-      // Calculate stats efficiently
-      const now = new Date()
-      const currentMonth = now.getMonth()
-      const currentYear = now.getFullYear()
-      let newThisMonth = 0
-      
-      for (const contact of contactsArray) {
-        const created = new Date(contact.created_at)
-        if (created.getMonth() === currentMonth && created.getFullYear() === currentYear) {
-          newThisMonth++
+        const data = await response.json()
+        const contactsArray = data.contacts || []
+        setContacts(contactsArray)
+
+        // Calculate stats efficiently
+        const now = new Date()
+        const currentMonth = now.getMonth()
+        const currentYear = now.getFullYear()
+        let newThisMonth = 0
+
+        for (const contact of contactsArray) {
+          const created = new Date(contact.created_at)
+          if (created.getMonth() === currentMonth && created.getFullYear() === currentYear) {
+            newThisMonth++
+          }
         }
-      }
-      
-      setStats({
-        total: data.total || contactsArray.length,
-        active: contactsArray.length,
-        newThisMonth
-      })
+
+        setStats({
+          total: data.total || contactsArray.length,
+          active: contactsArray.length,
+          newThisMonth
+        })
       }
     } catch (error) {
       // API failed, but continue with empty state
@@ -160,12 +160,12 @@ function ContactsPageContent() {
       })
 
       if (response.ok) {
-      const data = await response.json()
+        const data = await response.json()
         if (data.conversation) {
-        // Navigate to inbox with conversation pre-selected
-        router.push(`/inbox?conversation=${data.conversation.id}`)
-      } else {
-        console.error('Failed to create/find conversation:', data.error)
+          // Navigate to inbox with conversation pre-selected
+          router.push(`/inbox?conversation=${data.conversation.id}`)
+        } else {
+          console.error('Failed to create/find conversation:', data.error)
           toastError('Failed to open conversation', data.error || 'Please try again.')
         }
       } else {
@@ -199,7 +199,7 @@ function ContactsPageContent() {
 
   async function handleBulkDelete() {
     if (selectedContactIds.size === 0) return
-    
+
     const confirmed = await confirmDialog({
       title: `Delete ${selectedContactIds.size} contact(s)?`,
       description: 'This action cannot be undone. Are you sure you want to continue?',
@@ -207,7 +207,7 @@ function ContactsPageContent() {
       confirmText: 'Delete',
       cancelText: 'Cancel',
     })
-    
+
     if (!confirmed) {
       return
     }
@@ -265,38 +265,38 @@ function ContactsPageContent() {
         onOpenFilters={() => setFilterDialogOpen(true)}
         activeFilterCount={activeFilterCount}
       >
-      {/* Contact Detail Modal */}
-      <ContactDetailModal
-        open={detailModalOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            closeModal()
-          } else {
-            if (selectedContactId) {
-              openModal(selectedContactId)
+        {/* Contact Detail Modal */}
+        <ContactDetailModal
+          open={detailModalOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeModal()
+            } else {
+              if (selectedContactId) {
+                openModal(selectedContactId)
+              }
             }
-          }
-        }}
-        contactId={selectedContactId}
-      />
+          }}
+          contactId={selectedContactId}
+        />
 
-      {/* Add Contact Dialog */}
-      <AddContactDialog
-        open={addContactDialogOpen}
-        onOpenChange={setAddContactDialogOpen}
-        onSuccess={handleContactAdded}
-      />
+        {/* Add Contact Dialog */}
+        <AddContactDialog
+          open={addContactDialogOpen}
+          onOpenChange={setAddContactDialogOpen}
+          onSuccess={handleContactAdded}
+        />
 
-      {/* Filter Dialog */}
-      <ContactsFilterDialog
-        open={filterDialogOpen}
-        onOpenChange={setFilterDialogOpen}
-        filters={filters}
-        onFiltersChange={(newFilters) => {
-          setFilters(newFilters)
-          fetchContacts(searchQuery)
-        }}
-      />
+        {/* Filter Dialog */}
+        <ContactsFilterDialog
+          open={filterDialogOpen}
+          onOpenChange={setFilterDialogOpen}
+          filters={filters}
+          onFiltersChange={(newFilters) => {
+            setFilters(newFilters)
+            fetchContacts(searchQuery)
+          }}
+        />
       </ContactsLayout>
     </ErrorBoundary>
   )
@@ -322,11 +322,11 @@ export default function ContactsPage() {
                     <div className="flex-1 space-y-2">
                       <div className="h-4 w-32 bg-ops-bg rounded animate-pulse" />
                       <div className="h-3 w-24 bg-ops-bg rounded animate-pulse" />
-          </div>
-        </div>
+                    </div>
+                  </div>
                   <div className="h-3 w-full bg-ops-bg rounded animate-pulse mb-2" />
                   <div className="h-8 w-full bg-ops-bg rounded animate-pulse" />
-              </div>
+                </div>
               ))}
             </div>
           </div>

@@ -20,8 +20,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Loader2, Plus, RefreshCw } from 'lucide-react'
 import { toast } from '@/lib/toast'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
-export default function ReportsPage() {
+function ReportsPageContent() {
   const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate | null>(null)
   const [filters, setFilters] = useState<ReportFilters>(getDefaultFilters())
   const [report, setReport] = useState<Report | null>(null)
@@ -242,5 +243,13 @@ export default function ReportsPage() {
         onSave={handleSaveCustomReport}
       />
     </div>
+  )
+}
+
+export default function ReportsPage() {
+  return (
+    <ErrorBoundary>
+      <ReportsPageContent />
+    </ErrorBoundary>
   )
 }

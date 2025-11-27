@@ -8,8 +8,9 @@ import { Plus, Mail, Play, Pause, BarChart3, Users, Eye, MousePointerClick } fro
 import type { Campaign } from '@/types/campaigns'
 import { useRouter } from 'next/navigation'
 import { CampaignEditorDialog } from '@/components/marketing/campaign-editor-dialog'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
-export default function CampaignsPage() {
+function CampaignsPageContent() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState<string>('all')
@@ -208,6 +209,14 @@ export default function CampaignsPage() {
         }}
       />
     </div>
+  )
+}
+
+export default function CampaignsPage() {
+  return (
+    <ErrorBoundary>
+      <CampaignsPageContent />
+    </ErrorBoundary>
   )
 }
 
