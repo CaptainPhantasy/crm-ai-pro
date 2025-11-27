@@ -317,16 +317,6 @@ const TOOLS = [
   },
   // Priority 3 - Business Intelligence
   {
-    name: 'get_stats',
-    description: 'Get business statistics and dashboard data. Use this when user says "What\'s my revenue this month?"',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        period: { type: 'string', description: 'Time period (today, week, month, year)' },
-      },
-    },
-  },
-  {
     name: 'get_analytics',
     description: 'Get analytics data. Use this when user says "Show me job completion rates"',
     inputSchema: {
@@ -1663,21 +1653,6 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
     }
 
     // Priority 3 - Business Intelligence
-    else if (toolName === 'get_stats') {
-      const apiUrl = getNextApiUrl(supabaseUrl, '/analytics/dashboard')
-      const statsRes = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${serviceRoleKey}`,
-        },
-      })
-      const statsData = await statsRes.json()
-      if (!statsRes.ok) {
-        return { error: statsData.error || 'Failed to fetch stats' }
-      }
-      return { stats: statsData }
-    }
-
     else if (toolName === 'get_analytics') {
       const type = args.type || 'jobs'
       const apiUrl = getNextApiUrl(supabaseUrl, `/analytics/${type}`)
@@ -2716,6 +2691,13 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
         return { error: 'Email service not configured' }
       }
 
+      // Get sender email from environment config
+      const senderEmail = Deno.env.get('RESEND_VERIFIED_DOMAIN')
+        ? (Deno.env.get('RESEND_VERIFIED_DOMAIN')!.includes('@')
+            ? `CRM <${Deno.env.get('RESEND_VERIFIED_DOMAIN')}>`
+            : `CRM <noreply@${Deno.env.get('RESEND_VERIFIED_DOMAIN')}>`)
+        : 'CRM <noreply@resend.dev>'
+
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -2723,7 +2705,7 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'CRM <noreply@317plumber.com>',
+          from: senderEmail,
           to: [args.to],
           subject: args.subject,
           html: args.body,
@@ -2775,6 +2757,13 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
         return { error: 'Email service not configured' }
       }
 
+      // Get sender email from environment config
+      const senderEmail = Deno.env.get('RESEND_VERIFIED_DOMAIN')
+        ? (Deno.env.get('RESEND_VERIFIED_DOMAIN')!.includes('@')
+            ? `CRM <${Deno.env.get('RESEND_VERIFIED_DOMAIN')}>`
+            : `CRM <noreply@${Deno.env.get('RESEND_VERIFIED_DOMAIN')}>`)
+        : 'CRM <noreply@resend.dev>'
+
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -2782,7 +2771,7 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'CRM <noreply@317plumber.com>',
+          from: senderEmail,
           to: [contact.email],
           subject: "We'd love your feedback!",
           html: `<p>Hi ${contact.first_name},</p><p>Thank you for your business! We'd appreciate your review.</p>`,

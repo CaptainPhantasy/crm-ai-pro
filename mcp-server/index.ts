@@ -368,6 +368,13 @@ async function sendEmail(args: any): Promise<any> {
     return { error: 'Email service not configured' }
   }
 
+  // Get sender email from environment config
+  const senderEmail = process.env.RESEND_VERIFIED_DOMAIN
+    ? (process.env.RESEND_VERIFIED_DOMAIN.includes('@')
+        ? `CRM <${process.env.RESEND_VERIFIED_DOMAIN}>`
+        : `CRM <noreply@${process.env.RESEND_VERIFIED_DOMAIN}>`)
+    : 'CRM <noreply@resend.dev>'
+
   const emailRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -375,7 +382,7 @@ async function sendEmail(args: any): Promise<any> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'CRM <noreply@317plumber.com>',
+      from: senderEmail,
       to: [to],
       subject,
       html: body,

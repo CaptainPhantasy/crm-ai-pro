@@ -879,6 +879,108 @@ export const crmTools: Tool[] = [
     },
   },
   {
+    name: 'add_job_parts',
+    description: 'Add parts/materials to a job. Use when tech says "add 3 pipe fittings at $3.50 each to the Smith job" or "record materials used".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job',
+        },
+        parts: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Part/material name',
+              },
+              quantity: {
+                type: 'number',
+                description: 'Quantity used',
+              },
+              unit: {
+                type: 'string',
+                description: 'Unit of measurement (e.g., "each", "ft", "gallon")',
+              },
+              unitCost: {
+                type: 'number',
+                description: 'Unit cost in cents',
+              },
+              supplier: {
+                type: 'string',
+                description: 'Supplier name (optional)',
+              },
+              notes: {
+                type: 'string',
+                description: 'Additional notes (optional)',
+              },
+            },
+            required: ['name', 'quantity', 'unitCost'],
+          },
+          description: 'Array of parts to add',
+        },
+      },
+      required: ['jobId', 'parts'],
+    },
+  },
+  {
+    name: 'list_job_parts',
+    description: 'List all parts/materials for a job. Use when user asks "what parts were used on this job?" or "show me materials for the Johnson job".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job',
+        },
+      },
+      required: ['jobId'],
+    },
+  },
+  {
+    name: 'update_job_part',
+    description: 'Update a part quantity or cost. Use when user says "change the quantity to 5" or "update the cost to $12.50".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        partId: {
+          type: 'string',
+          description: 'UUID of the part to update',
+        },
+        quantity: {
+          type: 'number',
+          description: 'New quantity (optional)',
+        },
+        unitCost: {
+          type: 'number',
+          description: 'New unit cost in cents (optional)',
+        },
+        notes: {
+          type: 'string',
+          description: 'Updated notes (optional)',
+        },
+      },
+      required: ['partId'],
+    },
+  },
+  {
+    name: 'remove_job_part',
+    description: 'Remove a part from a job. Use when user says "remove that part" or "delete the pipe fitting from the job".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        partId: {
+          type: 'string',
+          description: 'UUID of the part to remove',
+        },
+      },
+      required: ['partId'],
+    },
+  },
+  {
     name: 'list_payments',
     description: 'List payments with optional filters',
     inputSchema: {
@@ -1721,6 +1823,27 @@ export const crmTools: Tool[] = [
       required: ['serviceType'],
     },
   },
+  // ======================================
+  // PARTS MANAGEMENT & EMAIL TOOLS
+  // ======================================
+  {
+    name: 'email_parts_list',
+    description: 'Email a formatted parts/materials list to a customer for a specific job. Use when user says "email parts list to customer" or "send materials list".',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: {
+          type: 'string',
+          description: 'UUID of the job',
+        },
+        recipientEmail: {
+          type: 'string',
+          description: 'Email address to send the parts list to',
+        },
+      },
+      required: ['jobId', 'recipientEmail'],
+    },
+  },
 ]
 
 export async function handleCrmTool(
@@ -1743,27 +1866,103 @@ export async function handleCrmTool(
         techAssignedId?: string
       }
 
-      // Search for contact
+      // Search for contact with better matching
       const { data: contacts } = await supabase
         .from('contacts')
-        .select('id, first_name, last_name')
+        .select('id, first_name, last_name, email, phone')
         .eq('account_id', accountId)
         .or(`first_name.ilike.%${contactName}%,last_name.ilike.%${contactName}%`)
-        .limit(5)
+        .limit(10)
 
       if (!contacts || contacts.length === 0) {
         return {
-          error: `Contact "${contactName}" not found. Please provide the correct contact name.`,
+          error: `Contact "${contactName}" not found. You can create a new contact first, or search by email/phone.`,
+          suggestion: 'create_contact',
         }
       }
 
-      // Find best match
-      const matched = contacts.find(
-        (c) =>
-          `${c.first_name} ${c.last_name}`.toLowerCase().includes(contactName.toLowerCase()) ||
-          contactName.toLowerCase().includes(c.first_name?.toLowerCase() || '')
-      )
-      const contactId = matched?.id || contacts[0].id
+      // Score contacts for best match
+      const scoredContacts = contacts.map(c => {
+        const fullName = `${c.first_name} ${c.last_name}`.toLowerCase()
+        const searchLower = contactName.toLowerCase()
+
+        let score = 0
+        if (fullName === searchLower) score = 100
+        else if (fullName.includes(searchLower)) score = 50
+        else if (searchLower.includes(c.first_name?.toLowerCase() || '')) score = 30
+        else score = 10
+
+        return { contact: c, score }
+      })
+
+      scoredContacts.sort((a, b) => b.score - a.score)
+
+      // If multiple matches with low confidence, ask for clarification
+      if (contacts.length > 1 && scoredContacts[0].score < 100) {
+        const options = contacts.slice(0, 3).map(c =>
+          `${c.first_name} ${c.last_name}${c.email ? ` (${c.email})` : ''}`
+        )
+        return {
+          error: `Multiple contacts found matching "${contactName}": ${options.join(', ')}. Please be more specific.`,
+          matches: contacts.slice(0, 3),
+        }
+      }
+
+      const contactId = scoredContacts[0].contact.id
+
+      // Validate scheduling dates
+      if (scheduledStart) {
+        const startDate = new Date(scheduledStart)
+        const now = new Date()
+
+        // Check if start date is in the past (with 5 minute buffer for processing)
+        if (startDate < new Date(now.getTime() - 5 * 60 * 1000)) {
+          return {
+            error: 'Scheduled start time cannot be in the past',
+            suggestion: 'Provide a future date/time for the job',
+          }
+        }
+
+        // Validate end is after start
+        if (scheduledEnd) {
+          const endDate = new Date(scheduledEnd)
+          if (endDate <= startDate) {
+            return {
+              error: 'Scheduled end time must be after start time',
+            }
+          }
+        }
+
+        // Check for scheduling conflicts if tech is assigned
+        if (techAssignedId) {
+          const { data: conflictingJobs } = await supabase
+            .from('jobs')
+            .select('id, scheduled_start, scheduled_end')
+            .eq('account_id', accountId)
+            .eq('tech_assigned_id', techAssignedId)
+            .not('status', 'in', '(completed,cancelled)')
+            .not('scheduled_start', 'is', null)
+
+          if (conflictingJobs && conflictingJobs.length > 0) {
+            const hasConflict = conflictingJobs.some(job => {
+              const jobStart = new Date(job.scheduled_start)
+              const jobEnd = job.scheduled_end ? new Date(job.scheduled_end) : new Date(jobStart.getTime() + 2 * 60 * 60 * 1000) // Default 2 hour job
+              const newStart = startDate
+              const newEnd = scheduledEnd ? new Date(scheduledEnd) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000)
+
+              // Check if time ranges overlap
+              return (newStart < jobEnd && newEnd > jobStart)
+            })
+
+            if (hasConflict) {
+              return {
+                error: 'Technician is already scheduled for another job at this time',
+                suggestion: 'Choose a different time or assign a different technician',
+              }
+            }
+          }
+        }
+      }
 
       // Create job via edge function
       const jobRes = await fetch(`${supabaseUrl}/functions/v1/create-job`, {
@@ -1799,17 +1998,52 @@ export async function handleCrmTool(
     case 'search_contacts': {
       const { search } = args as { search: string }
 
-      const { data: contacts } = await supabase
+      // Split search into potential first/last name
+      const searchParts = search.trim().split(/\s+/)
+
+      let query = supabase
         .from('contacts')
         .select('id, first_name, last_name, email, phone')
         .eq('account_id', accountId)
-        .or(
+
+      if (searchParts.length === 1) {
+        // Single word - search first, last, email, phone
+        query = query.or(
           `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`
         )
-        .limit(10)
+      } else if (searchParts.length === 2) {
+        // Two words - likely first + last name
+        const [first, last] = searchParts
+        query = query.or(
+          `and(first_name.ilike.%${first}%,last_name.ilike.%${last}%),first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`
+        )
+      } else {
+        // Multiple words - full text search
+        query = query.or(
+          `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`
+        )
+      }
+
+      const { data: contacts } = await query.limit(10)
+
+      // Score results for relevance
+      const scoredContacts = (contacts || []).map(contact => {
+        let score = 0
+        const fullName = `${contact.first_name} ${contact.last_name}`.toLowerCase()
+        const searchLower = search.toLowerCase()
+
+        if (fullName === searchLower) score += 100 // exact match
+        else if (fullName.includes(searchLower)) score += 50 // contains
+        else score += 10 // partial match
+
+        return { ...contact, _score: score }
+      })
+
+      // Sort by score descending
+      scoredContacts.sort((a, b) => b._score - a._score)
 
       return {
-        contacts: contacts || [],
+        contacts: scoredContacts.map(({ _score, ...c }) => c),
         count: contacts?.length || 0,
       }
     }
@@ -1916,6 +2150,13 @@ export async function handleCrmTool(
         return { error: 'Email service not configured' }
       }
 
+      // Get sender email from environment config
+      const senderEmail = process.env.RESEND_VERIFIED_DOMAIN
+        ? (process.env.RESEND_VERIFIED_DOMAIN.includes('@')
+            ? `CRM <${process.env.RESEND_VERIFIED_DOMAIN}>`
+            : `CRM <noreply@${process.env.RESEND_VERIFIED_DOMAIN}>`)
+        : 'CRM <noreply@resend.dev>'
+
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -1923,7 +2164,7 @@ export async function handleCrmTool(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'CRM <noreply@317plumber.com>',
+          from: senderEmail,
           to: [to],
           subject,
           html: body,
@@ -2189,6 +2430,11 @@ export async function handleCrmTool(
         notes?: string
       }
 
+      // Validate amount
+      if (!totalAmount || totalAmount <= 0) {
+        return { error: 'Invoice amount must be greater than zero' }
+      }
+
       // Verify job exists
       const { data: job } = await supabase
         .from('jobs')
@@ -2199,6 +2445,26 @@ export async function handleCrmTool(
 
       if (!job) {
         return { error: 'Job not found' }
+      }
+
+      // Check for existing draft invoice (idempotency)
+      const { data: existingInvoice } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('job_id', jobId)
+        .eq('account_id', accountId)
+        .eq('status', 'draft')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (existingInvoice) {
+        return {
+          success: true,
+          invoice: existingInvoice,
+          message: 'Draft invoice already exists for this job',
+          wasExisting: true,
+        }
       }
 
       const { data: invoice, error } = await supabase
@@ -2549,6 +2815,13 @@ export async function handleCrmTool(
         return { error: 'Email service not configured' }
       }
 
+      // Get sender email from environment config
+      const senderEmail = process.env.RESEND_VERIFIED_DOMAIN
+        ? (process.env.RESEND_VERIFIED_DOMAIN.includes('@')
+            ? `CRM <${process.env.RESEND_VERIFIED_DOMAIN}>`
+            : `CRM <noreply@${process.env.RESEND_VERIFIED_DOMAIN}>`)
+        : 'CRM <noreply@resend.dev>'
+
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -2556,7 +2829,7 @@ export async function handleCrmTool(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'CRM <noreply@317plumber.com>',
+          from: senderEmail,
           to: [contact.email],
           subject: emailSubject,
           html: emailBody,
@@ -2702,11 +2975,83 @@ export async function handleCrmTool(
         totalAmount?: number
       }
 
+      // Get current job data for validation
+      const { data: currentJob } = await supabase
+        .from('jobs')
+        .select('scheduled_start, scheduled_end, tech_assigned_id, status')
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!currentJob) {
+        return { error: 'Job not found' }
+      }
+
       const updateData: Record<string, unknown> = {}
       if (description !== undefined) updateData.description = description
       if (scheduledStart !== undefined) updateData.scheduled_start = scheduledStart
       if (scheduledEnd !== undefined) updateData.scheduled_end = scheduledEnd
       if (totalAmount !== undefined) updateData.total_amount = totalAmount
+
+      // Validate scheduling dates
+      const finalScheduledStart = scheduledStart !== undefined ? scheduledStart : currentJob.scheduled_start
+      const finalScheduledEnd = scheduledEnd !== undefined ? scheduledEnd : currentJob.scheduled_end
+
+      if (scheduledStart || scheduledEnd) {
+        if (finalScheduledStart) {
+          const startDate = new Date(finalScheduledStart)
+          const now = new Date()
+
+          // Check if start date is in the past (with 5 minute buffer)
+          if (startDate < new Date(now.getTime() - 5 * 60 * 1000)) {
+            return {
+              error: 'Scheduled start time cannot be in the past',
+              suggestion: 'Provide a future date/time for the job',
+            }
+          }
+
+          // Validate end is after start
+          if (finalScheduledEnd) {
+            const endDate = new Date(finalScheduledEnd)
+            if (endDate <= startDate) {
+              return {
+                error: 'Scheduled end time must be after start time',
+              }
+            }
+          }
+
+          // Check for scheduling conflicts
+          const techId = currentJob.tech_assigned_id
+          if (techId) {
+            const { data: conflictingJobs } = await supabase
+              .from('jobs')
+              .select('id, scheduled_start, scheduled_end')
+              .eq('account_id', accountId)
+              .eq('tech_assigned_id', techId)
+              .not('status', 'in', '(completed,cancelled)')
+              .not('scheduled_start', 'is', null)
+              .neq('id', jobId) // Exclude current job
+
+            if (conflictingJobs && conflictingJobs.length > 0) {
+              const hasConflict = conflictingJobs.some(job => {
+                const jobStart = new Date(job.scheduled_start)
+                const jobEnd = job.scheduled_end ? new Date(job.scheduled_end) : new Date(jobStart.getTime() + 2 * 60 * 60 * 1000)
+                const newStart = startDate
+                const newEnd = finalScheduledEnd ? new Date(finalScheduledEnd) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000)
+
+                return (newStart < jobEnd && newEnd > jobStart)
+              })
+
+              if (hasConflict) {
+                return {
+                  error: 'Technician is already scheduled for another job at this time',
+                  suggestion: 'Choose a different time or assign a different technician',
+                }
+              }
+            }
+          }
+        }
+      }
 
       const { data: job, error } = await supabase
         .from('jobs')
@@ -3157,6 +3502,46 @@ export async function handleCrmTool(
       }
     }
 
+    case 'add_job_note': {
+      const { jobId, content } = args as {
+        jobId: string
+        content: string
+      }
+
+      // Verify job exists and belongs to account
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('id')
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!job) {
+        return { error: 'Job not found' }
+      }
+
+      const { data: note, error } = await supabase
+        .from('job_notes')
+        .insert({
+          account_id: accountId,
+          job_id: jobId,
+          content,
+          created_by: userId || null,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        note,
+        message: 'Note added to job successfully',
+      }
+    }
+
     case 'add_conversation_note': {
       const { conversationId, content } = args as {
         conversationId: string
@@ -3279,6 +3664,13 @@ export async function handleCrmTool(
         ${invoice.notes ? `<p>Notes: ${invoice.notes}</p>` : ''}
       `
 
+      // Get sender email from environment config
+      const senderEmail = process.env.RESEND_VERIFIED_DOMAIN
+        ? (process.env.RESEND_VERIFIED_DOMAIN.includes('@')
+            ? `CRM <${process.env.RESEND_VERIFIED_DOMAIN}>`
+            : `CRM <noreply@${process.env.RESEND_VERIFIED_DOMAIN}>`)
+        : 'CRM <noreply@resend.dev>'
+
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -3286,7 +3678,7 @@ export async function handleCrmTool(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'CRM <noreply@317plumber.com>',
+          from: senderEmail,
           to: [contact.email],
           subject: emailSubject,
           html: emailBody,
@@ -3329,6 +3721,631 @@ export async function handleCrmTool(
         success: true,
         invoice,
         message: 'Invoice marked as paid',
+      }
+    }
+
+    case 'create_estimate': {
+      const { contactId, title, description, items, taxRate, validUntil, customerNotes } = args as {
+        contactId: string
+        title?: string
+        description?: string
+        items: Array<{
+          type: 'labor' | 'material' | 'equipment' | 'other'
+          name: string
+          description?: string
+          quantity: number
+          unitPrice: number
+          unit?: string
+        }>
+        taxRate?: number
+        validUntil?: string
+        customerNotes?: string
+      }
+
+      // Verify contact exists
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('id', contactId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!contact) {
+        return { error: 'Contact not found' }
+      }
+
+      // Generate estimate number
+      const estimateNumberRes = await supabase
+        .rpc('generate_estimate_number', { p_account_id: accountId })
+
+      const estimateNumber = estimateNumberRes.data || `EST-${Date.now()}`
+
+      // Create estimate
+      const { data: estimate, error: estimateError } = await supabase
+        .from('estimates')
+        .insert({
+          account_id: accountId,
+          contact_id: contactId,
+          estimate_number: estimateNumber,
+          title: title || null,
+          description: description || null,
+          tax_rate: taxRate || 0,
+          valid_until: validUntil || null,
+          customer_notes: customerNotes || null,
+          created_by: userId || null,
+        })
+        .select()
+        .single()
+
+      if (estimateError || !estimate) {
+        return { error: estimateError?.message || 'Failed to create estimate' }
+      }
+
+      // Create estimate items
+      const itemsToInsert = items.map((item, index) => ({
+        account_id: accountId,
+        estimate_id: estimate.id,
+        item_type: item.type || 'material',
+        name: item.name,
+        description: item.description || null,
+        quantity: item.quantity,
+        unit: item.unit || 'each',
+        unit_price: Math.round(item.unitPrice),
+        total_price: Math.round(item.quantity * item.unitPrice),
+        sort_order: index,
+      }))
+
+      const { error: itemsError } = await supabase
+        .from('estimate_items')
+        .insert(itemsToInsert)
+
+      if (itemsError) {
+        // Rollback estimate if items fail
+        await supabase.from('estimates').delete().eq('id', estimate.id)
+        return { error: itemsError.message }
+      }
+
+      // Fetch the complete estimate with items
+      const { data: completeEstimate } = await supabase
+        .from('estimates')
+        .select('*, estimate_items(*), contacts(*)')
+        .eq('id', estimate.id)
+        .single()
+
+      return {
+        success: true,
+        estimate: completeEstimate,
+        estimateNumber,
+        message: 'Estimate created successfully',
+      }
+    }
+
+    case 'get_estimate': {
+      const { estimateId } = args as { estimateId: string }
+
+      const { data: estimate } = await supabase
+        .from('estimates')
+        .select('*, estimate_items(*), contacts(*)')
+        .eq('id', estimateId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!estimate) {
+        return { error: 'Estimate not found' }
+      }
+
+      return { estimate }
+    }
+
+    case 'list_estimates': {
+      const { contactId, status, limit = 50 } = args as {
+        contactId?: string
+        status?: string
+        limit?: number
+      }
+
+      let query = supabase
+        .from('estimates')
+        .select('*, estimate_items(*), contacts(*)')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (contactId) {
+        query = query.eq('contact_id', contactId)
+      }
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      const { data: estimates } = await query
+
+      return {
+        estimates: estimates || [],
+        count: estimates?.length || 0,
+      }
+    }
+
+    case 'update_estimate_status': {
+      const { estimateId, status, rejectionReason } = args as {
+        estimateId: string
+        status: 'draft' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'expired'
+        rejectionReason?: string
+      }
+
+      const updateData: Record<string, unknown> = { status }
+
+      // Set timestamps based on status
+      if (status === 'sent' && !updateData.sent_at) {
+        updateData.sent_at = new Date().toISOString()
+      } else if (status === 'viewed' && !updateData.viewed_at) {
+        updateData.viewed_at = new Date().toISOString()
+      } else if (status === 'accepted' && !updateData.accepted_at) {
+        updateData.accepted_at = new Date().toISOString()
+      } else if (status === 'rejected') {
+        updateData.rejected_at = new Date().toISOString()
+        if (rejectionReason) {
+          updateData.rejection_reason = rejectionReason
+        }
+      }
+
+      const { data: estimate, error } = await supabase
+        .from('estimates')
+        .update(updateData)
+        .eq('id', estimateId)
+        .eq('account_id', accountId)
+        .select('*, estimate_items(*), contacts(*)')
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      if (!estimate) {
+        return { error: 'Estimate not found' }
+      }
+
+      return {
+        success: true,
+        estimate,
+        message: `Estimate ${status}`,
+      }
+    }
+
+    case 'convert_estimate_to_job': {
+      const { estimateId } = args as { estimateId: string }
+
+      // Get the estimate
+      const { data: estimate } = await supabase
+        .from('estimates')
+        .select('*, estimate_items(*), contacts(*)')
+        .eq('id', estimateId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!estimate) {
+        return { error: 'Estimate not found' }
+      }
+
+      if (estimate.status !== 'accepted') {
+        return { error: 'Only accepted estimates can be converted to jobs' }
+      }
+
+      if (estimate.converted_to_job_id) {
+        return { error: 'Estimate has already been converted to a job' }
+      }
+
+      // Create job from estimate
+      const { data: job, error: jobError } = await supabase
+        .from('jobs')
+        .insert({
+          account_id: accountId,
+          contact_id: estimate.contact_id,
+          description: `${estimate.title || 'Job'}\n\n${estimate.description || ''}`.trim(),
+          total_amount: estimate.total_amount,
+          status: 'scheduled',
+        })
+        .select()
+        .single()
+
+      if (jobError || !job) {
+        return { error: jobError?.message || 'Failed to create job' }
+      }
+
+      // Copy estimate items to job materials
+      const items = estimate.estimate_items as any[]
+      if (items && items.length > 0) {
+        const materialsToInsert = items.map(item => ({
+          account_id: accountId,
+          job_id: job.id,
+          material_name: item.name,
+          quantity: item.quantity,
+          unit: item.unit,
+          unit_cost: item.unit_price,
+          total_cost: item.total_price,
+          notes: item.description,
+        }))
+
+        await supabase.from('job_materials').insert(materialsToInsert)
+      }
+
+      // Update estimate to mark it as converted
+      await supabase
+        .from('estimates')
+        .update({ converted_to_job_id: job.id })
+        .eq('id', estimateId)
+
+      return {
+        success: true,
+        job,
+        estimate,
+        message: 'Estimate converted to job successfully',
+      }
+    }
+
+    case 'add_job_parts': {
+      const { jobId, parts } = args as {
+        jobId: string
+        parts: Array<{
+          name: string
+          quantity: number
+          unit?: string
+          unitCost: number
+          supplier?: string
+          notes?: string
+        }>
+      }
+
+      // Validate job exists and belongs to account
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('id')
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!job) {
+        return { error: 'Job not found or access denied' }
+      }
+
+      // Validate parts
+      for (const part of parts) {
+        if (part.quantity <= 0) {
+          return { error: `Quantity must be positive for part: ${part.name}` }
+        }
+        if (part.unitCost < 0) {
+          return { error: `Unit cost cannot be negative for part: ${part.name}` }
+        }
+      }
+
+      // Prepare parts for insertion
+      const partsToInsert = parts.map(part => ({
+        account_id: accountId,
+        job_id: jobId,
+        material_name: part.name,
+        quantity: part.quantity,
+        unit: part.unit || 'each',
+        unit_cost: part.unitCost,
+        total_cost: Math.round(part.quantity * part.unitCost),
+        supplier: part.supplier || null,
+        notes: part.notes || null,
+      }))
+
+      // Insert parts
+      const { data: insertedParts, error } = await supabase
+        .from('job_materials')
+        .insert(partsToInsert)
+        .select()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        parts: insertedParts,
+        message: `Added ${insertedParts.length} part(s) to job`,
+      }
+    }
+
+    case 'list_job_parts': {
+      const { jobId } = args as { jobId: string }
+
+      // Validate job exists and belongs to account
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('id')
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!job) {
+        return { error: 'Job not found or access denied' }
+      }
+
+      // Get all parts for the job
+      const { data: parts, error } = await supabase
+        .from('job_materials')
+        .select('*')
+        .eq('job_id', jobId)
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        parts: parts || [],
+        count: parts?.length || 0,
+      }
+    }
+
+    case 'update_job_part': {
+      const { partId, quantity, unitCost, notes } = args as {
+        partId: string
+        quantity?: number
+        unitCost?: number
+        notes?: string
+      }
+
+      // Validate at least one field to update
+      if (quantity === undefined && unitCost === undefined && notes === undefined) {
+        return { error: 'At least one field (quantity, unitCost, notes) must be provided' }
+      }
+
+      // Validate values
+      if (quantity !== undefined && quantity <= 0) {
+        return { error: 'Quantity must be positive' }
+      }
+      if (unitCost !== undefined && unitCost < 0) {
+        return { error: 'Unit cost cannot be negative' }
+      }
+
+      // Get current part to verify ownership
+      const { data: currentPart } = await supabase
+        .from('job_materials')
+        .select('*')
+        .eq('id', partId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!currentPart) {
+        return { error: 'Part not found or access denied' }
+      }
+
+      // Prepare update data
+      const updateData: Record<string, unknown> = {}
+
+      if (quantity !== undefined) {
+        updateData.quantity = quantity
+      }
+      if (unitCost !== undefined) {
+        updateData.unit_cost = unitCost
+      }
+      if (notes !== undefined) {
+        updateData.notes = notes
+      }
+
+      // Calculate new total cost
+      const finalQuantity = quantity !== undefined ? quantity : currentPart.quantity
+      const finalUnitCost = unitCost !== undefined ? unitCost : currentPart.unit_cost
+      updateData.total_cost = Math.round(finalQuantity * finalUnitCost)
+
+      // Update part
+      const { data: updatedPart, error } = await supabase
+        .from('job_materials')
+        .update(updateData)
+        .eq('id', partId)
+        .eq('account_id', accountId)
+        .select()
+        .single()
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        part: updatedPart,
+        message: 'Part updated successfully',
+      }
+    }
+
+    case 'remove_job_part': {
+      const { partId } = args as { partId: string }
+
+      // Verify part exists and belongs to account
+      const { data: part } = await supabase
+        .from('job_materials')
+        .select('id, material_name')
+        .eq('id', partId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!part) {
+        return { error: 'Part not found or access denied' }
+      }
+
+      // Delete part
+      const { error } = await supabase
+        .from('job_materials')
+        .delete()
+        .eq('id', partId)
+        .eq('account_id', accountId)
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {
+        success: true,
+        message: `Part "${part.material_name}" removed successfully`,
+      }
+    }
+
+    case 'email_parts_list': {
+      const { jobId, recipientEmail } = args as {
+        jobId: string
+        recipientEmail: string
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(recipientEmail)) {
+        return { error: 'Invalid email address format' }
+      }
+
+      // Get job details with contact info
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('*, contacts(*)')
+        .eq('id', jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!job) {
+        return { error: 'Job not found' }
+      }
+
+      // Get all job materials for this job
+      const { data: materials, error: materialsError } = await supabase
+        .from('job_materials')
+        .select('*')
+        .eq('job_id', jobId)
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: true })
+
+      if (materialsError) {
+        return { error: materialsError.message }
+      }
+
+      if (!materials || materials.length === 0) {
+        return { error: 'No parts found for this job' }
+      }
+
+      // Calculate totals
+      let subtotal = 0
+      const partsRows = materials
+        .map((material: any) => {
+          const quantity = parseFloat(material.quantity) || 1
+          const unitCost = material.unit_cost || 0
+          const total = Math.round(quantity * unitCost)
+          subtotal += total
+
+          const unitPriceFormatted = (unitCost / 100).toFixed(2)
+          const totalFormatted = (total / 100).toFixed(2)
+
+          return `
+            <tr style="border-bottom: 1px solid #ddd;">
+              <td style="padding: 8px;">${material.material_name}${material.notes ? `<br/><small style="color: #666;">${material.notes}</small>` : ''}</td>
+              <td style="padding: 8px; text-align: center;">${quantity} ${material.unit || 'each'}</td>
+              <td style="padding: 8px; text-align: right;">$${unitPriceFormatted}</td>
+              <td style="padding: 8px; text-align: right;">$${totalFormatted}</td>
+            </tr>
+          `
+        })
+        .join('')
+
+      const subtotalFormatted = (subtotal / 100).toFixed(2)
+      const totalFormatted = (subtotal / 100).toFixed(2)
+
+      const contact = job.contacts as any
+      const customerName = contact?.name || 'Valued Customer'
+      const jobNumber = job.job_number || jobId.substring(0, 8)
+      const jobDescription = job.description || 'N/A'
+
+      // Generate professional HTML email
+      const emailBody = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+              h2 { color: #2563eb; border-bottom: 3px solid #2563eb; padding-bottom: 10px; }
+              table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+              th { background-color: #f3f4f6; padding: 12px; text-align: left; font-weight: bold; border-bottom: 2px solid #000; }
+              .summary { margin-top: 20px; text-align: right; }
+              .summary p { margin: 5px 0; }
+              .total { font-size: 1.2em; font-weight: bold; color: #2563eb; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h2>Parts & Materials List - Job #${jobNumber}</h2>
+              <p><strong>Customer:</strong> ${customerName}</p>
+              <p><strong>Job Description:</strong> ${jobDescription}</p>
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th style="text-align: center;">Quantity</th>
+                    <th style="text-align: right;">Unit Price</th>
+                    <th style="text-align: right;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${partsRows}
+                </tbody>
+              </table>
+
+              <div class="summary">
+                <p><strong>Subtotal:</strong> $${subtotalFormatted}</p>
+                <p class="total">Total: $${totalFormatted}</p>
+              </div>
+
+              <p style="margin-top: 30px; color: #666; font-size: 0.9em;">
+                Thank you for your business. If you have any questions about these materials, please don't hesitate to contact us.
+              </p>
+            </div>
+          </body>
+        </html>
+      `
+
+      // Send email via Resend
+      const resendKey = process.env.RESEND_API_KEY
+      if (!resendKey) {
+        return { error: 'Email service not configured' }
+      }
+
+      // Get sender email from environment config (Phase 1 pattern)
+      const senderEmail = process.env.RESEND_VERIFIED_DOMAIN
+        ? (process.env.RESEND_VERIFIED_DOMAIN.includes('@')
+            ? `CRM <${process.env.RESEND_VERIFIED_DOMAIN}>`
+            : `CRM <noreply@${process.env.RESEND_VERIFIED_DOMAIN}>`)
+        : 'CRM <noreply@resend.dev>'
+
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: senderEmail,
+          to: [recipientEmail],
+          subject: `Parts List - Job #${jobNumber}`,
+          html: emailBody,
+        }),
+      })
+
+      const emailData = await emailRes.json()
+
+      if (!emailRes.ok) {
+        return { error: emailData.message || 'Failed to send parts list email' }
+      }
+
+      return {
+        success: true,
+        messageId: emailData.id,
+        partsCount: materials.length,
+        total: totalFormatted,
+        message: `Parts list sent to ${recipientEmail}`,
       }
     }
 

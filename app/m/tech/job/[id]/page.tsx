@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import { BigButton, BigButtonGrid } from '@/components/mobile/big-button'
 import { gpsTracker } from '@/lib/gps/tracker'
+import { saveGateCompletionOffline, type OfflineGateCompletion } from '@/lib/offline/db'
+import SignatureCanvas from 'react-signature-canvas'
 
 type GateStage = 
   | 'arrival'
@@ -60,9 +62,10 @@ export default function TechJobPage() {
     signatureData: null,
   })
   const [isProcessing, setIsProcessing] = useState(false)
-  
+  const [hasSignature, setHasSignature] = useState(false)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const signatureRef = useRef<SignatureCanvas>(null)
 
   useEffect(() => {
     fetchJob()
@@ -90,17 +93,39 @@ export default function TechJobPage() {
     setIsProcessing(true)
     try {
       await gpsTracker.logArrival(jobId, { stage: 'arrival' })
-      
-      await fetch('/api/tech/gates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobId,
-          stageName: 'arrival',
-          metadata: { gpsLogged: true },
-        }),
-      })
-      
+
+      const gateData = {
+        jobId,
+        stageName: 'arrival',
+        metadata: { gpsLogged: true },
+      }
+
+      // Try online first
+      try {
+        await fetch('/api/tech/gates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gateData),
+        })
+      } catch (error) {
+        // If offline, save to IndexedDB
+        if (!navigator.onLine) {
+          const offlineGate: OfflineGateCompletion = {
+            id: crypto.randomUUID(),
+            localId: crypto.randomUUID(),
+            jobId: jobId,
+            stageName: 'arrival',
+            status: 'completed',
+            metadata: { gpsLogged: true },
+            syncStatus: 'pending',
+            lastModified: Date.now(),
+          }
+          await saveGateCompletionOffline(offlineGate)
+        } else {
+          throw error
+        }
+      }
+
       setGateState(prev => ({ ...prev, arrivalLogged: true }))
       setCurrentStage('before_photos')
     } catch (error) {
@@ -159,58 +184,145 @@ export default function TechJobPage() {
       return
     }
 
-    await fetch('/api/tech/gates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jobId,
-        stageName: `${type}_photos`,
-        metadata: { photoCount: photos.length },
-      }),
-    })
+    const gateData = {
+      jobId,
+      stageName: `${type}_photos`,
+      metadata: { photoCount: photos.length },
+    }
+
+    try {
+      await fetch('/api/tech/gates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gateData),
+      })
+    } catch (error) {
+      // If offline, save to IndexedDB
+      if (!navigator.onLine) {
+        const offlineGate: OfflineGateCompletion = {
+          id: crypto.randomUUID(),
+          localId: crypto.randomUUID(),
+          jobId: jobId,
+          stageName: `${type}_photos`,
+          status: 'completed',
+          metadata: { photoCount: photos.length },
+          syncStatus: 'pending',
+          lastModified: Date.now(),
+        }
+        await saveGateCompletionOffline(offlineGate)
+      } else {
+        throw error
+      }
+    }
 
     setCurrentStage(type === 'before' ? 'work_complete' : 'satisfaction')
   }
 
   const handleWorkComplete = async () => {
-    await fetch('/api/tech/gates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jobId,
-        stageName: 'work_complete',
-      }),
-    })
+    const gateData = {
+      jobId,
+      stageName: 'work_complete',
+    }
+
+    try {
+      await fetch('/api/tech/gates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gateData),
+      })
+    } catch (error) {
+      // If offline, save to IndexedDB
+      if (!navigator.onLine) {
+        const offlineGate: OfflineGateCompletion = {
+          id: crypto.randomUUID(),
+          localId: crypto.randomUUID(),
+          jobId: jobId,
+          stageName: 'work_complete',
+          status: 'completed',
+          metadata: {},
+          syncStatus: 'pending',
+          lastModified: Date.now(),
+        }
+        await saveGateCompletionOffline(offlineGate)
+      } else {
+        throw error
+      }
+    }
+
     setCurrentStage('after_photos')
   }
 
   const handleSatisfactionRating = async (rating: number) => {
     setGateState(prev => ({ ...prev, satisfactionRating: rating }))
-    
+
     if (rating <= 3) {
       // Escalate to manager
-      await fetch('/api/tech/gates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobId,
-          stageName: 'satisfaction',
-          metadata: { rating, escalated: true },
-          requiresException: true,
-        }),
-      })
+      const gateData = {
+        jobId,
+        stageName: 'satisfaction',
+        metadata: { rating, escalated: true },
+        requiresException: true,
+      }
+
+      try {
+        await fetch('/api/tech/gates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gateData),
+        })
+      } catch (error) {
+        if (!navigator.onLine) {
+          const offlineGate: OfflineGateCompletion = {
+            id: crypto.randomUUID(),
+            localId: crypto.randomUUID(),
+            jobId: jobId,
+            stageName: 'satisfaction',
+            status: 'completed',
+            satisfactionRating: rating,
+            metadata: { rating, escalated: true },
+            syncStatus: 'pending',
+            lastModified: Date.now(),
+          }
+          await saveGateCompletionOffline(offlineGate)
+        } else {
+          throw error
+        }
+      }
+
       alert('Manager has been notified. They will contact the customer.')
       setCurrentStage('signature')
     } else {
-      await fetch('/api/tech/gates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobId,
-          stageName: 'satisfaction',
-          metadata: { rating },
-        }),
-      })
+      const gateData = {
+        jobId,
+        stageName: 'satisfaction',
+        metadata: { rating },
+      }
+
+      try {
+        await fetch('/api/tech/gates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gateData),
+        })
+      } catch (error) {
+        if (!navigator.onLine) {
+          const offlineGate: OfflineGateCompletion = {
+            id: crypto.randomUUID(),
+            localId: crypto.randomUUID(),
+            jobId: jobId,
+            stageName: 'satisfaction',
+            status: 'completed',
+            satisfactionRating: rating,
+            metadata: { rating },
+            syncStatus: 'pending',
+            lastModified: Date.now(),
+          }
+          await saveGateCompletionOffline(offlineGate)
+        } else {
+          throw error
+        }
+      }
+
       setCurrentStage('review_request')
     }
   }
@@ -222,48 +334,138 @@ export default function TechJobPage() {
       discountApplied: discount,
     }))
 
-    await fetch('/api/tech/gates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jobId,
-        stageName: 'review_request',
-        metadata: { accepted, discount },
-      }),
-    })
+    const gateData = {
+      jobId,
+      stageName: 'review_request',
+      metadata: { accepted, discount },
+    }
+
+    try {
+      await fetch('/api/tech/gates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gateData),
+      })
+    } catch (error) {
+      if (!navigator.onLine) {
+        const offlineGate: OfflineGateCompletion = {
+          id: crypto.randomUUID(),
+          localId: crypto.randomUUID(),
+          jobId: jobId,
+          stageName: 'review_request',
+          status: 'completed',
+          metadata: { accepted, discount },
+          syncStatus: 'pending',
+          lastModified: Date.now(),
+        }
+        await saveGateCompletionOffline(offlineGate)
+      } else {
+        throw error
+      }
+    }
 
     setCurrentStage('signature')
   }
 
   const handleSignature = async () => {
-    // In production, implement actual signature capture
-    const signatureData = 'signature_placeholder'
-    
+    if (!signatureRef.current || signatureRef.current.isEmpty()) {
+      alert('Please provide a signature first')
+      return
+    }
+
     setIsProcessing(true)
     try {
+      // Get signature as data URL
+      const signatureData = signatureRef.current.toDataURL('image/png')
+      let signatureUrl = signatureData // Default to data URL for offline
+
+      // Try to upload signature if online
+      try {
+        const blob = await (await fetch(signatureData)).blob()
+        const formData = new FormData()
+        formData.append('photo', blob, 'signature.png')
+        formData.append('jobId', jobId)
+        formData.append('type', 'signature')
+
+        const photoRes = await fetch('/api/photos', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (photoRes.ok) {
+          const photoData = await photoRes.json()
+          signatureUrl = photoData.url
+        }
+      } catch (photoError) {
+        // Photo upload failed, but we'll still save the gate with data URL
+        console.warn('Signature photo upload failed, saving offline:', photoError)
+      }
+
+      // Log GPS departure
       await gpsTracker.logDeparture(jobId, { stage: 'completion' })
-      
-      await fetch('/api/tech/gates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobId,
-          stageName: 'signature',
-          metadata: { signatureData },
-        }),
-      })
+
+      const gateData = {
+        jobId,
+        stageName: 'signature',
+        metadata: {
+          signatureUrl: signatureUrl,
+          signedAt: new Date().toISOString()
+        },
+      }
+
+      // Complete gate with signature URL
+      try {
+        await fetch('/api/tech/gates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gateData),
+        })
+      } catch (error) {
+        if (!navigator.onLine) {
+          const offlineGate: OfflineGateCompletion = {
+            id: crypto.randomUUID(),
+            localId: crypto.randomUUID(),
+            jobId: jobId,
+            stageName: 'signature',
+            status: 'completed',
+            metadata: {
+              signatureUrl: signatureUrl,
+              signedAt: new Date().toISOString()
+            },
+            syncStatus: 'pending',
+            lastModified: Date.now(),
+          }
+          await saveGateCompletionOffline(offlineGate)
+        } else {
+          throw error
+        }
+      }
 
       // Mark job complete
-      await fetch(`/api/tech/jobs/${jobId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'completed' }),
-      })
+      try {
+        await fetch(`/api/tech/jobs/${jobId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'completed' }),
+        })
+      } catch (error) {
+        // Job status update can fail offline - will be updated when gate syncs
+        console.warn('Job completion update failed:', error)
+      }
 
+      setGateState(prev => ({ ...prev, signatureData: signatureData }))
       setCurrentStage('done')
+    } catch (error) {
+      console.error('Signature error:', error)
+      alert('Failed to save signature. Please try again.')
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  const clearSignature = () => {
+    signatureRef.current?.clear()
+    setHasSignature(false)
   }
 
   if (loading) {
@@ -493,23 +695,40 @@ export default function TechJobPage() {
               <p className="text-gray-400">Please sign to confirm work completion</p>
             </div>
 
-            <div className="bg-white rounded-xl h-48 relative">
-              <canvas
-                ref={canvasRef}
-                className="w-full h-full rounded-xl"
+            <div className="bg-white rounded-xl overflow-hidden">
+              <SignatureCanvas
+                ref={signatureRef}
+                canvasProps={{
+                  className: 'w-full h-48 touch-none',
+                  style: { touchAction: 'none' }
+                }}
+                backgroundColor="white"
+                penColor="black"
+                minWidth={1}
+                maxWidth={3}
+                onEnd={() => setHasSignature(true)}
               />
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
-                Sign here
-              </div>
             </div>
 
-            <BigButton
-              icon={CheckCircle}
-              label="COMPLETE JOB"
-              variant="success"
-              onClick={handleSignature}
-              disabled={isProcessing}
-            />
+            {hasSignature && (
+              <button
+                onClick={clearSignature}
+                className="w-full py-2 text-gray-400 text-sm underline"
+              >
+                Clear Signature
+              </button>
+            )}
+
+            <BigButtonGrid columns={1}>
+              <BigButton
+                icon={CheckCircle}
+                label="COMPLETE JOB"
+                sublabel={hasSignature ? "Signature captured" : "Sign above to continue"}
+                variant="success"
+                onClick={handleSignature}
+                disabled={isProcessing || !hasSignature}
+              />
+            </BigButtonGrid>
           </div>
         )}
 

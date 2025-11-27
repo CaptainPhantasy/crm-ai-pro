@@ -147,9 +147,45 @@ export default function MeetingTranscriptionPage() {
 
       if (response.ok) {
         const data = await response.json()
-        // Show success with extracted data
-        alert(`Meeting saved!\n\nAI extracted:\n- Summary ready\n- ${data.meeting?.action_items?.length || 0} action items`)
-        router.push('/sales/dashboard')
+
+        // Build AI results message
+        let message = 'Meeting saved successfully!\n\n'
+
+        if (data.analysis) {
+          message += '🤖 AI ANALYSIS\n'
+          message += '─'.repeat(40) + '\n\n'
+
+          if (data.analysis.summary) {
+            message += `📝 Summary:\n${data.analysis.summary}\n\n`
+          }
+
+          if (data.analysis.actionItems && data.analysis.actionItems.length > 0) {
+            message += `✅ Action Items (${data.analysis.actionItems.length}):\n`
+            data.analysis.actionItems.forEach((item: string, i: number) => {
+              message += `${i + 1}. ${item}\n`
+            })
+            message += '\n'
+          }
+
+          if (data.analysis.sentiment) {
+            const sentimentEmoji = {
+              positive: '😊',
+              neutral: '😐',
+              negative: '😞',
+              mixed: '🤔'
+            }[data.analysis.sentiment] || '📊'
+            message += `${sentimentEmoji} Sentiment: ${data.analysis.sentiment}\n\n`
+          }
+
+          if (data.analysis.nextSteps) {
+            message += `🎯 Next Steps:\n${data.analysis.nextSteps}\n`
+          }
+        } else {
+          message += 'Note: AI analysis was not available, but your transcript was saved.'
+        }
+
+        alert(message)
+        router.push('/m/sales/dashboard')
       } else {
         throw new Error('Failed to save')
       }
