@@ -53,7 +53,7 @@ async function setupAuth() {
 
     // 2. Create test user in Auth
     const testEmail = 'test@317plumber.com'
-    const testPassword = 'TestPassword123!'
+    const testPassword = 'TestPass123!'
 
     // Check if user already exists
     const { data: existingUsers } = await supabase.auth.admin.listUsers()

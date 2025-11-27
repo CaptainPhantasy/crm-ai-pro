@@ -34,7 +34,7 @@ async function testLLMRouterAPI() {
     console.log('1. Authenticating test user...')
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: 'test@317plumber.com',
-      password: 'TestPassword123!',
+      password: 'TestPass123!',
     })
 
     if (authError || !authData.session) {
@@ -55,7 +55,7 @@ async function testLLMRouterAPI() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: 'test' }),
       })
-      
+
       if (response.status === 401) {
         console.log('   ✅ Returns 401 for unauthorized request')
         results.push({ name: 'Unauthorized request', passed: true })
@@ -79,7 +79,7 @@ async function testLLMRouterAPI() {
         },
         body: JSON.stringify({}),
       })
-      
+
       const data = await response.json()
       if (response.status === 400 && data.error?.includes('Prompt is required')) {
         console.log('   ✅ Returns 400 for missing prompt')
@@ -114,7 +114,7 @@ async function testLLMRouterAPI() {
         console.log(`   ✅ Request successful (${response.status})`)
         console.log(`   Provider: ${data.provider}`)
         console.log(`   Model: ${data.model}`)
-        
+
         if (data.provider === 'anthropic-claude-haiku-4-5' || data.model === 'claude-haiku-4-5') {
           console.log('   ✅ Correctly routed to Claude Haiku 4.5')
           results.push({ name: 'Draft use case routing', passed: true, details: { provider: data.provider, model: data.model } })
@@ -157,7 +157,7 @@ async function testLLMRouterAPI() {
         console.log(`   ✅ Request successful (${response.status})`)
         console.log(`   Provider: ${data.provider}`)
         console.log(`   Model: ${data.model}`)
-        
+
         if (data.provider?.includes('sonnet') || data.model?.includes('sonnet')) {
           console.log('   ✅ Correctly routed to Claude Sonnet')
           results.push({ name: 'Complex use case routing', passed: true, details: { provider: data.provider, model: data.model } })
@@ -194,13 +194,13 @@ async function testLLMRouterAPI() {
 
       if (response.ok) {
         const data = await response.json()
-        const hasRequiredFields = 
+        const hasRequiredFields =
           data.success === true &&
           typeof data.text === 'string' &&
           data.provider &&
           data.model &&
           data.usage
-        
+
         if (hasRequiredFields) {
           console.log('   ✅ Response format is correct')
           console.log(`   Fields: success=${data.success}, text.length=${data.text.length}, provider=${data.provider}, model=${data.model}`)
@@ -222,10 +222,10 @@ async function testLLMRouterAPI() {
     console.log(`\n${'='.repeat(60)}`)
     console.log('📊 Test Summary')
     console.log(`${'='.repeat(60)}`)
-    
+
     const passed = results.filter(r => r.passed).length
     const failed = results.filter(r => !r.passed).length
-    
+
     results.forEach(result => {
       const icon = result.passed ? '✅' : '❌'
       console.log(`${icon} ${result.name}`)
@@ -233,7 +233,7 @@ async function testLLMRouterAPI() {
         console.log(`   Error: ${result.error}`)
       }
     })
-    
+
     console.log(`\n✅ Passed: ${passed}`)
     console.log(`❌ Failed: ${failed}`)
     console.log(`📈 Success Rate: ${((passed / results.length) * 100).toFixed(1)}%`)

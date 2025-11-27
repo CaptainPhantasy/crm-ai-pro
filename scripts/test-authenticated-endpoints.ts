@@ -23,7 +23,7 @@ async function testAuthenticatedEndpoints() {
     console.log('1. Authenticating test user...')
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: 'test@317plumber.com',
-      password: 'TestPassword123!',
+      password: 'TestPass123!',
     })
 
     if (authError || !authData.session) {

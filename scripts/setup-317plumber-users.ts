@@ -33,11 +33,11 @@ const teamMembers: TeamMember[] = [
   // Executive
   { name: 'Ryan Galbraith', role: 'owner', email: 'ryan@317plumber.com', fullName: 'Ryan Galbraith' },
   { name: 'Cecily Turner', role: 'admin', email: 'cecily@317plumber.com', fullName: 'Cecily Turner' },
-  
+
   // Dispatch & Office
   { name: 'Maria Lopez', role: 'dispatcher', email: 'maria.lopez@317plumber.com', fullName: 'Maria Lopez' },
   { name: 'Kevin Sandler', role: 'dispatcher', email: 'kevin.sandler@317plumber.com', fullName: 'Kevin Sandler' },
-  
+
   // Field Technicians
   { name: 'Tom "TJ" Jackson', role: 'tech', email: 'tj.jackson@317plumber.com', fullName: 'Tom "TJ" Jackson' },
   { name: 'Derrick Hayes', role: 'tech', email: 'derrick.hayes@317plumber.com', fullName: 'Derrick Hayes' },
@@ -51,11 +51,11 @@ const teamMembers: TeamMember[] = [
   { name: 'Jim Parkhurst', role: 'tech', email: 'jim.parkhurst@317plumber.com', fullName: 'Jim Parkhurst' },
   { name: 'Garrett James', role: 'tech', email: 'garrett.james@317plumber.com', fullName: 'Garrett James' },
   { name: 'Jackson Miller', role: 'tech', email: 'jackson.miller@317plumber.com', fullName: 'Jackson Miller' },
-  
+
   // Management
   { name: 'Michelle Carter', role: 'admin', email: 'michelle.carter@317plumber.com', fullName: 'Michelle Carter' },
   { name: 'Robert "Bobby" Harmon', role: 'admin', email: 'bobby.harmon@317plumber.com', fullName: 'Robert "Bobby" Harmon' },
-  
+
   // Sales
   { name: 'Evan Brewer', role: 'admin', email: 'evan.brewer@317plumber.com', fullName: 'Evan Brewer' },
   { name: 'Zoe Cross', role: 'admin', email: 'zoe.cross@317plumber.com', fullName: 'Zoe Cross' },
@@ -104,7 +104,7 @@ async function setupUsers() {
 
         // Check if user already exists in auth.users
         const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers()
-        
+
         if (listError) {
           throw new Error(`Failed to list users: ${listError.message}`)
         }
@@ -113,20 +113,32 @@ async function setupUsers() {
 
         let userId: string
 
+        // Generate deterministic phone number based on email
+        // Pattern: 317555XXXX where XXXX is derived from email
+        const emailHash = member.email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+        const uniqueSuffix = (emailHash % 10000).toString().padStart(4, '0')
+        const phoneNumber = `317555${uniqueSuffix}`
+
         if (existingAuthUser) {
           // User exists in auth.users
           userId = existingAuthUser.id
           console.log(`   ⚠️  User already exists in auth.users (ID: ${userId})`)
-          
-          // Update password to default (in case it was changed)
+
+          // Update password to default (in case it was changed) AND ensure phone number
           const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
-            password: DEFAULT_PASSWORD
+            password: DEFAULT_PASSWORD,
+            phone: phoneNumber,
+            phone_confirm: true,
+            user_metadata: {
+              ...existingAuthUser.user_metadata,
+              full_name: member.fullName
+            }
           })
-          
+
           if (updateError) {
-            console.log(`   ⚠️  Could not update password: ${updateError.message}`)
+            console.log(`   ⚠️  Could not update password/phone: ${updateError.message}`)
           } else {
-            console.log(`   ✅ Password reset to default`)
+            console.log(`   ✅ Password reset and phone updated`)
           }
         } else {
           // Create new user in auth.users
@@ -134,6 +146,8 @@ async function setupUsers() {
             email: member.email,
             password: DEFAULT_PASSWORD,
             email_confirm: true, // Auto-confirm email
+            phone: phoneNumber,
+            phone_confirm: true,
             user_metadata: {
               full_name: member.fullName,
               role: member.role
@@ -211,7 +225,7 @@ async function setupUsers() {
     console.log(`✅ Created: ${results.created} users`)
     console.log(`🔄 Updated: ${results.updated} users`)
     console.log(`⏭️  Skipped: ${results.skipped} users`)
-    
+
     if (results.errors.length > 0) {
       console.log(`\n❌ Errors:`)
       results.errors.forEach(err => console.log(`   - ${err}`))

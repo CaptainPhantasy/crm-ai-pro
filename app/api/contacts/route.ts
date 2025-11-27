@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       const token = authHeader.substring(7)
       supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
           global: {
             headers: {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       const cookieStore = await cookies()
       supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
           cookies: {
             getAll() {
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
                 cookiesToSet.forEach(({ name, value, options }) =>
                   cookieStore.set(name, value, options)
                 )
-              } catch {}
+              } catch { }
             },
           },
         }
@@ -59,8 +59,8 @@ export async function POST(request: Request) {
     const { email, phone, firstName, lastName, address } = body
 
     if (!email || !firstName) {
-      return NextResponse.json({ 
-        error: 'Missing required fields: email, firstName' 
+      return NextResponse.json({
+        error: 'Missing required fields: email, firstName'
       }, { status: 400 })
     }
 
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       .single()
 
     if (existing) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Contact with this email already exists',
         contact: existing
       }, { status: 409 })
@@ -132,7 +132,7 @@ export async function GET(request: Request) {
       const token = authHeader.substring(7)
       supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
           global: {
             headers: {
@@ -146,7 +146,7 @@ export async function GET(request: Request) {
       const cookieStore = await cookies()
       supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
           cookies: {
             getAll() {
@@ -157,7 +157,7 @@ export async function GET(request: Request) {
                 cookiesToSet.forEach(({ name, value, options }) =>
                   cookieStore.set(name, value, options)
                 )
-              } catch {}
+              } catch { }
             },
           },
         }

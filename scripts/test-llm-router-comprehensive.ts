@@ -46,7 +46,7 @@ async function testLLMRouter() {
   console.log('🔐 Authenticating test user...')
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email: 'test@317plumber.com',
-    password: 'TestPassword123!',
+    password: 'TestPass123!',
   })
 
   if (authError || !authData.session) {
@@ -154,9 +154,9 @@ async function testLLMRouter() {
 
         // Check if provider/model matches expectation
         const providerMatch = !testCase.expectedProvider ||
-                            provider.toLowerCase().includes(testCase.expectedProvider.toLowerCase())
+          provider.toLowerCase().includes(testCase.expectedProvider.toLowerCase())
         const modelMatch = !testCase.expectedModel ||
-                          model.toLowerCase().includes(testCase.expectedModel.toLowerCase())
+          model.toLowerCase().includes(testCase.expectedModel.toLowerCase())
 
         if (!providerMatch || !modelMatch) {
           console.log(`   ⚠️  Expected ${testCase.expectedProvider}/${testCase.expectedModel}, got ${provider}/${model}`)

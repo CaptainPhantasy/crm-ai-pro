@@ -68,14 +68,14 @@ async function fixAdminRole() {
     // 2. Find user by email in auth.users
     console.log('\n🔍 Finding user in auth.users...')
     const { data: usersList, error: listError } = await supabase.auth.admin.listUsers()
-    
+
     if (listError) {
       console.error('❌ Error listing users:', listError)
       throw listError
     }
 
     const authUser = usersList?.users?.find(u => u.email === email)
-    
+
     if (!authUser) {
       console.error(`❌ User not found: ${email}`)
       console.log('\n💡 To create a new user, run: npm run setup-auth')
@@ -101,7 +101,7 @@ async function fixAdminRole() {
     if (existingUser) {
       console.log(`   Current role: ${existingUser.role || 'null'}`)
       console.log(`   Current account_id: ${existingUser.account_id}`)
-      
+
       if (existingUser.role === 'owner' && existingUser.account_id === accountId) {
         console.log('\n✅ User already has owner role and correct account_id!')
         return { userId, accountId, email }
@@ -163,7 +163,7 @@ async function fixAdminRole() {
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
-        password: 'TestPassword123!', // Default password
+        password: 'TestPass123!', // Default password
       })
 
       if (authError) {

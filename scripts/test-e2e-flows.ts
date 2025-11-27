@@ -22,7 +22,7 @@ async function testE2EFlows() {
   console.log('1. Authenticating...')
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email: 'test@317plumber.com',
-    password: 'TestPassword123!',
+    password: 'TestPass123!',
   })
 
   if (authError || !authData.session) {
@@ -114,7 +114,7 @@ async function testE2EFlows() {
     console.log('   Note: Make sure Next.js dev server is running on port 3000')
   }
 
-      // 5. Test Voice Commands (via edge function)
+  // 5. Test Voice Commands (via edge function)
   console.log('\n5. Testing voice command edge function...')
   try {
     const voiceRes = await fetch(`${supabaseUrl}/functions/v1/voice-command`, {

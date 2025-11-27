@@ -18,12 +18,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Future TODO: Add 'sales' to the role enum in the database.
 
 const TEST_USERS = [
-  { email: 'ryan@317plumber.com', password: 'Password123!', role: 'owner', fullName: 'Ryan Galbraith' },
-  { email: 'cecily@317plumber.com', password: 'Password123!', role: 'admin', fullName: 'Cecily Turner' },
-  { email: 'maria@317plumber.com', password: 'Password123!', role: 'dispatcher', fullName: 'Maria Lopez' },
-  { email: 'tom@317plumber.com', password: 'Password123!', role: 'tech', fullName: 'Tom "TJ" Jackson' },
+  // Protected User - DO NOT RESET PASSWORD
+  // { email: 'ryan@317plumber.com', password: 'TestPass123!', role: 'owner', fullName: 'Ryan Galbraith' },
+  { email: 'cecily@317plumber.com', password: 'TestPass123!', role: 'admin', fullName: 'Cecily Turner' },
+  { email: 'maria@317plumber.com', password: 'TestPass123!', role: 'dispatcher', fullName: 'Maria Lopez' },
+  { email: 'tom@317plumber.com', password: 'TestPass123!', role: 'tech', fullName: 'Tom "TJ" Jackson' },
   // Adding Sales user (mapped to admin for now as temporary workaround or we can try to add it if constraint allows)
-  { email: 'sarah@317plumber.com', password: 'Password123!', role: 'admin', fullName: 'Sarah Miller (Sales)' }
+  { email: 'sarah@317plumber.com', password: 'TestPass123!', role: 'admin', fullName: 'Sarah Miller (Sales)' }
 ];
 
 async function resetPasswords() {
@@ -56,11 +57,11 @@ async function resetPasswords() {
         } else {
           console.log(`✅ Reset password for ${user.email}`);
         }
-        
+
         // Update public.users role/name just in case
-        await supabase.from('users').update({ 
+        await supabase.from('users').update({
           full_name: user.fullName,
-          role: user.role 
+          role: user.role
         }).eq('id', existingUser.id);
 
       } else {
@@ -76,10 +77,10 @@ async function resetPasswords() {
           console.error(`Failed to create user ${user.email}:`, createError.message);
         } else if (newUser.user) {
           console.log(`✅ Created new user ${user.email}`);
-          
+
           // Need to link to the correct account_id. fetching 317plumber account
           const { data: account } = await supabase.from('accounts').select('id').eq('slug', '317plumber').single();
-          
+
           if (account) {
             await supabase.from('users').insert({
               id: newUser.user.id,

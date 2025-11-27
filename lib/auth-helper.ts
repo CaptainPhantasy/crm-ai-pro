@@ -20,12 +20,15 @@ export async function getAuthenticatedSession(request?: Request) {
             },
           }
         )
-        const { data: { user }, error } = await supabaseClient.auth.getUser(token)
+        const { data: { user }, error } = await supabaseClient.auth.getUser()
         if (user && !error) {
           return { user, session: { user, access_token: token } }
+        } else {
+          console.error('Supabase getUser error:', error)
         }
       } catch (err) {
         console.error('Error validating Bearer token:', err)
+
       }
     }
   }
@@ -45,7 +48,7 @@ export async function getAuthenticatedSession(request?: Request) {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
-          } catch {}
+          } catch { }
         },
       },
     }

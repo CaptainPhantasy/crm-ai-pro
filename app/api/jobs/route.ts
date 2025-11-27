@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       const token = authHeader.substring(7)
       supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
           global: {
             headers: {
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       const cookieStore = await cookies()
       supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
           cookies: {
             getAll() {
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
                 cookiesToSet.forEach(({ name, value, options }) =>
                   cookieStore.set(name, value, options)
                 )
-              } catch {}
+              } catch { }
             },
           },
         }
@@ -58,8 +58,8 @@ export async function POST(request: Request) {
     const { conversationId, contactId, description, scheduledStart, scheduledEnd, techAssignedId } = body
 
     if (!contactId || !description) {
-      return NextResponse.json({ 
-        error: 'Missing required fields: contactId, description' 
+      return NextResponse.json({
+        error: 'Missing required fields: contactId, description'
       }, { status: 400 })
     }
 
@@ -108,25 +108,43 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    // TEMPORARY: Skip auth for voice agent testing
-    // const auth = await getAuthenticatedSession(request)
-    // if (!auth) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
-    const auth = { user: { id: 'test-user' } } // Mock auth for testing
+    // 1. Authenticate User
+    const auth = await getAuthenticatedSession(request)
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    // TEMPORARY: Use service role client for voice agent testing (bypasses RLS)
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(
+    // 2. Create Authenticated Client
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch { }
+          },
+        },
       }
     )
+
+    // 3. Get User's Account ID
+    const { data: user } = await supabase
+      .from('users')
+      .select('account_id')
+      .eq('id', auth.user.id)
+      .single()
+
+    if (!user?.account_id) {
+      return NextResponse.json({ error: 'User has no account assigned' }, { status: 403 })
+    }
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
@@ -135,14 +153,11 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // For voice agent testing: show jobs from default account (where voice agent creates jobs)
-    // TODO: Make voice agent use authenticated user's account
-    const accountId = process.env.DEFAULT_ACCOUNT_ID || 'fde73a6a-ea84-46a7-803b-a3ae7cc09d00'
-
+    // 4. Query Jobs (Filtered by Account ID via RLS)
     let query = supabase
       .from('jobs')
       .select('*, contact:contacts(*), tech:users!tech_assigned_id(*)', { count: 'exact' })
-      .eq('account_id', accountId)
+      .eq('account_id', user.account_id) // Explicitly filter by account_id for safety
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -174,4 +189,3 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
-

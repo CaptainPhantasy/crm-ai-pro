@@ -33,25 +33,25 @@ interface UserConfig {
 const users: UserConfig[] = [
   {
     email: 'test@317plumber.com',
-    password: 'TestPassword123!',
+    password: 'TestPass123!',
     role: 'owner',
     storageStatePath: 'playwright/.auth/owner.json',
   },
   {
     email: 'admin@317plumber.com',
-    password: 'TestPassword123!',
+    password: 'TestPass123!',
     role: 'admin',
     storageStatePath: 'playwright/.auth/admin.json',
   },
   {
     email: 'dispatcher@317plumber.com',
-    password: 'TestPassword123!',
+    password: 'TestPass123!',
     role: 'dispatcher',
     storageStatePath: 'playwright/.auth/dispatcher.json',
   },
   {
     email: 'tech@317plumber.com',
-    password: 'TestPassword123!',
+    password: 'TestPass123!',
     role: 'tech',
     storageStatePath: 'playwright/.auth/tech.json',
   },
@@ -83,18 +83,45 @@ async function createAuthStates() {
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
     let authUser = existingUsers?.users?.find(u => u.email === user.email)
 
+    // Generate deterministic phone number based on email
+    // Pattern: 317555XXXX where XXXX is derived from email
+    const emailHash = user.email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    const uniqueSuffix = (emailHash % 10000).toString().padStart(4, '0')
+    const phoneNumber = `317555${uniqueSuffix}`
+
     if (!authUser) {
       console.log(`  Creating auth user...`)
       const { data: newUser, error } = await supabaseAdmin.auth.admin.createUser({
         email: user.email,
         password: user.password,
         email_confirm: true,
+        phone: phoneNumber,
+        phone_confirm: true,
+        user_metadata: {
+          full_name: `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} User`
+        }
       })
       if (error) {
         console.error(`  Error creating user:`, error.message)
         continue
       }
       authUser = newUser.user
+    } else {
+      // Update existing user with correct password and phone if needed
+      // Note: We don't update password here to avoid changing protected users if this script is run against them
+      // But for these specific test users, we want to ensure they have the phone number
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(authUser.id, {
+        phone: phoneNumber,
+        phone_confirm: true,
+        user_metadata: {
+          ...authUser.user_metadata,
+          full_name: `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} User`
+        }
+      })
+      
+      if (error) {
+        console.error(`  Error updating user metadata:`, error.message)
+      }
     }
 
     // Get account_id
@@ -123,17 +150,20 @@ async function createAuthStates() {
           id: authUser!.id,
           account_id: account.id,
           role: user.role,
-          full_name: `${user.role} User`,
+          full_name: `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} User`,
         })
       if (error) {
         console.error(`  Error creating user record:`, error.message)
         continue
       }
     } else {
-      // Update role if needed
+      // Update role and full_name if needed
       const { error } = await supabaseAdmin
         .from('users')
-        .update({ role: user.role })
+        .update({ 
+          role: user.role,
+          full_name: `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} User`
+        })
         .eq('id', authUser!.id)
       if (error) {
         console.error(`  Error updating user role:`, error.message)

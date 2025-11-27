@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
@@ -54,20 +54,14 @@ export async function POST(request: Request) {
       .from('job-photos')
       .getPublicUrl(filename)
 
-    // Get user's profile for taken_by reference
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', user.id)
-      .single()
-
     // Create photo record
+    // Note: 'taken_by' now references auth.users(id) directly
     const { data: photoRecord, error: recordError } = await supabase
       .from('job_photos')
       .insert({
         job_id: jobId,
         gate_id: gateId || null,
-        taken_by: profile?.id || null,
+        taken_by: user.id, // Use auth user ID directly
         storage_path: uploadData.path,
         metadata: {
           type,
@@ -99,7 +93,7 @@ export async function GET(request: Request) {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
@@ -143,4 +137,3 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ photos: photosWithUrls })
 }
-
