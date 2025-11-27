@@ -190,6 +190,19 @@ export async function GET(request: Request) {
       .select('*', { count: 'exact' })
       .eq('account_id', user.account_id)
 
+    // Apply tags filter using subquery (FIXED: prevents N+1 query)
+    if (tags.length > 0) {
+      // Use subquery to filter contacts by tags in a SINGLE query
+      // This avoids the two-round-trip approach
+      query = query.in('id', (qb: any) =>
+        qb
+          .from('contact_tags')
+          .select('contact_id')
+          .in('tag_id', tags)
+          .eq('account_id', user.account_id)
+      )
+    }
+
     // Apply search filter
     if (search) {
       query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`)
@@ -218,32 +231,14 @@ export async function GET(request: Request) {
 
     const { data: contacts, error, count } = await query
 
-    // If tags filter is specified, we need to filter by contact tags
-    let filteredContacts = contacts || []
-    if (tags.length > 0 && contacts) {
-      // Get contact IDs that have the specified tags
-      const { data: taggedContacts } = await supabase
-        .from('contact_tags')
-        .select('contact_id')
-        .in('tag_id', tags)
-        .eq('account_id', user.account_id)
-
-      if (taggedContacts) {
-        const taggedContactIds = new Set(taggedContacts.map((tc: any) => tc.contact_id))
-        filteredContacts = contacts.filter((c: any) => taggedContactIds.has(c.id))
-      } else {
-        filteredContacts = []
-      }
-    }
-
     if (error) {
       console.error('Error fetching contacts:', error)
       return NextResponse.json({ error: 'Failed to fetch contacts' }, { status: 500 })
     }
 
     return NextResponse.json({
-      contacts: filteredContacts,
-      total: tags.length > 0 ? filteredContacts.length : (count || 0),
+      contacts: contacts || [],
+      total: count || 0,
       limit,
       offset
     })

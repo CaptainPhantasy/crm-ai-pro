@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, CheckCircle2, XCircle } from 'lucide-react'
 import { LLMProviderDialog } from '@/components/admin/llm-provider-dialog'
+import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary'
 
 interface LLMProvider {
   id: string
@@ -39,7 +40,7 @@ interface HealthStatus {
   error: string | null
 }
 
-export default function LLMProvidersPage() {
+function LLMProvidersPageContent() {
   const router = useRouter()
   const [providers, setProviders] = useState<LLMProvider[]>([])
   const [loading, setLoading] = useState(true)
@@ -353,3 +354,11 @@ export default function LLMProvidersPage() {
   )
 }
 
+
+export default function LLMProvidersPage() {
+  return (
+    <AdminErrorBoundary errorMessage="Failed to load LLM providers page">
+      <LLMProvidersPageContent />
+    </AdminErrorBoundary>
+  )
+}

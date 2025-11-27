@@ -11,27 +11,44 @@ import {
   Settings as SettingsIcon,
   Send,
   FileText,
-  Tag
+  Tag,
+  Calendar,
+  Map,
+  UserCog,
+  Zap,
+  Brain,
+  FileCheck,
+  PieChart
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { VoiceAgentWidget } from '@/components/voice-agent/voice-agent-widget'
+import { PermissionGate } from '@/lib/auth/PermissionGate'
 
 const navItems = [
-  { label: "Inbox", icon: Mail, href: "/inbox" },
-  { label: "Jobs", icon: Briefcase, href: "/jobs" },
-  { label: "Contacts", icon: Users, href: "/contacts" },
-  { label: "Analytics", icon: BarChart3, href: "/analytics" },
-  { label: "Finance", icon: DollarSign, href: "/finance/dashboard" },
+  { label: "Inbox", icon: Mail, href: "/inbox", permission: null },
+  { label: "Jobs", icon: Briefcase, href: "/jobs", permission: 'view_all_jobs' as const },
+  { label: "Estimates", icon: FileText, href: "/estimates", permission: 'view_estimates' as const },
+  { label: "Parts", icon: Tag, href: "/parts", permission: 'view_parts' as const },
+  { label: "Contacts", icon: Users, href: "/contacts", permission: 'view_contacts' as const },
+  { label: "Calendar", icon: Calendar, href: "/calendar", permission: null },
+  { label: "Dispatch Map", icon: Map, href: "/dispatch/map", permission: 'view_dispatch_map' as const },
+  { label: "Analytics", icon: BarChart3, href: "/analytics", permission: 'view_analytics' as const },
+  { label: "Reports", icon: PieChart, href: "/reports", permission: 'view_analytics' as const },
+  { label: "Finance", icon: DollarSign, href: "/finance/dashboard", permission: 'view_financials' as const },
 ]
 
 const marketingItems = [
-  { label: "Campaigns", icon: Send, href: "/marketing/campaigns" },
-  { label: "Templates", icon: FileText, href: "/marketing/email-templates" },
-  { label: "Tags", icon: Tag, href: "/marketing/tags" },
+  { label: "Campaigns", icon: Send, href: "/marketing/campaigns", permission: 'manage_marketing' as const },
+  { label: "Templates", icon: FileText, href: "/marketing/email-templates", permission: 'manage_marketing' as const },
+  { label: "Tags", icon: Tag, href: "/marketing/tags", permission: 'manage_marketing' as const },
 ]
 
 const adminItems = [
-  { label: "Settings", icon: SettingsIcon, href: "/admin/settings" },
+  { label: "Settings", icon: SettingsIcon, href: "/admin/settings", permission: 'view_settings' as const },
+  { label: "Users", icon: UserCog, href: "/admin/users", permission: 'manage_users' as const },
+  { label: "Automation", icon: Zap, href: "/admin/automation", permission: 'view_settings' as const },
+  { label: "LLM Providers", icon: Brain, href: "/admin/llm-providers", permission: 'view_settings' as const },
+  { label: "Audit Log", icon: FileCheck, href: "/admin/audit", permission: 'view_settings' as const },
 ]
 
 function isActive(pathname: string, href: string): boolean {
@@ -44,11 +61,26 @@ function isActive(pathname: string, href: string): boolean {
   if (href === '/contacts') {
     return pathname === '/contacts' || pathname.startsWith('/contacts/')
   }
+  if (href === '/calendar') {
+    return pathname === '/calendar' || pathname.startsWith('/calendar/')
+  }
+  if (href === '/dispatch/map') {
+    return pathname === '/dispatch/map' || pathname.startsWith('/dispatch/')
+  }
   if (href === '/analytics') {
     return pathname === '/analytics' || pathname.startsWith('/analytics/')
   }
+  if (href === '/reports') {
+    return pathname === '/reports' || pathname.startsWith('/reports/')
+  }
   if (href === '/finance') {
     return pathname === '/finance' || pathname.startsWith('/finance/')
+  }
+  if (href === '/estimates') {
+    return pathname === '/estimates' || pathname.startsWith('/estimates/')
+  }
+  if (href === '/parts') {
+    return pathname === '/parts' || pathname.startsWith('/parts/')
   }
   if (href === '/marketing/campaigns') {
     return pathname === '/marketing/campaigns' || pathname.startsWith('/marketing/campaigns')
@@ -61,6 +93,18 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === '/admin/settings') {
     return pathname === '/admin/settings' || pathname.startsWith('/admin/settings')
+  }
+  if (href === '/admin/users') {
+    return pathname === '/admin/users' || pathname.startsWith('/admin/users')
+  }
+  if (href === '/admin/automation') {
+    return pathname === '/admin/automation' || pathname.startsWith('/admin/automation')
+  }
+  if (href === '/admin/llm-providers') {
+    return pathname === '/admin/llm-providers' || pathname.startsWith('/admin/llm-providers')
+  }
+  if (href === '/admin/audit') {
+    return pathname === '/admin/audit' || pathname.startsWith('/admin/audit')
   }
   return false
 }
@@ -82,66 +126,74 @@ export function SidebarNav() {
           <p className="text-xs uppercase text-theme-secondary px-1">Core</p>
           <nav className="space-y-1">
             {navItems.map(item => (
-              <Link
+              <PermissionGate
                 key={item.label}
-                href={item.href}
-                className={cn(
-                  "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                  isActive(pathname, item.href)
-                    ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
-                    : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
-                )}
+                requires={item.permission || undefined}
               >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                    isActive(pathname, item.href)
+                      ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
+                      : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              </PermissionGate>
             ))}
           </nav>
         </div>
 
         {/* Marketing Section */}
-        <div className="space-y-3">
-          <p className="text-xs uppercase text-theme-secondary px-1">Marketing</p>
-          <nav className="space-y-1">
-            {marketingItems.map(item => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={cn(
-                  "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                  isActive(pathname, item.href)
-                    ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
-                    : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
-        </div>
+        <PermissionGate requires="manage_marketing">
+          <div className="space-y-3">
+            <p className="text-xs uppercase text-theme-secondary px-1">Marketing</p>
+            <nav className="space-y-1">
+              {marketingItems.map(item => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={cn(
+                    "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                    isActive(pathname, item.href)
+                      ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
+                      : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </PermissionGate>
 
         {/* Admin Section */}
-        <div className="space-y-3">
-          <p className="text-xs uppercase text-theme-secondary px-1">Admin</p>
-          <nav className="space-y-1">
-            {adminItems.map(item => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={cn(
-                  "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                  isActive(pathname, item.href)
-                    ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
-                    : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
-        </div>
+        <PermissionGate requires="view_settings">
+          <div className="space-y-3">
+            <p className="text-xs uppercase text-theme-secondary px-1">Admin</p>
+            <nav className="space-y-1">
+              {adminItems.map(item => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={cn(
+                    "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                    isActive(pathname, item.href)
+                      ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
+                      : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </PermissionGate>
       </div>
 
       {/* Voice Agent Widget - positioned at bottom */}

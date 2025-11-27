@@ -13,6 +13,10 @@ import { cn } from '@/lib/utils'
 import { BarChart3, DollarSign, Settings as SettingsIcon } from 'lucide-react'
 import { VoiceNavigationProvider } from '@/hooks/use-voice-navigation'
 import { AppShell } from '@/components/layout/app-shell'
+import { NotificationProvider } from '@/lib/contexts/NotificationContext'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
+import { NotificationToastContainer } from '@/components/notifications/NotificationToast'
+import type { Notification } from '@/types/notifications'
 
 export default function DashboardLayout({
   children,
@@ -26,6 +30,7 @@ export default function DashboardLayout({
   const router = useRouter()
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false)
+  const [toastNotifications, setToastNotifications] = useState<Notification[]>([])
 
   const isActive = (path: string) => {
     if (path === '/inbox') {
@@ -140,23 +145,45 @@ export default function DashboardLayout({
 
   useKeyboardShortcuts(shortcuts)
 
-  return (
-    <AppShell>
-      {/* Header with global search and user controls */}
-      <header className="flex-none h-16 bg-theme-surface border-b border-theme-border px-6 flex items-center justify-between">
-        <div className="flex-1">
-          <GlobalSearch />
-        </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <UserMenu />
-          </div>
-        </header>
+  // Handle new notification toast
+  const handleShowToast = (notification: Notification) => {
+    setToastNotifications(prev => [notification, ...prev])
 
-      {/* Main content area - extra padding on outer edges for shadow breathing room */}
-      <div className="flex-1 overflow-y-auto bg-theme-primary px-4">
-          {children}
-      </div>
+    // Remove toast after it's dismissed
+    setTimeout(() => {
+      setToastNotifications(prev => prev.filter(n => n.id !== notification.id))
+    }, 6000) // Slightly longer than toast duration to ensure smooth removal
+  }
+
+  return (
+      <NotificationProvider onShowToast={handleShowToast}>
+
+        {/* Toast notifications */}
+        <NotificationToastContainer
+          notifications={toastNotifications}
+          maxToasts={3}
+          position="top-right"
+          duration={5000}
+          onDismiss={(id) => setToastNotifications(prev => prev.filter(n => n.id !== id))}
+        />
+
+        <AppShell>
+          {/* Header with global search and user controls */}
+          <header className="flex-none h-16 bg-theme-surface border-b border-theme-border px-6 flex items-center justify-between">
+            <div className="flex-1">
+              <GlobalSearch />
+            </div>
+            <div className="flex items-center gap-4">
+              <NotificationBell variant="ghost" size="icon" enableSound={true} />
+              <ThemeToggle />
+              <UserMenu />
+            </div>
+          </header>
+
+        {/* Main content area - extra padding on outer edges for shadow breathing room */}
+        <div className="flex-1 overflow-y-auto bg-theme-primary px-4">
+            {children}
+        </div>
       
       {/* Command Palette */}
       <CommandPalette
@@ -173,7 +200,8 @@ export default function DashboardLayout({
       
       {/* Voice Navigation - listens for commands from the voice agent */}
       <VoiceNavigationProvider />
-    </AppShell>
+        </AppShell>
+      </NotificationProvider>
   )
 }
 

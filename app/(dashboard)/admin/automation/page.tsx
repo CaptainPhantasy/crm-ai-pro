@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, CheckCircle2, XCircle } from 'lucide-react'
 import { AutomationRuleDialog } from '@/components/admin/automation-rule-dialog'
+import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary'
+import { fetchWithRetry } from '@/lib/api-retry'
+import { toast } from '@/lib/toast'
 
 interface AutomationRule {
   id: string
@@ -19,7 +22,7 @@ interface AutomationRule {
   account_id: string
 }
 
-export default function AutomationPage() {
+function AutomationPageContent() {
   const router = useRouter()
   const [rules, setRules] = useState<AutomationRule[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,20 +36,18 @@ export default function AutomationPage() {
 
   async function checkAdminAccess() {
     try {
-      const response = await fetch('/api/users/me')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.user && (data.user.role === 'admin' || data.user.role === 'owner')) {
-          setIsAdmin(true)
-          fetchRules()
-        } else {
-          router.push('/inbox')
-        }
+      const response = await fetchWithRetry('/api/users/me', { maxRetries: 2 })
+      if (!response.ok) throw new Error(`Access check failed: ${response.status}`)
+      const data = await response.json()
+      if (data.user && (data.user.role === 'admin' || data.user.role === 'owner')) {
+        setIsAdmin(true)
+        fetchRules()
       } else {
         router.push('/inbox')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking admin access:', error)
+      toast.error('Failed to verify admin access', error.message)
       router.push('/inbox')
     } finally {
       setLoading(false)
@@ -55,13 +56,20 @@ export default function AutomationPage() {
 
   async function fetchRules() {
     try {
-      const response = await fetch('/api/automation-rules')
-      if (response.ok) {
-        const data = await response.json()
-        setRules(data.rules || [])
+      setLoading(true)
+      const response = await fetchWithRetry('/api/automation-rules', { maxRetries: 3 })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
-    } catch (error) {
+      const data = await response.json()
+      setRules(data.rules || [])
+    } catch (error: any) {
       console.error('Error fetching rules:', error)
+      toast.error('Failed to load automation rules', error.message)
+      setRules([])
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -77,17 +85,17 @@ export default function AutomationPage() {
 
   async function handleToggleActive(ruleId: string, currentStatus: boolean) {
     try {
-      const response = await fetch(`/api/automation-rules/${ruleId}`, {
+      const response = await fetchWithRetry(`/api/automation-rules/${ruleId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !currentStatus }),
+        maxRetries: 2
       })
-
-      if (response.ok) {
-        fetchRules()
-      }
-    } catch (error) {
+      if (!response.ok) throw new Error('Failed to toggle rule status')
+      fetchRules()
+    } catch (error: any) {
       console.error('Error toggling rule status:', error)
+      toast.error('Failed to update rule status', error.message)
     }
   }
 
@@ -203,6 +211,14 @@ export default function AutomationPage() {
         onSuccess={fetchRules}
       />
     </div>
+  )
+}
+
+export default function AutomationPage() {
+  return (
+    <AdminErrorBoundary errorMessage="Failed to load automation rules page">
+      <AutomationPageContent />
+    </AdminErrorBoundary>
   )
 }
 

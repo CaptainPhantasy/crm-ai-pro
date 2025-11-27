@@ -27,15 +27,15 @@ export async function GET() {
       }
     )
 
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+    if (authError || !authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { data: user, error } = await supabase
       .from('users')
       .select('id, account_id, full_name, role, avatar_url')
-      .eq('id', session.user.id)
+      .eq('id', authUser.id)
       .single()
 
     if (error) {

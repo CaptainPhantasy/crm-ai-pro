@@ -6,7 +6,7 @@ import { cookies } from 'next/headers'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export async function PATCH(request: Request) {
+export async function POST(request: Request) {
   try {
     const session = await getAuthenticatedSession(request)
     if (!session) {
@@ -38,6 +38,14 @@ export async function PATCH(request: Request) {
       }
     )
 
+    // Get count of unread notifications before updating
+    const { count: unreadCount } = await supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', session.user.id)
+      .eq('is_read', false)
+
+    // Mark all as read
     const { error } = await supabase
       .from('notifications')
       .update({
@@ -52,7 +60,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Failed to update notifications' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, count: unreadCount || 0 })
   } catch (error: unknown) {
     console.error('Error in PATCH /api/notifications/read-all:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

@@ -1,5 +1,6 @@
 import { Metadata, Viewport } from 'next'
 import '@/app/globals.css'
+import { MobileLayoutClient } from './mobile-layout-client'
 
 export const metadata: Metadata = {
   title: 'CRM-AI PRO Mobile',
@@ -25,13 +26,6 @@ export default function MobileLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Mobile-optimized container */}
-      <main className="safe-area-inset">
-        {children}
-      </main>
-    </div>
-  )
+  return <MobileLayoutClient>{children}</MobileLayoutClient>
 }
 

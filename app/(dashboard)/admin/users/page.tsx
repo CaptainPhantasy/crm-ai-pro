@@ -9,8 +9,11 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { UserPlus, Shield, User, Wrench, MessageSquare } from 'lucide-react'
 import { UserDialog } from '@/components/admin/user-dialog'
 import { User as UserType } from '@/types'
+import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary'
+import { fetchWithRetry } from '@/lib/api-retry'
+import { toast } from '@/lib/toast'
 
-export default function UsersPage() {
+function UsersPageContent() {
   const router = useRouter()
   const [users, setUsers] = useState<UserType[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,20 +27,27 @@ export default function UsersPage() {
 
   async function checkAdminAccess() {
     try {
-      const response = await fetch('/api/users/me')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.user && (data.user.role === 'admin' || data.user.role === 'owner')) {
-          setIsAdmin(true)
-          fetchUsers()
-        } else {
-          router.push('/inbox')
+      const response = await fetchWithRetry('/api/users/me', {
+        maxRetries: 2,
+        onRetry: (attempt) => {
+          console.log(`Retrying admin access check (attempt ${attempt})`)
         }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Access check failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      if (data.user && (data.user.role === 'admin' || data.user.role === 'owner')) {
+        setIsAdmin(true)
+        fetchUsers()
       } else {
         router.push('/inbox')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking admin access:', error)
+      toast.error('Failed to verify admin access', error.message)
       router.push('/inbox')
     } finally {
       setLoading(false)
@@ -46,13 +56,27 @@ export default function UsersPage() {
 
   async function fetchUsers() {
     try {
-      const response = await fetch('/api/users')
-      if (response.ok) {
-        const data = await response.json()
-        setUsers(data.users || [])
+      setLoading(true)
+      const response = await fetchWithRetry('/api/users', {
+        maxRetries: 3,
+        onRetry: (attempt, error) => {
+          toast.error(`Retrying... (attempt ${attempt})`, error.message)
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
-    } catch (error) {
+
+      const data = await response.json()
+      setUsers(data.users || [])
+    } catch (error: any) {
       console.error('Error fetching users:', error)
+      toast.error('Failed to load users', error.message)
+      setUsers([])
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -188,6 +212,14 @@ export default function UsersPage() {
         onSuccess={fetchUsers}
       />
     </div>
+  )
+}
+
+export default function UsersPage() {
+  return (
+    <AdminErrorBoundary errorMessage="Failed to load user management page">
+      <UsersPageContent />
+    </AdminErrorBoundary>
   )
 }
 

@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Search, Filter } from 'lucide-react'
 import type { AuditLog } from '@/types/admin'
+import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary'
 
-export default function AuditPage() {
+function AuditPageContent() {
   const router = useRouter()
   const [logs, setLogs] = useState<AuditLog[]>([])
   const [loading, setLoading] = useState(true)
@@ -215,3 +216,11 @@ export default function AuditPage() {
   )
 }
 
+
+export default function AuditPage() {
+  return (
+    <AdminErrorBoundary errorMessage="Failed to load audit log page">
+      <AuditPageContent />
+    </AdminErrorBoundary>
+  )
+}

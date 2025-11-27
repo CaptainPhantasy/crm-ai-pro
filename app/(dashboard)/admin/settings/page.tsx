@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { AccountSettings } from '@/types/admin'
+import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary'
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -399,3 +400,11 @@ export default function SettingsPage() {
   )
 }
 
+
+export default function SettingsPage() {
+  return (
+    <AdminErrorBoundary errorMessage="Failed to load settings page">
+      <SettingsPageContent />
+    </AdminErrorBoundary>
+  )
+}

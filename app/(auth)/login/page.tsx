@@ -7,15 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
-
-// Role-based routing map
-const ROLE_ROUTES: Record<string, string> = {
-  tech: '/tech/dashboard',
-  sales: '/sales/dashboard',
-  dispatcher: '/office/dashboard',
-  admin: '/inbox',
-  owner: '/owner/dashboard',
-}
+import { getRouteForRole, getMobileRouteForRole } from '@/lib/auth/role-routes'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -66,18 +58,10 @@ export default function LoginPage() {
       // Check if mobile device - redirect to mobile routes
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
-      if (isMobile && role === 'owner') {
-        // Mobile owners go to mobile dashboard
-        router.push('/m/owner/dashboard')
-      } else if (role === 'owner') {
-        // Desktop owners go to inbox (no desktop owner dashboard exists)
-        router.push('/inbox')
-      } else if (isMobile && ['tech', 'sales'].includes(role)) {
-        // Mobile users with field roles go to mobile dashboards
-        router.push(`/m/${role}/dashboard`)
+      if (isMobile) {
+        router.push(getMobileRouteForRole(role))
       } else {
-        // All other roles use their standard routes
-        router.push(ROLE_ROUTES[role] || '/inbox')
+        router.push(getRouteForRole(role))
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to sign in'
