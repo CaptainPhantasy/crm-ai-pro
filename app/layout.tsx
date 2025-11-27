@@ -38,7 +38,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('theme-preference') || 'system';
+                  const theme = localStorage.getItem('theme-preference') || 'light';
                   const root = document.documentElement;
                   
                   // Apply theme immediately
@@ -46,7 +46,7 @@ export default function RootLayout({
                   root.classList.add('theme-' + theme);
                   
                   // Update meta theme-color
-                  const darkThemes = ['dark', 'midnight'];
+                  const darkThemes = ['dark'];
                   const isDark = darkThemes.includes(theme) || 
                     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
                   const metaThemeColor = document.querySelector('meta[name="theme-color"]');

@@ -3,10 +3,10 @@
  * Supports localStorage persistence and system preference detection
  */
 
-export type Theme = 'light' | 'dark' | 'warm' | 'midnight' | 'taro' | 'matcha' | 'honeydew' | 'system'
+export type Theme = 'light' | 'dark' | 'warm' | 'taro' | 'matcha' | 'honeydew' | 'ops' | 'system'
 
 const THEME_STORAGE_KEY = 'theme-preference'
-const DEFAULT_THEME: Theme = 'dark'
+const DEFAULT_THEME: Theme = 'light'
 
 class ThemeManager {
   private currentTheme: Theme
@@ -19,8 +19,8 @@ class ThemeManager {
 
   private loadTheme(): Theme {
     if (typeof window === 'undefined') return DEFAULT_THEME
-    
-    const validThemes: Theme[] = ['light', 'dark', 'warm', 'midnight', 'taro', 'matcha', 'honeydew', 'system']
+
+    const validThemes: Theme[] = ['light', 'dark', 'warm', 'taro', 'matcha', 'honeydew', 'ops', 'system']
     const stored = localStorage.getItem(THEME_STORAGE_KEY)
     if (stored && validThemes.includes(stored as Theme)) {
       return stored as Theme
@@ -37,22 +37,22 @@ class ThemeManager {
     if (typeof document === 'undefined') return
 
     // Remove all theme classes
-    const allThemes: Theme[] = ['light', 'dark', 'warm', 'midnight', 'taro', 'matcha', 'honeydew', 'system']
+    const allThemes: Theme[] = ['light', 'dark', 'warm', 'taro', 'matcha', 'honeydew', 'ops', 'system']
     allThemes.forEach(t => {
       document.documentElement.classList.remove(`theme-${t}`)
     })
-    
+
     // Apply new theme
     document.documentElement.setAttribute('data-theme', theme)
     document.documentElement.classList.add(`theme-${theme}`)
-    
+
     // Update meta theme-color for mobile browsers
     this.updateMetaThemeColor(theme)
-    
+
     // Store current theme
     this.currentTheme = theme
     this.saveTheme(theme)
-    
+
     // Notify listeners
     this.notifyListeners(theme)
   }
@@ -61,13 +61,13 @@ class ThemeManager {
     if (typeof document === 'undefined') return
 
     let color: string
-    
-    if (theme === 'dark' || theme === 'midnight' || (theme === 'system' && this.isDarkMode())) {
-      color = 'hsl(220, 30%, 8%)' // Dark/Midnight primary bg
+
+    if (theme === 'dark' || (theme === 'system' && this.isDarkMode())) {
+      color = 'hsl(220, 30%, 8%)' // Dark primary bg
     } else {
       color = 'hsl(0, 0%, 100%)' // Light/Warm primary bg
     }
-    
+
     // Update or create meta tag
     let metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (!metaThemeColor) {
@@ -85,7 +85,7 @@ class ThemeManager {
 
   private init() {
     if (typeof window === 'undefined') return
-    
+
     this.applyTheme(this.currentTheme)
     this.setupSystemThemeListener()
   }
@@ -95,7 +95,7 @@ class ThemeManager {
 
     // Listen for system theme changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
+
     const handleChange = () => {
       if (this.currentTheme === 'system') {
         // Re-apply system theme to pick up changes
@@ -113,29 +113,29 @@ class ThemeManager {
   }
 
   cycleTheme() {
-    const themes: Theme[] = ['light', 'dark', 'warm', 'midnight', 'taro', 'matcha', 'honeydew', 'system']
+    const themes: Theme[] = ['light', 'dark', 'warm', 'taro', 'matcha', 'honeydew', 'ops', 'system']
     const currentIndex = themes.indexOf(this.currentTheme)
     const nextIndex = (currentIndex + 1) % themes.length
     const nextTheme = themes[nextIndex]
-    
+
     this.setTheme(nextTheme)
   }
 
   setTheme(theme: Theme) {
-    const validThemes: Theme[] = ['light', 'dark', 'warm', 'midnight', 'taro', 'matcha', 'honeydew', 'system']
+    const validThemes: Theme[] = ['light', 'dark', 'warm', 'taro', 'matcha', 'honeydew', 'ops', 'system']
     if (!validThemes.includes(theme)) {
       console.warn(`Invalid theme: ${theme}`)
       return
     }
-    
+
     if (typeof document === 'undefined') return
 
     // Add transition class for smooth change
     document.body.classList.add('theme-transitioning')
-    
+
     setTimeout(() => {
       this.applyTheme(theme)
-      
+
       setTimeout(() => {
         document.body.classList.remove('theme-transitioning')
       }, 300)
@@ -144,7 +144,7 @@ class ThemeManager {
 
   onThemeChange(callback: (theme: Theme) => void) {
     this.listeners.push(callback)
-    
+
     // Return unsubscribe function
     return () => {
       const index = this.listeners.indexOf(callback)
@@ -164,7 +164,7 @@ class ThemeManager {
     return this.currentTheme
   }
 
-  getEffectiveTheme(): 'light' | 'dark' | 'warm' | 'midnight' | 'taro' | 'matcha' | 'honeydew' {
+  getEffectiveTheme(): 'light' | 'dark' | 'warm' | 'taro' | 'matcha' | 'honeydew' | 'ops' {
     if (this.currentTheme === 'system') {
       return this.isDarkMode() ? 'dark' : 'light'
     }
@@ -180,9 +180,9 @@ export function getThemeManager(): ThemeManager {
     // Return a mock for SSR
     return {
       currentTheme: DEFAULT_THEME,
-      cycleTheme: () => {},
-      setTheme: () => {},
-      onThemeChange: () => () => {},
+      cycleTheme: () => { },
+      setTheme: () => { },
+      onThemeChange: () => () => { },
       getTheme: () => DEFAULT_THEME,
       getEffectiveTheme: () => 'dark',
     } as unknown as ThemeManager

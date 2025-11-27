@@ -54,9 +54,14 @@ export async function getAuthenticatedSession(request?: Request) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
-  if (session) {
-    return { user: session.user, session }
+  // Use getUser() instead of getSession() for better security
+  // getUser() validates the session with Supabase Auth, while getSession() just reads cookies
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  if (user && !error) {
+    // Get the session to include the access token
+    const { data: { session } } = await supabase.auth.getSession()
+    return { user, session: session || { user, access_token: '' } }
   }
 
   return null

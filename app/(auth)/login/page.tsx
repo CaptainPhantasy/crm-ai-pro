@@ -62,10 +62,10 @@ export default function LoginPage() {
 
       // Redirect based on role
       const role = userData?.role || 'admin'
-      
+
       // Check if mobile device - redirect to mobile routes
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      
+
       if (isMobile && role === 'owner') {
         // Mobile owners go to mobile dashboard
         router.push('/m/owner/dashboard')
@@ -74,7 +74,7 @@ export default function LoginPage() {
         router.push('/inbox')
       } else if (isMobile && ['tech', 'sales'].includes(role)) {
         // Mobile users with field roles go to mobile dashboards
-        router.push(ROLE_ROUTES[role] || '/inbox')
+        router.push(`/m/${role}/dashboard`)
       } else {
         // All other roles use their standard routes
         router.push(ROLE_ROUTES[role] || '/inbox')

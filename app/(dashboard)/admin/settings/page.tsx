@@ -354,6 +354,45 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Role Impersonation - Owner Only */}
+          <Card className="shadow-card bg-[var(--card-bg)] border-[var(--card-border)]">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-[var(--color-text-primary)]">Role Viewer</CardTitle>
+              <CardDescription className="text-xs text-[var(--color-text-secondary)]">View system as different roles</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="viewAsRole" className="text-xs">View As Role</Label>
+                <Select
+                  value={typeof window !== 'undefined' ? localStorage.getItem('impersonatedRole') || 'owner' : 'owner'}
+                  onValueChange={(value) => {
+                    if (typeof window !== 'undefined') {
+                      if (value === 'owner') {
+                        localStorage.removeItem('impersonatedRole')
+                      } else {
+                        localStorage.setItem('impersonatedRole', value)
+                      }
+                      // Reload to apply new role view
+                      window.location.reload()
+                    }
+                  }}
+                >
+                  <SelectTrigger id="viewAsRole" className="w-full h-8 text-sm">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="owner">👑 Owner (Default)</SelectItem>
+                    <SelectItem value="admin">🔧 Admin</SelectItem>
+                    <SelectItem value="dispatcher">📋 Dispatcher</SelectItem>
+                    <SelectItem value="tech">🔨 Field Technician</SelectItem>
+                    <SelectItem value="sales">💼 Sales Person</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-[var(--color-text-subtle)]">Experience the system as this role would see it</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </form>
     </div>

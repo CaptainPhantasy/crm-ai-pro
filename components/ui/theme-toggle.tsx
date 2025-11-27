@@ -21,13 +21,12 @@ const themes: Array<{ value: Theme; label: string; icon: React.ReactNode; descri
   { value: 'light', label: 'Solaris', icon: <Sun className="w-4 h-4" />, description: 'Daybreak Energy ☀️' },
   { value: 'dark', label: 'Opus', icon: <Moon className="w-4 h-4" />, description: 'Literary Warmth 📜' },
   { value: 'warm', label: 'Latte', icon: <Sun className="w-4 h-4" />, description: 'Earthy & Grounded ☕' },
-  { value: 'midnight', label: 'Abyss', icon: <Moon className="w-4 h-4" />, description: 'Deepest Navy 🌙' },
   { value: 'ops', label: 'Ops Pro', icon: <Sparkles className="w-4 h-4" />, description: 'Service Industry 🔧' },
   { value: 'system', label: 'System', icon: <Monitor className="w-4 h-4" />, description: 'Auto-detect' },
 ]
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
-  const [theme, setTheme] = useState<Theme>('system')
+  const [theme, setTheme] = useState<Theme>('light')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -49,7 +48,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 
   if (!mounted) {
     return (
-      <div 
+      <div
         className={cn(
           "relative inline-flex items-center justify-center w-10 h-10 bg-theme-surface border-2 border-theme rounded-lg",
           className
