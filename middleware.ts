@@ -4,9 +4,19 @@ import type { NextRequest } from 'next/server'
 const COOKIE_SPLIT_REGEX = /,(?=[^;,]+=)/g
 
 export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl
+  const isStaticAsset = /\.(?:png|jpg|jpeg|gif|svg|ico|webp|mp4|mp3|wav|ogg|css|js|json|txt|xml|webmanifest|woff2?)$/i.test(pathname)
+
   // Don't redirect root path - let it show loading screen
   // The loading screen component will handle redirect after 6 seconds
-  if (req.nextUrl.pathname === '/') {
+  if (
+    pathname === '/' ||
+    pathname.startsWith('/assets/') ||
+    pathname.startsWith('/fonts/') ||
+    pathname === '/manifest.json' ||
+    pathname === '/sw.js' ||
+    isStaticAsset
+  ) {
     return NextResponse.next()
   }
 
