@@ -1,6 +1,7 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+
+const COOKIE_SPLIT_REGEX = /,(?=[^;,]+=)/g
 
 export async function middleware(req: NextRequest) {
   // Don't redirect root path - let it show loading screen
@@ -9,7 +10,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Only create Supabase client if env vars are available
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.next({
       request: {
@@ -18,40 +18,49 @@ export async function middleware(req: NextRequest) {
     })
   }
 
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: req.headers,
     },
   })
 
   try {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return req.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => req.cookies.set(name, value))
-            response = NextResponse.next({
-              request: {
-                headers: req.headers,
-              },
-            })
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            )
-          },
-        },
-      }
-    )
+    const sessionUrl = new URL('/api/auth/session', req.url)
+    const sessionResponse = await fetch(sessionUrl, {
+      method: 'GET',
+      headers: {
+        cookie: req.headers.get('cookie') ?? '',
+      },
+      cache: 'no-store',
+    })
 
-    await supabase.auth.getSession()
+    const sessionHeaders = sessionResponse.headers as Headers & {
+      getSetCookie?: () => string[]
+    }
+
+    const setCookieValues =
+      typeof sessionHeaders.getSetCookie === 'function'
+        ? sessionHeaders.getSetCookie()
+        : null
+
+    if (setCookieValues && setCookieValues.length > 0) {
+      setCookieValues.forEach(cookieValue => {
+        response.headers.append('set-cookie', cookieValue)
+      })
+    } else {
+      const setCookieHeader = sessionHeaders.get('set-cookie')
+      if (setCookieHeader) {
+        const cookiesToSet = setCookieHeader.split(COOKIE_SPLIT_REGEX)
+        cookiesToSet.forEach(cookieValue => {
+          if (cookieValue.trim().length > 0) {
+            response.headers.append('set-cookie', cookieValue)
+          }
+        })
+      }
+    }
   } catch (error) {
-    // If Supabase fails, just continue without auth
-    console.error('Middleware Supabase error:', error)
+    // If Supabase session fetch fails, just continue without blocking navigation
+    console.error('Middleware session fetch error:', error)
   }
 
   return response
@@ -68,4 +77,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }
-
