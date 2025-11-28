@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { ConfirmDialogProvider } from '@/lib/confirm'
+import { VoiceConversationProvider } from '@/components/voice-conversation-provider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -16,7 +17,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ConfirmDialogProvider>
-        {children}
+        <VoiceConversationProvider>
+          {children}
+        </VoiceConversationProvider>
       </ConfirmDialogProvider>
     </QueryClientProvider>
   )
