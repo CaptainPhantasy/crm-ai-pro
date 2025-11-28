@@ -406,7 +406,7 @@ export class DatabaseVerifier {
    * Get test account ID
    * Use this to get the correct account_id for test data
    */
-  async getTestAccountId(slug: string = 'test-317plumber'): Promise<string | null> {
+  async getTestAccountId(slug: string = '317-plumber'): Promise<string | null> {
     const { data } = await this.supabase
       .from('accounts')
       .select('id')

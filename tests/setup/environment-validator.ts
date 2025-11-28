@@ -37,16 +37,19 @@ export interface TestUser {
   password: string
 }
 
-// Canonical test users - single source of truth
+// Canonical test users - 317 Plumber realistic users
+// All users share the same password for testing convenience
+export const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || 'TestPassword123!'
+
 export const TEST_USERS: TestUser[] = [
-  { email: 'test-owner@317plumber.com', role: 'owner', password: 'TestOwner123!' },
-  { email: 'test-admin@317plumber.com', role: 'admin', password: 'TestAdmin123!' },
-  { email: 'test-dispatcher@317plumber.com', role: 'dispatcher', password: 'TestDispatcher123!' },
-  { email: 'test-tech@317plumber.com', role: 'tech', password: 'TestTech123!' },
-  { email: 'test-sales@317plumber.com', role: 'sales', password: 'TestSales123!' },
+  { email: 'ryan@317plumber.com', role: 'owner', password: TEST_PASSWORD },
+  { email: 'admin@317plumber.com', role: 'admin', password: TEST_PASSWORD },
+  { email: 'dispatch@317plumber.com', role: 'dispatcher', password: TEST_PASSWORD },
+  { email: 'marcus@317plumber.com', role: 'tech', password: TEST_PASSWORD },
+  { email: 'emily@317plumber.com', role: 'sales', password: TEST_PASSWORD },
 ]
 
-export const TEST_ACCOUNT_SLUG = 'test-317plumber'
+export const TEST_ACCOUNT_SLUG = '317-plumber'
 
 export class EnvironmentValidator {
   private supabase: SupabaseClient | null = null

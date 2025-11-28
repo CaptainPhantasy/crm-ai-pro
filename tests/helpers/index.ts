@@ -47,9 +47,5 @@ export {
   pageObjects,
 } from './ui-test-base'
 
-// Test data seeder
-export {
-  TestDataSeeder,
-  expectedTestData,
-  type TestDataIds,
-} from '../setup/test-data-seeder'
+// Test password constant for all users
+export { TEST_PASSWORD } from '../setup/environment-validator'

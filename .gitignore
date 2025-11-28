@@ -51,3 +51,4 @@ next-env.d.ts
 # log files
 *.log
 ngrok*.log
+RYAN_TEST_REPORT.md
