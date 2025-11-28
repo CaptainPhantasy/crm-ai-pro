@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { 
-  MapPin, Camera, Star, Gift, PenTool, 
-  CheckCircle, AlertTriangle, ArrowLeft, Phone
+import {
+  MapPin, Camera, Star, Gift, PenTool,
+  CheckCircle, AlertTriangle, ArrowLeft, Phone, Navigation
 } from 'lucide-react'
 import { BigButton, BigButtonGrid } from '@/components/mobile/big-button'
+import { VoiceButton } from '@/components/mobile/voice-button'
 import { gpsTracker } from '@/lib/gps/tracker'
 import { saveGateCompletionOffline, type OfflineGateCompletion } from '@/lib/offline/db'
 import SignatureCanvas from 'react-signature-canvas'
@@ -470,24 +471,24 @@ export default function TechJobPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent-primary)]" />
       </div>
     )
   }
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center text-white">
         Job not found
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white">
       {/* Header */}
-      <header className="bg-gray-800 p-4 flex items-center gap-4">
+      <header className="bg-[var(--color-bg-secondary)] p-4 flex items-center gap-4">
         <button onClick={() => router.back()} className="p-2">
           <ArrowLeft className="w-6 h-6" />
         </button>
@@ -495,7 +496,16 @@ export default function TechJobPage() {
           <div className="font-bold">{job.contact.firstName} {job.contact.lastName}</div>
           <div className="text-gray-400 text-sm">{job.description}</div>
         </div>
-        <a href={`tel:${job.contact.phone}`} className="p-2 bg-green-600 rounded-full">
+        <a
+          href={`https://maps.google.com/?q=${encodeURIComponent(job.contact.address)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-2 bg-[var(--color-accent-primary)] rounded-full"
+          aria-label="Navigate to address"
+        >
+          <Navigation className="w-5 h-5" />
+        </a>
+        <a href={`tel:${job.contact.phone}`} className="p-2 bg-green-600 rounded-full" aria-label="Call customer">
           <Phone className="w-5 h-5" />
         </a>
       </header>
@@ -516,7 +526,7 @@ export default function TechJobPage() {
         {currentStage === 'arrival' && (
           <div className="space-y-6">
             <div className="text-center py-8">
-              <MapPin className="w-16 h-16 mx-auto text-blue-400 mb-4" />
+              <MapPin className="w-16 h-16 mx-auto text-[var(--color-accent-primary)] mb-4" />
               <h2 className="text-2xl font-bold mb-2">Confirm Arrival</h2>
               <p className="text-gray-400">{job.contact.address}</p>
             </div>
@@ -690,7 +700,7 @@ export default function TechJobPage() {
         {currentStage === 'signature' && (
           <div className="space-y-6">
             <div className="text-center py-4">
-              <PenTool className="w-16 h-16 mx-auto text-blue-400 mb-4" />
+              <PenTool className="w-16 h-16 mx-auto text-[var(--color-accent-primary)] mb-4" />
               <h2 className="text-2xl font-bold mb-2">Customer Signature</h2>
               <p className="text-gray-400">Please sign to confirm work completion</p>
             </div>
@@ -746,6 +756,9 @@ export default function TechJobPage() {
           </div>
         )}
       </div>
+
+      {/* Voice Command Button */}
+      <VoiceButton />
     </div>
   )
 }

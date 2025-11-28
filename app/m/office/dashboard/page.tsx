@@ -81,35 +81,35 @@ export default function OfficeDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent-primary)]" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 pb-24">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white p-4 pb-24">
       {/* Header */}
       <header className="mb-6">
         <h1 className="text-2xl font-bold">Office Dashboard</h1>
         <p className="text-gray-400">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            month: 'short', 
-            day: 'numeric' 
+          {new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'short',
+            day: 'numeric'
           })}
         </p>
       </header>
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-gray-800 rounded-xl p-4">
+        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
           <div className="text-gray-400 text-sm">Jobs Today</div>
           <div className="text-2xl font-bold">
             {stats.jobsCompleted}/{stats.jobsToday}
           </div>
         </div>
-        <div className="bg-gray-800 rounded-xl p-4">
+        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
           <div className="text-gray-400 text-sm">Avg Rating</div>
           <div className="text-2xl font-bold text-yellow-400">
             {stats.avgRating.toFixed(1)} ⭐
@@ -196,7 +196,7 @@ function EscalationCard({
   }
 
   return (
-    <div className="bg-gray-800 rounded-xl overflow-hidden">
+    <div className="bg-[var(--color-bg-secondary)] rounded-xl overflow-hidden">
       <div className="p-4">
         <div className="flex justify-between items-start">
           <div className="flex-1">
@@ -219,7 +219,7 @@ function EscalationCard({
           </div>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="px-4 py-2 bg-blue-600 rounded-lg font-bold text-sm"
+            className="px-4 py-2 bg-[var(--color-accent-primary)] rounded-lg font-bold text-sm"
           >
             {expanded ? 'Close' : 'Handle'}
           </button>

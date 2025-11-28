@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Mic, MicOff, Save, X, User, Pause, Play } from 'lucide-react'
 import { BigButton } from '@/components/mobile/big-button'
+import { VoiceButton } from '@/components/mobile/voice-button'
 import { useParams, useRouter } from 'next/navigation'
 
 export default function MeetingTranscriptionPage() {
@@ -204,14 +205,14 @@ export default function MeetingTranscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white flex flex-col">
       {/* Header */}
-      <header className="bg-gray-800 p-4 flex items-center justify-between safe-area-top">
-        <button 
+      <header className="bg-[var(--color-bg-secondary)] p-4 flex items-center justify-between safe-area-top">
+        <button
           onClick={() => {
             if (transcript && !confirm('Discard this recording?')) return
             router.back()
-          }} 
+          }}
           className="p-2"
         >
           <X className="w-6 h-6" />
@@ -220,20 +221,20 @@ export default function MeetingTranscriptionPage() {
           <div className="font-bold">
             {isRecording ? (isPaused ? 'Paused' : 'Recording') : 'Meeting Mode'}
           </div>
-          <div className="text-3xl font-mono text-blue-400">{formatTime(duration)}</div>
+          <div className="text-3xl font-mono text-[var(--color-accent-primary)]">{formatTime(duration)}</div>
         </div>
         <div className={`w-4 h-4 rounded-full ${
-          isRecording 
-            ? isPaused 
-              ? 'bg-yellow-500' 
-              : 'bg-red-500 animate-pulse' 
+          isRecording
+            ? isPaused
+              ? 'bg-yellow-500'
+              : 'bg-red-500 animate-pulse'
             : 'bg-gray-600'
         }`} />
       </header>
 
       {/* Contact info */}
       {contact && (
-        <div className="bg-gray-800/50 px-4 py-2 flex items-center gap-2">
+        <div className="bg-[var(--color-bg-secondary)]/50 px-4 py-2 flex items-center gap-2">
           <User className="w-4 h-4 text-gray-400" />
           <span className="text-gray-300">{contact.name}</span>
         </div>
@@ -241,15 +242,15 @@ export default function MeetingTranscriptionPage() {
 
       {/* Transcript area */}
       <div className="flex-1 p-4 overflow-y-auto">
-        <div className="bg-gray-800 rounded-xl p-4 min-h-[300px]">
+        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 min-h-[300px]">
           {transcript ? (
             <p className="text-gray-200 whitespace-pre-wrap leading-relaxed">
               {transcript}
             </p>
           ) : (
             <p className="text-gray-500 text-center py-12">
-              {isRecording 
-                ? 'Listening... Start speaking' 
+              {isRecording
+                ? 'Listening... Start speaking'
                 : 'Tap START to begin recording'}
             </p>
           )}
@@ -257,7 +258,7 @@ export default function MeetingTranscriptionPage() {
       </div>
 
       {/* Controls */}
-      <div className="p-4 space-y-3 safe-area-bottom bg-gray-900">
+      <div className="p-4 space-y-3 safe-area-bottom bg-[var(--color-bg-primary)]">
         {!isRecording ? (
           <BigButton
             onClick={startRecording}
@@ -303,6 +304,9 @@ export default function MeetingTranscriptionPage() {
           />
         )}
       </div>
+
+      {/* Voice Command Button */}
+      <VoiceButton />
     </div>
   )
 }

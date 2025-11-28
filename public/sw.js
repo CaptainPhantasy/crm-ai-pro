@@ -1,9 +1,12 @@
 // CRM-AI PRO Service Worker
-const CACHE_NAME = 'crm-ai-pro-v1';
+const CACHE_NAME = 'crm-ai-pro-mobile-v1';
 const urlsToCache = [
-  '/',
-  '/login',
-  '/manifest.json'
+  '/m/tech/dashboard',
+  '/m/sales/dashboard',
+  '/m/owner/dashboard',
+  '/m/office/dashboard',
+  '/manifest.json',
+  '/login'
 ];
 
 // Install event - cache essential files

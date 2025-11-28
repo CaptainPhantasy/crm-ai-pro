@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, User, DollarSign, Phone, Mail, MapPin, Clock, Star, AlertCircle } from 'lucide-react'
 import { BigButton } from '@/components/mobile/big-button'
+import { VoiceButton } from '@/components/mobile/voice-button'
 
 interface Briefing {
   contact: {
@@ -65,9 +66,9 @@ export default function SalesBriefingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent-primary)] mx-auto mb-4" />
           <p className="text-gray-400">Preparing your briefing...</p>
         </div>
       </div>
@@ -76,11 +77,11 @@ export default function SalesBriefingPage() {
 
   if (!briefing) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center text-white">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
           <p>Could not load briefing</p>
-          <button onClick={() => router.back()} className="mt-4 text-blue-400">
+          <button onClick={() => router.back()} className="mt-4 text-[var(--color-accent-primary)]">
             Go Back
           </button>
         </div>
@@ -89,22 +90,22 @@ export default function SalesBriefingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white pb-24">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white pb-24">
       {/* Header */}
-      <header className="bg-gradient-to-b from-blue-900 to-gray-900 p-4 pb-8">
+      <header className="bg-gradient-to-b from-[var(--color-accent-primary)]/20 to-[var(--color-bg-primary)] p-4 pb-8">
         <button onClick={() => router.back()} className="p-2 -ml-2 mb-4">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        
+
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold">
+          <div className="w-16 h-16 bg-[var(--color-accent-primary)] rounded-full flex items-center justify-center text-2xl font-bold">
             {briefing.contact.firstName[0]}{briefing.contact.lastName[0]}
           </div>
           <div>
             <h1 className="text-2xl font-bold">
               {briefing.contact.firstName} {briefing.contact.lastName}
             </h1>
-            <div className="flex items-center gap-2 text-blue-300">
+            <div className="flex items-center gap-2 text-[var(--color-accent-primary)]">
               <DollarSign className="w-4 h-4" />
               <span>${briefing.totalSpent.toLocaleString()} lifetime</span>
             </div>
@@ -140,7 +141,7 @@ export default function SalesBriefingPage() {
 
         {/* Personal Notes */}
         {(briefing.profile.familyNotes || briefing.profile.preferences) && (
-          <div className="bg-gray-800 rounded-xl p-4">
+          <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
             <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
               <User className="w-5 h-5 text-purple-400" />
               Personal Notes
@@ -162,7 +163,7 @@ export default function SalesBriefingPage() {
 
         {/* Suggested Topics */}
         {briefing.suggestedTopics.length > 0 && (
-          <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-xl p-4 border border-purple-500/30">
+          <div className="bg-gradient-to-r from-purple-900/50 to-[var(--color-accent-primary)]/20 rounded-xl p-4 border border-purple-500/30">
             <h2 className="font-bold text-lg mb-3">💡 Suggested Topics</h2>
             <ul className="space-y-2">
               {briefing.suggestedTopics.map((topic, i) => (
@@ -176,7 +177,7 @@ export default function SalesBriefingPage() {
         )}
 
         {/* Recent Jobs */}
-        <div className="bg-gray-800 rounded-xl p-4">
+        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
           <h2 className="font-bold text-lg mb-3">Recent Work</h2>
           {briefing.recentJobs.length > 0 ? (
             <div className="space-y-3">
@@ -201,11 +202,11 @@ export default function SalesBriefingPage() {
 
         {/* Meeting History */}
         {briefing.meetingHistory.length > 0 && (
-          <div className="bg-gray-800 rounded-xl p-4">
+          <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
             <h2 className="font-bold text-lg mb-3">Previous Meetings</h2>
             <div className="space-y-3">
               {briefing.meetingHistory.slice(0, 3).map((meeting) => (
-                <div key={meeting.id} className="border-l-2 border-blue-500 pl-3">
+                <div key={meeting.id} className="border-l-2 border-[var(--color-accent-primary)] pl-3">
                   <div className="text-gray-500 text-sm">{meeting.date}</div>
                   <div className="text-gray-200">{meeting.summary}</div>
                   <div className={`text-sm ${
@@ -222,7 +223,7 @@ export default function SalesBriefingPage() {
         )}
 
         {/* Contact Details */}
-        <div className="bg-gray-800 rounded-xl p-4">
+        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
           <h2 className="font-bold text-lg mb-3">Contact Info</h2>
           <div className="space-y-2 text-gray-300">
             <div className="flex items-center gap-2">
@@ -240,6 +241,9 @@ export default function SalesBriefingPage() {
           </div>
         </div>
       </div>
+
+      {/* Voice Command Button */}
+      <VoiceButton />
     </div>
   )
 }

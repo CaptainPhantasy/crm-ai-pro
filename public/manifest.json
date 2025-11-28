@@ -1,12 +1,13 @@
 {
-  "name": "CRM-AI PRO",
-  "short_name": "CRM-AI",
-  "description": "AI-Native CRM for Service Businesses",
-  "start_url": "/",
+  "name": "CRM-AI PRO Mobile",
+  "short_name": "CRM-AI PRO",
+  "description": "Field Operations Mobile App",
+  "start_url": "/m/tech/dashboard",
   "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#4B79FF",
-  "orientation": "portrait-primary",
+  "background_color": "#111827",
+  "theme_color": "#F97316",
+  "orientation": "portrait",
+  "scope": "/m/",
   "icons": [
     {
       "src": "/icon-192.png",

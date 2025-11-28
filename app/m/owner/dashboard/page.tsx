@@ -75,18 +75,18 @@ export default function OwnerDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent-primary)]" />
       </div>
     )
   }
 
-  const jobProgress = stats.jobsToday > 0 
-    ? (stats.jobsCompleted / stats.jobsToday) * 100 
+  const jobProgress = stats.jobsToday > 0
+    ? (stats.jobsCompleted / stats.jobsToday) * 100
     : 0
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 pb-24">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white p-4 pb-24">
       {/* Header */}
       <header className="mb-6">
         <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -128,7 +128,7 @@ export default function OwnerDashboard() {
           icon={TrendingUp}
           label="This Week"
           value={`$${stats.weekRevenue.toLocaleString()}`}
-          color="blue"
+          color="accent"
         />
         <StatCard
           icon={Star}
@@ -146,7 +146,7 @@ export default function OwnerDashboard() {
       </div>
 
       {/* Jobs Progress */}
-      <div className="bg-gray-800 rounded-xl p-4 mb-6">
+      <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 mb-6">
         <div className="flex justify-between mb-2">
           <span className="font-bold">Today's Jobs</span>
           <span className="text-gray-400">
@@ -155,7 +155,7 @@ export default function OwnerDashboard() {
         </div>
         <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-500"
+            className="h-full bg-gradient-to-r from-[var(--color-accent-primary)] to-green-500 transition-all duration-500"
             style={{ width: `${jobProgress}%` }}
           />
         </div>
@@ -168,7 +168,7 @@ export default function OwnerDashboard() {
       <h2 className="text-xl font-bold mb-4">Team Status</h2>
       <div className="space-y-3 mb-6">
         {techs.map((tech) => (
-          <div key={tech.id} className="bg-gray-800 rounded-xl p-4">
+          <div key={tech.id} className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
             <div className="flex justify-between items-center">
               <div>
                 <div className="font-bold">{tech.name}</div>
@@ -178,7 +178,7 @@ export default function OwnerDashboard() {
               </div>
               <div className={`px-3 py-1 rounded-full text-sm font-bold ${
                 tech.status === 'on_job' ? 'bg-green-900 text-green-400' :
-                tech.status === 'en_route' ? 'bg-blue-900 text-blue-400' :
+                tech.status === 'en_route' ? 'bg-[var(--color-accent-primary)]/20 text-[var(--color-accent-primary)]' :
                 tech.status === 'idle' ? 'bg-yellow-900 text-yellow-400' :
                 'bg-gray-700 text-gray-400'
               }`}>
@@ -227,28 +227,28 @@ export default function OwnerDashboard() {
   )
 }
 
-function StatCard({ 
-  icon: Icon, 
-  label, 
-  value, 
-  sublabel, 
-  color 
-}: { 
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  sublabel,
+  color
+}: {
   icon: React.ElementType
   label: string
   value: string
   sublabel?: string
-  color: 'green' | 'blue' | 'yellow' | 'purple'
+  color: 'green' | 'accent' | 'yellow' | 'purple'
 }) {
   const colors = {
     green: 'text-green-400',
-    blue: 'text-blue-400',
+    accent: 'text-[var(--color-accent-primary)]',
     yellow: 'text-yellow-400',
     purple: 'text-purple-400',
   }
 
   return (
-    <div className="bg-gray-800 rounded-xl p-4">
+    <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
       <Icon className={`w-6 h-6 ${colors[color]} mb-2`} />
       <div className={`text-2xl font-bold ${colors[color]}`}>{value}</div>
       <div className="text-gray-400 text-sm">{label}</div>

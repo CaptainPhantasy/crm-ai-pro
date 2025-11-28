@@ -218,6 +218,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const contactId = searchParams.get('contactId')
+  const today = searchParams.get('today')
   const limit = parseInt(searchParams.get('limit') || '20')
 
   let query = supabase
@@ -228,11 +229,22 @@ export async function GET(request: Request) {
       user:users(id, name, email)
     `)
     .eq('account_id', user.account_id)
-    .order('created_at', { ascending: false })
+    .order('scheduled_at', { ascending: true })
     .limit(limit)
 
   if (contactId) {
     query = query.eq('contact_id', contactId)
+  }
+
+  if (today === 'true') {
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const todayEnd = new Date(todayStart)
+    todayEnd.setDate(todayEnd.getDate() + 1)
+
+    query = query
+      .gte('scheduled_at', todayStart.toISOString())
+      .lt('scheduled_at', todayEnd.toISOString())
   }
 
   const { data, error } = await query

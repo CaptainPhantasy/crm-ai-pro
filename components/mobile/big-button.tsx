@@ -15,7 +15,7 @@ interface BigButtonProps {
 
 const variantStyles = {
   default: 'bg-gray-800 text-white border-gray-700',
-  primary: 'bg-blue-600 text-white border-blue-500',
+  primary: 'bg-[var(--color-accent-primary)] text-white border-[var(--color-accent-primary)]',
   success: 'bg-green-600 text-white border-green-500',
   warning: 'bg-amber-600 text-white border-amber-500',
   danger: 'bg-red-600 text-white border-red-500',
@@ -23,9 +23,9 @@ const variantStyles = {
 
 /**
  * BigButton - Mobile-optimized button for field technicians
- * 
+ *
  * Features:
- * - 60px minimum height for glove-friendly tapping
+ * - 44px minimum height for standard touch target
  * - Large touch target (full width)
  * - High contrast colors
  * - Optional icon and sublabel
@@ -44,7 +44,7 @@ export function BigButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'w-full min-h-[60px] px-6 py-4 rounded-2xl border-2',
+        'w-full min-h-[44px] px-6 py-4 rounded-2xl border-2',
         'flex items-center justify-center gap-3',
         'font-bold text-lg uppercase tracking-wide',
         'transition-all duration-150 active:scale-[0.98]',

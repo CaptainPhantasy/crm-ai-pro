@@ -26,6 +26,28 @@ export default function MobileLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <MobileLayoutClient>{children}</MobileLayoutClient>
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') || 'light';
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {
+                  document.documentElement.setAttribute('data-theme', 'light');
+                }
+              })()
+            `,
+          }}
+        />
+      </head>
+      <body>
+        <MobileLayoutClient>{children}</MobileLayoutClient>
+      </body>
+    </html>
+  )
 }
 

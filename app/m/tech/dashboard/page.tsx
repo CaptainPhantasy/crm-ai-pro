@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Clock, Wrench, ChevronRight } from 'lucide-react'
 import { BigButton } from '@/components/mobile/big-button'
+import { VoiceButton } from '@/components/mobile/voice-button'
 import Link from 'next/link'
 
 interface Job {
@@ -55,14 +56,14 @@ export default function TechDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent-primary)]" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 pb-24">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white p-4 pb-24">
       {/* Header */}
       <header className="mb-6">
         <h1 className="text-2xl font-bold">My Jobs</h1>
@@ -77,8 +78,8 @@ export default function TechDashboard() {
 
       {/* Current Job Card */}
       {currentJob && (
-        <div className="bg-blue-900/50 border border-blue-500 rounded-2xl p-4 mb-6">
-          <div className="text-blue-400 text-sm font-bold mb-2">
+        <div className="bg-[var(--color-accent-primary)]/10 border border-[var(--color-accent-primary)] rounded-2xl p-4 mb-6">
+          <div className="text-[var(--color-accent-primary)] text-sm font-bold mb-2">
             {currentJob.status === 'in_progress' ? '🔧 IN PROGRESS' : '📍 NEXT UP'}
           </div>
           <div className="text-xl font-bold mb-1">
@@ -109,10 +110,10 @@ export default function TechDashboard() {
       <h2 className="text-lg font-bold mb-3">Today's Schedule</h2>
       <div className="space-y-3">
         {jobs.map((job) => (
-          <Link 
-            key={job.id} 
+          <Link
+            key={job.id}
             href={`/tech/job/${job.id}`}
-            className="block bg-gray-800 rounded-xl p-4 active:bg-gray-700 transition-colors"
+            className="block bg-[var(--color-bg-secondary)] rounded-xl p-4 active:bg-gray-700 transition-colors"
           >
             <div className="flex justify-between items-start">
               <div className="flex-1">
@@ -127,7 +128,7 @@ export default function TechDashboard() {
                   </span>
                   <span className={`px-2 py-0.5 rounded-full text-xs ${
                     job.status === 'completed' ? 'bg-green-900 text-green-400' :
-                    job.status === 'in_progress' ? 'bg-blue-900 text-blue-400' :
+                    job.status === 'in_progress' ? 'bg-[var(--color-accent-primary)]/20 text-[var(--color-accent-primary)]' :
                     'bg-gray-700 text-gray-400'
                   }`}>
                     {job.status.replace('_', ' ')}
@@ -145,6 +146,9 @@ export default function TechDashboard() {
           </div>
         )}
       </div>
+
+      {/* Voice Command Button */}
+      <VoiceButton />
     </div>
   )
 }

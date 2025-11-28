@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Calendar, MapPin, Mic, User, Clock, Plus } from 'lucide-react'
 import { BigButton, BigButtonGrid } from '@/components/mobile/big-button'
+import { VoiceButton } from '@/components/mobile/voice-button'
 import Link from 'next/link'
 
 interface Meeting {
@@ -61,14 +62,14 @@ export default function SalesDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-accent-primary)]" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 pb-24">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white p-4 pb-24">
       {/* Header */}
       <header className="mb-6">
         <h1 className="text-3xl font-bold">{getGreeting()}</h1>
@@ -79,8 +80,8 @@ export default function SalesDashboard() {
 
       {/* Next Meeting Card */}
       {nextMeeting && (
-        <div className="bg-gradient-to-br from-blue-900/80 to-purple-900/80 border border-blue-500/50 rounded-2xl p-5 mb-6">
-          <div className="text-blue-300 text-sm font-bold mb-2">NEXT UP</div>
+        <div className="bg-gradient-to-br from-[var(--color-accent-primary)]/20 to-[var(--color-accent-primary)]/10 border border-[var(--color-accent-primary)]/50 rounded-2xl p-5 mb-6">
+          <div className="text-[var(--color-accent-primary)] text-sm font-bold mb-2">NEXT UP</div>
           <div className="text-2xl font-bold mb-1">{nextMeeting.contactName}</div>
           {nextMeeting.title && (
             <div className="text-gray-300 mb-3">{nextMeeting.title}</div>
@@ -124,6 +125,7 @@ export default function SalesDashboard() {
               icon={Plus}
               label="NEW MEETING"
               sublabel="Start recording"
+              variant="primary"
             />
           </Link>
           <Link href="/sales/voice-note">
@@ -141,10 +143,10 @@ export default function SalesDashboard() {
       <h2 className="text-xl font-bold mb-4">Today's Schedule</h2>
       <div className="space-y-3">
         {meetings.map((meeting) => (
-          <Link 
+          <Link
             key={meeting.id}
             href={`/sales/meeting/${meeting.id}`}
-            className="block bg-gray-800 rounded-xl p-4 active:bg-gray-700 transition-colors"
+            className="block bg-[var(--color-bg-secondary)] rounded-xl p-4 active:bg-gray-700 transition-colors"
           >
             <div className="flex justify-between items-start">
               <div>
@@ -174,6 +176,9 @@ export default function SalesDashboard() {
           </div>
         )}
       </div>
+
+      {/* Voice Command Button */}
+      <VoiceButton />
     </div>
   )
 }
