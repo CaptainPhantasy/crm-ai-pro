@@ -208,7 +208,7 @@ export async function GET(request: Request) {
     const techActivityTimeline: Array<{ hour: string; active: number }> = []
     
     // Get all GPS logs for the time range in one query
-    const { data: allGpsLogs } = await supabase
+    const { data: activityGpsLogs } = await supabase
       .from('gps_logs')
       .select('user_id, created_at')
       .in('user_id', techIds)
@@ -219,7 +219,7 @@ export async function GET(request: Request) {
     // Process logs in memory (much faster than 24 DB queries)
     const hourlyActivity = new Map<string, Set<string>>()
     
-    allGpsLogs?.forEach(log => {
+    activityGpsLogs?.forEach(log => {
       const hour = new Date(log.created_at).toTimeString().substring(0, 5)
       if (!hourlyActivity.has(hour)) {
         hourlyActivity.set(hour, new Set())
@@ -241,7 +241,7 @@ export async function GET(request: Request) {
     const distanceTraveled: Array<{ techName: string; miles: number }> = []
     
     // Get all GPS logs for all techs in one query
-    const { data: allGpsLogs } = await supabase
+    const { data: distanceGpsLogs } = await supabase
       .from('gps_logs')
       .select('user_id, latitude, longitude, created_at')
       .in('user_id', techIds)
@@ -260,7 +260,7 @@ export async function GET(request: Request) {
 
     // Calculate distances per tech
     const techGpsMap = new Map<string, any[]>()
-    allGpsLogs?.forEach(log => {
+    distanceGpsLogs?.forEach(log => {
       if (!techGpsMap.has(log.user_id)) {
         techGpsMap.set(log.user_id, [])
       }
