@@ -204,44 +204,75 @@ export async function GET(request: Request) {
       completed: completedJobs.length
     }
 
-    // Tech activity timeline (hourly)
+    // Tech activity timeline (hourly) - BATCH QUERY
     const techActivityTimeline: Array<{ hour: string; active: number }> = []
+    
+    // Get all GPS logs for the time range in one query
+    const { data: allGpsLogs } = await supabase
+      .from('gps_logs')
+      .select('user_id, created_at')
+      .in('user_id', techIds)
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString())
+      .order('created_at', { ascending: true })
+
+    // Process logs in memory (much faster than 24 DB queries)
+    const hourlyActivity = new Map<string, Set<string>>()
+    
+    allGpsLogs?.forEach(log => {
+      const hour = new Date(log.created_at).toTimeString().substring(0, 5)
+      if (!hourlyActivity.has(hour)) {
+        hourlyActivity.set(hour, new Set())
+      }
+      hourlyActivity.get(hour)!.add(log.user_id)
+    })
+
+    // Build timeline from processed data
     for (let i = 0; i < 24; i++) {
       const hourStart = new Date(startDate.getTime() + i * 60 * 60 * 1000)
-      const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000)
-
-      const { data: hourlyGps } = await supabase
-        .from('gps_logs')
-        .select('user_id')
-        .in('user_id', techIds)
-        .gte('created_at', hourStart.toISOString())
-        .lte('created_at', hourEnd.toISOString())
-
-      const activeTechsInHour = new Set(hourlyGps?.map(g => g.user_id) || []).size
-
+      const hour = hourStart.toTimeString().substring(0, 5)
       techActivityTimeline.push({
-        hour: hourStart.toTimeString().substring(0, 5), // HH:MM format
-        active: activeTechsInHour
+        hour,
+        active: hourlyActivity.get(hour)?.size || 0
       })
     }
 
-    // Distance traveled per tech
+    // Distance traveled per tech - BATCH QUERY
     const distanceTraveled: Array<{ techName: string; miles: number }> = []
+    
+    // Get all GPS logs for all techs in one query
+    const { data: allGpsLogs } = await supabase
+      .from('gps_logs')
+      .select('user_id, latitude, longitude, created_at')
+      .in('user_id', techIds)
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString())
+      .order('created_at', { ascending: true })
 
-    for (const tech of techs || []) {
-      const { data: techGps } = await supabase
-        .from('gps_logs')
-        .select('latitude, longitude, created_at')
-        .eq('user_id', tech.id)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString())
-        .order('created_at', { ascending: true })
+    // Process by tech in memory
+    const techDistances = new Map<string, number>()
+    const techNameMap = new Map<string, string>()
+    
+    // Build name map for quick lookup
+    techs?.forEach(tech => {
+      techNameMap.set(tech.id, tech.full_name || 'Unknown')
+    })
 
+    // Calculate distances per tech
+    const techGpsMap = new Map<string, any[]>()
+    allGpsLogs?.forEach(log => {
+      if (!techGpsMap.has(log.user_id)) {
+        techGpsMap.set(log.user_id, [])
+      }
+      techGpsMap.get(log.user_id)!.push(log)
+    })
+
+    techGpsMap.forEach((gpsLogs, techId) => {
       let totalDistance = 0
-      if (techGps && techGps.length > 1) {
-        for (let i = 1; i < techGps.length; i++) {
-          const prev = techGps[i - 1]
-          const curr = techGps[i]
+      if (gpsLogs.length > 1) {
+        for (let i = 1; i < gpsLogs.length; i++) {
+          const prev = gpsLogs[i - 1]
+          const curr = gpsLogs[i]
           const distance = calculateDistance(
             parseFloat(prev.latitude),
             parseFloat(prev.longitude),
@@ -251,12 +282,13 @@ export async function GET(request: Request) {
           if (distance < 10000) totalDistance += distance // Filter GPS jumps
         }
       }
-
+      
+      const miles = Math.round((totalDistance / 1609.34) * 10) / 10
       distanceTraveled.push({
-        techName: tech.full_name || 'Unknown',
-        miles: Math.round((totalDistance / 1609.34) * 10) / 10
+        techName: techNameMap.get(techId) || 'Unknown',
+        miles
       })
-    }
+    })
 
     // Sort by distance and take top 10
     distanceTraveled.sort((a, b) => b.miles - a.miles)

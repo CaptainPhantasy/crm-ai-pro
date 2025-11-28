@@ -1,14 +1,12 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns'
-import { cachedFetch } from '@/lib/api/cache'
-import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { useQuery } from '@tanstack/react-query'
 
 interface CalendarEvent {
   id: string
@@ -30,34 +28,21 @@ interface CalendarViewProps {
 
 export function CalendarView({ onEventClick, onCreateEvent, className }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [events, setEvents] = useState<CalendarEvent[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchEvents()
-  }, [currentDate])
-
-  async function fetchEvents() {
-    setLoading(true)
-    try {
+  // Fetch events using React Query
+  const { data: events = [], isLoading, isFetching } = useQuery({
+    queryKey: ['calendar-events', format(currentDate, 'yyyy-MM')],
+    queryFn: async () => {
       const startDate = startOfMonth(currentDate).toISOString()
       const endDate = endOfMonth(currentDate).toISOString()
-
-      // Use cached fetch with 30 second TTL
-      const data = await cachedFetch(
-        `/api/calendar/events?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
-        {},
-        30000 // 30 seconds cache
-      )
-
-      setEvents(data.events || [])
-    } catch (error) {
-      console.error('Error fetching calendar events:', error)
-      setEvents([])
-    } finally {
-      setLoading(false)
-    }
-  }
+      const res = await fetch(`/api/calendar/events?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`)
+      if (!res.ok) throw new Error('Failed to fetch events')
+      const data = await res.json()
+      return (data.events || []) as CalendarEvent[]
+    },
+    placeholderData: (previousData) => previousData, // Keep showing previous month while loading new one
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  })
 
   // Memoize expensive date calculations
   const { days, eventsByDate } = useMemo(() => {
@@ -91,6 +76,7 @@ export function CalendarView({ onEventClick, onCreateEvent, className }: Calenda
           <CardTitle className="text-white flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-theme-accent-primary" />
             {format(currentDate, 'MMMM yyyy')}
+            {isFetching && <Loader2 className="w-4 h-4 animate-spin text-theme-subtle ml-2" />}
           </CardTitle>
           <div className="flex items-center gap-2">
             <Button
@@ -98,6 +84,7 @@ export function CalendarView({ onEventClick, onCreateEvent, className }: Calenda
               size="sm"
               onClick={() => setCurrentDate(subMonths(currentDate, 1))}
               className="border-theme-border"
+              disabled={isLoading}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -106,6 +93,7 @@ export function CalendarView({ onEventClick, onCreateEvent, className }: Calenda
               size="sm"
               onClick={() => setCurrentDate(new Date())}
               className="border-theme-border"
+              disabled={isLoading}
             >
               Today
             </Button>
@@ -114,6 +102,7 @@ export function CalendarView({ onEventClick, onCreateEvent, className }: Calenda
               size="sm"
               onClick={() => setCurrentDate(addMonths(currentDate, 1))}
               className="border-theme-border"
+              disabled={isLoading}
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -131,69 +120,67 @@ export function CalendarView({ onEventClick, onCreateEvent, className }: Calenda
         </div>
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <LoadingSpinner message="Loading calendar..." />
-        ) : (
-          <div className="grid grid-cols-7 gap-1">
-            {/* Day headers */}
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+        <div className="grid grid-cols-7 gap-1">
+          {/* Day headers */}
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+            <div
+              key={day}
+              className="p-2 text-center text-sm font-semibold text-theme-subtle/70"
+            >
+              {day}
+            </div>
+          ))}
+
+          {/* Calendar days */}
+          {days.map((day, index) => {
+            const dayEvents = getEventsForDate(day)
+            const isCurrentMonth = isSameMonth(day, currentDate)
+            const isToday = isSameDay(day, new Date())
+
+            return (
               <div
-                key={day}
-                className="p-2 text-center text-sm font-semibold text-theme-subtle/70"
+                key={index}
+                className={cn(
+                  "min-h-[100px] p-1 border border-theme-border transition-opacity duration-200",
+                  !isCurrentMonth && "opacity-30",
+                  isToday && "bg-theme-accent-primary/10 border-theme-accent-primary",
+                  // Fade out slightly if we are fetching new data but showing old data
+                  isFetching && "opacity-50"
+                )}
               >
-                {day}
-              </div>
-            ))}
-
-            {/* Calendar days */}
-            {days.map((day, index) => {
-              const dayEvents = getEventsForDate(day)
-              const isCurrentMonth = isSameMonth(day, currentDate)
-              const isToday = isSameDay(day, new Date())
-
-              return (
                 <div
-                  key={index}
                   className={cn(
-                    "min-h-[100px] p-1 border border-theme-border",
-                    !isCurrentMonth && "opacity-30",
-                    isToday && "bg-theme-accent-primary/10 border-theme-accent-primary"
+                    "text-sm font-medium mb-1",
+                    isToday
+                      ? "text-theme-accent-primary font-bold"
+                      : isCurrentMonth
+                        ? "text-white"
+                        : "text-theme-subtle/50"
                   )}
                 >
-                  <div
-                    className={cn(
-                      "text-sm font-medium mb-1",
-                      isToday
-                        ? "text-theme-accent-primary font-bold"
-                        : isCurrentMonth
-                          ? "text-white"
-                          : "text-theme-subtle/50"
-                    )}
-                  >
-                    {format(day, 'd')}
-                  </div>
-                  <div className="space-y-1">
-                    {dayEvents.slice(0, 3).map((event) => (
-                      <button
-                        key={event.id}
-                        onClick={() => onEventClick?.(event)}
-                        className="w-full text-left px-1 py-0.5 text-xs rounded bg-theme-accent-primary/20 hover:bg-theme-accent-primary/30 text-white truncate border border-theme-accent-primary/30"
-                        title={event.title}
-                      >
-                        {format(new Date(event.startTime), 'HH:mm')} {event.title}
-                      </button>
-                    ))}
-                    {dayEvents.length > 3 && (
-                      <div className="text-xs text-theme-subtle/70 px-1">
-                        +{dayEvents.length - 3} more
-                      </div>
-                    )}
-                  </div>
+                  {format(day, 'd')}
                 </div>
-              )
-            })}
-          </div>
-        )}
+                <div className="space-y-1">
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <button
+                      key={event.id}
+                      onClick={() => onEventClick?.(event)}
+                      className="w-full text-left px-1 py-0.5 text-xs rounded bg-theme-accent-primary/20 hover:bg-theme-accent-primary/30 text-white truncate border border-theme-accent-primary/30"
+                      title={event.title}
+                    >
+                      {format(new Date(event.startTime), 'HH:mm')} {event.title}
+                    </button>
+                  ))}
+                  {dayEvents.length > 3 && (
+                    <div className="text-xs text-theme-subtle/70 px-1">
+                      +{dayEvents.length - 3} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </CardContent>
     </Card>
   )

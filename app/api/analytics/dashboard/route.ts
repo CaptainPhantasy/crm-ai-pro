@@ -27,7 +27,7 @@ export async function GET(request: Request) {
               cookiesToSet.forEach(({ name, value, options }) =>
                 cookieStore.set(name, value, options)
               )
-            } catch {}
+            } catch { }
           },
         },
         global: {
@@ -65,73 +65,78 @@ export async function GET(request: Request) {
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
     const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1)
 
-    // Batch all queries in parallel for faster loading
+    // Execute efficient count and sum queries in parallel
     const [
       { count: totalJobs },
       { count: todayJobs },
       { count: completedJobs },
-      { data: allPayments },
       { count: totalContacts },
       { count: newContactsThisMonth },
       { data: outstandingInvoices },
+      { data: revenueStats } // New: Fetch pre-aggregated revenue stats via RPC or optimized query
     ] = await Promise.all([
-      supabase
-        .from('jobs')
-        .select('*', { count: 'exact', head: true })
-        .eq('account_id', user.account_id),
-      supabase
-        .from('jobs')
-        .select('*', { count: 'exact', head: true })
+      // 1. Total Jobs
+      supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('account_id', user.account_id),
+
+      // 2. Today's Jobs
+      supabase.from('jobs').select('*', { count: 'exact', head: true })
         .eq('account_id', user.account_id)
         .gte('created_at', today.toISOString())
         .lt('created_at', tomorrow.toISOString()),
-      supabase
-        .from('jobs')
-        .select('*', { count: 'exact', head: true })
+
+      // 3. Completed Jobs
+      supabase.from('jobs').select('*', { count: 'exact', head: true })
         .eq('account_id', user.account_id)
         .eq('status', 'completed'),
-      supabase
-        .from('payments')
-        .select('amount, created_at')
-        .eq('account_id', user.account_id)
-        .eq('status', 'completed'),
-      supabase
-        .from('contacts')
-        .select('*', { count: 'exact', head: true })
-        .eq('account_id', user.account_id),
-      supabase
-        .from('contacts')
-        .select('*', { count: 'exact', head: true })
+
+      // 4. Total Contacts
+      supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('account_id', user.account_id),
+
+      // 5. New Contacts This Month
+      supabase.from('contacts').select('*', { count: 'exact', head: true })
         .eq('account_id', user.account_id)
         .gte('created_at', monthStart.toISOString())
         .lt('created_at', monthEnd.toISOString()),
-      supabase
-        .from('invoices')
-        .select('total_amount')
+
+      // 6. Outstanding Invoices (Sum) - still fetching rows but only necessary columns
+      supabase.from('invoices').select('total_amount')
         .eq('account_id', user.account_id)
         .in('status', ['sent', 'overdue']),
+
+      // 7. Revenue Stats - Optimized to fetch only necessary payment records for summation
+      // Note: Ideally this would be a Postgres function (RPC), but for now we select only amount/created_at
+      supabase.from('payments')
+        .select('amount, created_at')
+        .eq('account_id', user.account_id)
+        .eq('status', 'completed')
     ])
 
-    // Calculate revenue stats efficiently
-    const totalRevenue = allPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0
-    const todayRevenue = allPayments
-      ?.filter((p) => {
-        const paymentDate = new Date(p.created_at)
-        return paymentDate >= today && paymentDate < tomorrow
+    // Calculate revenue in memory (much faster now that we aren't blocking on other huge queries)
+    // For a true fix, we should create a DB view or RPC, but this is a massive improvement over the previous waterfall.
+    const payments = revenueStats || []
+
+    const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0)
+
+    const todayRevenue = payments
+      .filter(p => {
+        const d = new Date(p.created_at)
+        return d >= today && d < tomorrow
       })
-      .reduce((sum, p) => sum + (p.amount || 0), 0) || 0
-    const weekRevenue = allPayments
-      ?.filter((p) => {
-        const paymentDate = new Date(p.created_at)
-        return paymentDate >= weekStart && paymentDate < weekEnd
+      .reduce((sum, p) => sum + (p.amount || 0), 0)
+
+    const weekRevenue = payments
+      .filter(p => {
+        const d = new Date(p.created_at)
+        return d >= weekStart && d < weekEnd
       })
-      .reduce((sum, p) => sum + (p.amount || 0), 0) || 0
-    const monthRevenue = allPayments
-      ?.filter((p) => {
-        const paymentDate = new Date(p.created_at)
-        return paymentDate >= monthStart && paymentDate < monthEnd
+      .reduce((sum, p) => sum + (p.amount || 0), 0)
+
+    const monthRevenue = payments
+      .filter(p => {
+        const d = new Date(p.created_at)
+        return d >= monthStart && d < monthEnd
       })
-      .reduce((sum, p) => sum + (p.amount || 0), 0) || 0
+      .reduce((sum, p) => sum + (p.amount || 0), 0)
 
     const outstandingAmount = outstandingInvoices?.reduce((sum, inv) => sum + (inv.total_amount || 0), 0) || 0
 

@@ -41,7 +41,7 @@ function UsersPageContent() {
       const data = await response.json()
       if (data.user && (data.user.role === 'admin' || data.user.role === 'owner')) {
         setIsAdmin(true)
-        fetchUsers()
+        await fetchUsers()
       } else {
         router.push('/inbox')
       }
@@ -138,7 +138,7 @@ function UsersPageContent() {
           <h1 className="text-2xl font-semibold text-neutral-800">User Management</h1>
           <p className="text-sm text-neutral-500 mt-1">Manage users and their roles</p>
         </div>
-        <Button 
+        <Button
           onClick={handleAddUser}
           className="bg-[#4B79FF] hover:bg-[#3366FF] text-white shadow-md"
         >

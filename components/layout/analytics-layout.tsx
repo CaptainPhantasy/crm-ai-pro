@@ -1,34 +1,33 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
-  TrendingUp,
   DollarSign,
   Briefcase,
   Users,
   FileText,
-  Calendar,
   Loader2,
   BarChart3
 } from 'lucide-react'
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from 'recharts'
+import { Skeleton } from '@/components/ui/skeleton'
+
+// Lazy load Recharts components
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false })
+const LineChart = dynamic(() => import('recharts').then(mod => mod.LineChart), { ssr: false })
+const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: false })
+const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false })
+const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false })
+const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false })
+const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false })
+const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false })
+const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false })
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false })
+const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false })
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false })
+const Legend = dynamic(() => import('recharts').then(mod => mod.Legend), { ssr: false })
 
 interface DashboardStats {
   jobs: {
@@ -115,9 +114,9 @@ function StatCard({
         {change && (
           <p className={cn(
             "text-xs mt-1 font-medium",
-            changeType === 'positive' && "text-theme-accent-secondary",
-            changeType === 'negative' && "text-red-500",
-            changeType === 'neutral' && "text-theme-secondary"
+            changeType === 'positive' ? "text-theme-accent-secondary" : undefined,
+            changeType === 'negative' ? "text-red-500" : undefined,
+            changeType === 'neutral' ? "text-theme-secondary" : undefined
           )}>
             {change}
           </p>
@@ -127,8 +126,16 @@ function StatCard({
   )
 }
 
-function cn(...classes: (string | undefined)[]): string {
+function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
+}
+
+function ChartSkeleton() {
+  return (
+    <div className="h-[300px] w-full flex items-center justify-center bg-theme-surface/50 rounded-lg animate-pulse">
+      <Loader2 className="w-6 h-6 text-theme-secondary animate-spin" />
+    </div>
+  )
 }
 
 export function AnalyticsLayout({
@@ -166,18 +173,19 @@ export function AnalyticsLayout({
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full">
-        <header className="flex items-center justify-between border-b border-ops-border px-4 py-3 bg-ops-surface">
-          <div>
-            <div className="h-5 bg-ops-surfaceSoft rounded animate-pulse w-48 mb-1" />
-            <div className="h-3 bg-ops-surfaceSoft rounded animate-pulse w-64" />
-          </div>
-        </header>
-        <div className="flex flex-1 overflow-hidden px-4 py-4">
-          <div className="flex-1 bg-ops-surface rounded-lg border border-ops-border shadow-card flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-ops-accent" />
-          </div>
-          <div className="w-80 ml-4 border border-ops-border bg-ops-surfaceSoft rounded-lg shadow-card" />
+      <div className="flex flex-col h-full p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Skeleton className="h-[400px] w-full" />
+          <Skeleton className="h-[400px] w-full" />
         </div>
       </div>
     )
@@ -262,29 +270,31 @@ export function AnalyticsLayout({
               </CardHeader>
               <CardContent>
                 {revenueAnalytics?.breakdown && Object.keys(revenueAnalytics.breakdown).length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={prepareDateChartData(revenueAnalytics.breakdown)}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={COLORS[0]} />
-                      <XAxis dataKey="date" stroke={COLORS[1]} />
-                      <YAxis stroke={COLORS[1]} />
-                      <Tooltip
-                        formatter={(value: number) => formatCurrency(value)}
-                        contentStyle={{
-                          backgroundColor: 'var(--ops-surface)',
-                          border: '1px solid var(--ops-border)',
-                          borderRadius: '0.5rem'
-                        }}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke={COLORS[0]}
-                        strokeWidth={2}
-                        name="Revenue"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={prepareDateChartData(revenueAnalytics.breakdown)}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={COLORS[0]} />
+                        <XAxis dataKey="date" stroke={COLORS[1]} />
+                        <YAxis stroke={COLORS[1]} />
+                        <Tooltip
+                          formatter={(value: any) => [formatCurrency(Number(value)), 'Revenue']}
+                          contentStyle={{
+                            backgroundColor: 'var(--ops-surface)',
+                            border: '1px solid var(--ops-border)',
+                            borderRadius: '0.5rem'
+                          }}
+                        />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          stroke={COLORS[0]}
+                          strokeWidth={2}
+                          name="Revenue"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </Suspense>
                 ) : (
                   <div className="h-[300px] flex items-center justify-center text-theme-secondary">
                     No revenue data available
@@ -301,31 +311,33 @@ export function AnalyticsLayout({
               </CardHeader>
               <CardContent>
                 {jobAnalytics?.statusBreakdown && Object.keys(jobAnalytics.statusBreakdown).length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={prepareStatusChartData(jobAnalytics.statusBreakdown)}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent = 0 }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {prepareStatusChartData(jobAnalytics.statusBreakdown).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--ops-surface)',
-                          border: '1px solid var(--ops-border)',
-                          borderRadius: '0.5rem'
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={prepareStatusChartData(jobAnalytics.statusBreakdown)}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent = 0 }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {prepareStatusChartData(jobAnalytics.statusBreakdown).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'var(--ops-surface)',
+                            border: '1px solid var(--ops-border)',
+                            borderRadius: '0.5rem'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </Suspense>
                 ) : (
                   <div className="h-[300px] flex items-center justify-center text-ops-textMuted">
                     No job data available
@@ -342,22 +354,24 @@ export function AnalyticsLayout({
               </CardHeader>
               <CardContent>
                 {jobAnalytics?.dateBreakdown && Object.keys(jobAnalytics.dateBreakdown).length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={prepareDateChartData(jobAnalytics.dateBreakdown)}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={COLORS[0]} />
-                      <XAxis dataKey="date" stroke={COLORS[1]} />
-                      <YAxis stroke={COLORS[1]} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--ops-surface)',
-                          border: '1px solid var(--ops-border)',
-                          borderRadius: '0.5rem'
-                        }}
-                      />
-                      <Legend />
-                      <Bar dataKey="value" fill={COLORS[0]} name="Jobs" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={prepareDateChartData(jobAnalytics.dateBreakdown)}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={COLORS[0]} />
+                        <XAxis dataKey="date" stroke={COLORS[1]} />
+                        <YAxis stroke={COLORS[1]} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'var(--ops-surface)',
+                            border: '1px solid var(--ops-border)',
+                            borderRadius: '0.5rem'
+                          }}
+                        />
+                        <Legend />
+                        <Bar dataKey="value" fill={COLORS[0]} name="Jobs" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Suspense>
                 ) : (
                   <div className="h-[300px] flex items-center justify-center text-ops-textMuted">
                     No job data available
@@ -374,22 +388,24 @@ export function AnalyticsLayout({
               </CardHeader>
               <CardContent>
                 {contactAnalytics?.dateBreakdown && Object.keys(contactAnalytics.dateBreakdown).length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={prepareDateChartData(contactAnalytics.dateBreakdown)}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={COLORS[0]} />
-                      <XAxis dataKey="date" stroke={COLORS[1]} />
-                      <YAxis stroke={COLORS[1]} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--ops-surface)',
-                          border: '1px solid var(--ops-border)',
-                          borderRadius: '0.5rem'
-                        }}
-                      />
-                      <Legend />
-                      <Bar dataKey="value" fill={COLORS[1]} name="Contacts" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={prepareDateChartData(contactAnalytics.dateBreakdown)}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={COLORS[0]} />
+                        <XAxis dataKey="date" stroke={COLORS[1]} />
+                        <YAxis stroke={COLORS[1]} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'var(--ops-surface)',
+                            border: '1px solid var(--ops-border)',
+                            borderRadius: '0.5rem'
+                          }}
+                        />
+                        <Legend />
+                        <Bar dataKey="value" fill={COLORS[1]} name="Contacts" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Suspense>
                 ) : (
                   <div className="h-[300px] flex items-center justify-center text-ops-textMuted">
                     No contact data available

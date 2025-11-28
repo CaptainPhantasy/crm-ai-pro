@@ -76,19 +76,19 @@ export default function TechListSidebar({
       if (sortBy === 'distance' && selectedJobLocation) {
         const distA = a.lastLocation
           ? calculateDistance(
-              a.lastLocation.lat,
-              a.lastLocation.lng,
-              selectedJobLocation.lat,
-              selectedJobLocation.lng
-            )
+            a.lastLocation.lat,
+            a.lastLocation.lng,
+            selectedJobLocation.lat,
+            selectedJobLocation.lng
+          )
           : Infinity
         const distB = b.lastLocation
           ? calculateDistance(
-              b.lastLocation.lat,
-              b.lastLocation.lng,
-              selectedJobLocation.lat,
-              selectedJobLocation.lng
-            )
+            b.lastLocation.lat,
+            b.lastLocation.lng,
+            selectedJobLocation.lat,
+            selectedJobLocation.lng
+          )
           : Infinity
         return distA - distB
       }
@@ -262,11 +262,11 @@ export default function TechListSidebar({
                 const isSelected = tech.id === selectedTechId
                 const distance = selectedJobLocation && tech.lastLocation
                   ? calculateDistance(
-                      tech.lastLocation.lat,
-                      tech.lastLocation.lng,
-                      selectedJobLocation.lat,
-                      selectedJobLocation.lng
-                    )
+                    tech.lastLocation.lat,
+                    tech.lastLocation.lng,
+                    selectedJobLocation.lat,
+                    selectedJobLocation.lng
+                  )
                   : null
 
                 return (
@@ -354,15 +354,15 @@ export default function TechListSidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block relative z-20">
         <div
           className={cn(
-            "h-full transition-all duration-300 ease-in-out relative",
+            "h-full transition-all duration-300 ease-in-out relative overflow-visible",
             isCollapsed ? "w-0" : "w-[320px]"
           )}
         >
           {!isCollapsed && (
-            <div className="w-[320px] h-full">
+            <div className="w-[320px] h-full border-r border-gray-700">
               <SidebarContent />
             </div>
           )}
@@ -371,19 +371,20 @@ export default function TechListSidebar({
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={cn(
-              "absolute top-4 -right-3 z-10",
-              "w-6 h-6 rounded-full",
-              "bg-gray-800 border border-gray-600",
+              "absolute top-4 -right-10 z-50",
+              "w-8 h-12 rounded-r-lg", // Tab shape
+              "bg-blue-600 border-y border-r border-white/20",
               "flex items-center justify-center",
-              "text-gray-300 hover:text-white hover:bg-gray-700",
-              "transition-colors shadow-lg"
+              "text-white shadow-xl",
+              "hover:bg-blue-700 hover:w-10 transition-all duration-200",
+              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             )}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {isCollapsed ? (
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5" />
             ) : (
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             )}
           </button>
         </div>

@@ -37,7 +37,8 @@
     "logs:crm": "docker-compose logs -f crm-app",
     "logs:mcp": "docker-compose logs -f mcp-server",
     "health-check": "tsx scripts/health-check.ts",
-    "geocode-jobs": "tsx scripts/geocode-existing-jobs.ts"
+    "geocode-jobs": "tsx scripts/geocode-existing-jobs.ts",
+    "test:map-performance": "tsx scripts/test-map-performance.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.45",

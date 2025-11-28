@@ -102,64 +102,68 @@ export async function createCalendarEvent(
   event: CalendarEvent,
   userId?: string
 ): Promise<{ id: string; link?: string }> {
-  const provider = await getCalendarProvider(accountId, userId)
-
-  if (!provider) {
-    throw new Error('No calendar provider configured')
-  }
-
-  // Create event in provider's calendar
-  let result
-  if (provider.provider === 'google') {
-    result = await createGoogleCalendarEvent(provider.accessToken, {
-      summary: event.title,
-      description: event.description,
-      start: {
-        dateTime: event.startTime,
-        timeZone: 'America/Indiana/Indianapolis',
-      },
-      end: {
-        dateTime: event.endTime,
-        timeZone: 'America/Indiana/Indianapolis',
-      },
-      location: event.location,
-    })
-  } else {
-    result = await createMicrosoftCalendarEvent(provider.accessToken, {
-      subject: event.title,
-      body: event.description
-        ? {
-            contentType: 'text',
-            content: event.description,
-          }
-        : undefined,
-      start: {
-        dateTime: event.startTime,
-        timeZone: 'America/Indiana/Indianapolis',
-      },
-      end: {
-        dateTime: event.endTime,
-        timeZone: 'America/Indiana/Indianapolis',
-      },
-      location: event.location
-        ? {
-            displayName: event.location,
-          }
-        : undefined,
-    })
-  }
-
-  // Store event in database
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
   const supabase = createClient(supabaseUrl, serviceRoleKey)
 
-  const { data: calendarEvent } = await supabase
+  const provider = await getCalendarProvider(accountId, userId)
+
+  let providerResult: { id: string; htmlLink?: string; webLink?: string } | null = null
+
+  // If provider exists, create event in provider's calendar
+  if (provider) {
+    try {
+      if (provider.provider === 'google') {
+        providerResult = await createGoogleCalendarEvent(provider.accessToken, {
+          summary: event.title,
+          description: event.description,
+          start: {
+            dateTime: event.startTime,
+            timeZone: 'America/Indiana/Indianapolis',
+          },
+          end: {
+            dateTime: event.endTime,
+            timeZone: 'America/Indiana/Indianapolis',
+          },
+          location: event.location,
+        })
+      } else {
+        providerResult = await createMicrosoftCalendarEvent(provider.accessToken, {
+          subject: event.title,
+          body: event.description
+            ? {
+                contentType: 'text',
+                content: event.description,
+              }
+            : undefined,
+          start: {
+            dateTime: event.startTime,
+            timeZone: 'America/Indiana/Indianapolis',
+          },
+          end: {
+            dateTime: event.endTime,
+            timeZone: 'America/Indiana/Indianapolis',
+          },
+          location: event.location
+            ? {
+                displayName: event.location,
+              }
+            : undefined,
+        })
+      }
+    } catch (providerError) {
+      console.error('Failed to create event in provider calendar:', providerError)
+      // Continue to store locally even if provider fails
+    }
+  }
+
+  // Store event in database (works even without a provider)
+  const { data: calendarEvent, error } = await supabase
     .from('calendar_events')
     .insert({
       account_id: accountId,
-      provider: provider.provider,
-      provider_event_id: result.id,
+      provider: provider?.provider || 'local',
+      provider_event_id: providerResult?.id || null,
       title: event.title,
       description: event.description,
       start_time: event.startTime,
@@ -172,9 +176,14 @@ export async function createCalendarEvent(
     .select()
     .single()
 
+  if (error) {
+    console.error('Failed to store calendar event:', error)
+    throw new Error('Failed to create calendar event')
+  }
+
   return {
-    id: calendarEvent?.id || result.id,
-    link: result.htmlLink || result.webLink,
+    id: calendarEvent?.id || providerResult?.id || '',
+    link: providerResult?.htmlLink || providerResult?.webLink,
   }
 }
 

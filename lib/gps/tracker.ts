@@ -65,6 +65,9 @@ class GpsTracker {
     })
   }
 
+  private syncInterval: any | null = null
+  private readonly SYNC_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
+
   /**
    * Start continuous tracking for a job
    */
@@ -74,6 +77,7 @@ class GpsTracker {
     this.currentJobId = jobId
     this.isTracking = true
 
+    // Start watching position for local updates
     this.watchId = navigator.geolocation.watchPosition(
       (position) => {
         const gpsPosition: GpsPosition = {
@@ -94,6 +98,16 @@ class GpsTracker {
         maximumAge: 30000,
       }
     )
+
+    // Start periodic sync to server
+    this.syncInterval = setInterval(() => {
+      if (this.lastPosition) {
+        this.logEvent(jobId, 'auto', { background: true }).catch(console.error)
+      }
+    }, this.SYNC_INTERVAL_MS)
+
+    // Log initial start
+    this.logEvent(jobId, 'auto', { action: 'start_tracking' }).catch(console.error)
   }
 
   /**
@@ -104,6 +118,12 @@ class GpsTracker {
       navigator.geolocation.clearWatch(this.watchId)
       this.watchId = null
     }
+
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval)
+      this.syncInterval = null
+    }
+
     this.currentJobId = null
     this.isTracking = false
   }
@@ -139,7 +159,7 @@ class GpsTracker {
   ): Promise<void> {
     try {
       const position = await this.getCurrentPosition()
-      
+
       const log: OfflineGpsLog = {
         id: crypto.randomUUID(),
         localId: crypto.randomUUID(),
@@ -155,7 +175,7 @@ class GpsTracker {
       }
 
       await saveGpsLogOffline(log)
-      
+
       // Also try to sync immediately if online
       if (navigator.onLine) {
         this.syncGpsLog(log).catch(console.error)

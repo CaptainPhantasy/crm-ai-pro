@@ -62,13 +62,25 @@ export function useNotifications(
   const [error, setError] = useState<Error | null>(null)
 
   const channelRef = useRef<RealtimeChannel | null>(null)
-  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   /**
-   * Fetch notifications from API
+   * Fetch notifications from API with debouncing
    */
   const fetchNotifications = useCallback(async () => {
     if (!enabled) return
+
+    // Prevent rapid-fire calls with a simple timestamp check
+    const now = Date.now()
+    const lastFetch = (globalThis as any).__lastNotificationFetch || 0
+    const minFetchInterval = 1000 // 1 second minimum between fetches
+    
+    if (now - lastFetch < minFetchInterval) {
+      console.log('[Notifications] Skipping rapid fetch')
+      return
+    }
+    
+    (globalThis as any).__lastNotificationFetch = now
 
     setLoading(true)
     setError(null)
@@ -267,12 +279,29 @@ export function useNotifications(
   }, [enabled, autoRefresh, refreshInterval, fetchNotifications])
 
   /**
-   * Initial fetch on mount
+   * Initial fetch on mount with aggressive debouncing
    */
   useEffect(() => {
-    if (enabled) {
-      fetchNotifications()
+    if (!enabled) return
+
+    // Use a longer delay and shared debouncing to prevent spam
+    const DEBOUNCE_DELAY = 2000 // 2 seconds
+    const now = Date.now()
+    const globalKey = '__notificationFetchDebounce'
+    const lastFetch = (globalThis as any)[globalKey] || 0
+    
+    if (now - lastFetch < DEBOUNCE_DELAY) {
+      console.log('[Notifications] Skipping fetch due to global debounce')
+      return
     }
+    
+    (globalThis as any)[globalKey] = now
+
+    const timeoutId = setTimeout(() => {
+      fetchNotifications()
+    }, DEBOUNCE_DELAY)
+
+    return () => clearTimeout(timeoutId)
   }, [enabled, fetchNotifications])
 
   return {

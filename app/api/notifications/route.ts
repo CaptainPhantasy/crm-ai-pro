@@ -6,6 +6,14 @@ import { cookies } from 'next/headers'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+// Simple in-memory cache for notifications to prevent spam
+const notificationCache = new Map<string, { data: any; timestamp: number }>()
+const NOTIFICATION_CACHE_TTL = 5000 // 5 seconds cache
+
+function getCacheKey(userId: string, params: string): string {
+  return `notifications:${userId}:${params}`
+}
+
 export async function GET(request: Request) {
   try {
     const session = await getAuthenticatedSession(request)
@@ -18,6 +26,18 @@ export async function GET(request: Request) {
     const type = searchParams.get('type')
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
+
+    // Create cache key based on parameters
+    const cacheKey = getCacheKey(session.user.id, `isRead=${isRead}&type=${type}&limit=${limit}&offset=${offset}`)
+    
+    // Check cache first
+    const cached = notificationCache.get(cacheKey)
+    if (cached && Date.now() - cached.timestamp < NOTIFICATION_CACHE_TTL) {
+      console.log(`[Notifications] Cache hit for ${cacheKey}`)
+      return NextResponse.json(cached.data)
+    }
+    
+    console.log(`[Notifications] Cache miss for ${cacheKey}, fetching from database`)
 
     const cookieStore = await cookies()
     const supabase = createServerClient(
@@ -73,13 +93,21 @@ export async function GET(request: Request) {
       .eq('user_id', session.user.id)
       .eq('is_read', false)
 
-    return NextResponse.json({
+    const responseData = {
       notifications: notifications || [],
       total: count || 0,
       unreadCount: unreadCount || 0,
       limit,
       offset,
+    }
+
+    // Cache the response
+    notificationCache.set(cacheKey, {
+      data: responseData,
+      timestamp: Date.now()
     })
+
+    return NextResponse.json(responseData)
   } catch (error: unknown) {
     console.error('Error in GET /api/notifications:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

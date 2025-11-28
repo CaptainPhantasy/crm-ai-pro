@@ -11,7 +11,7 @@
 
 import { useMemo, useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useImpersonation } from '@/lib/hooks/useImpersonation'
+// import { useImpersonation } from '@/lib/hooks/useImpersonation' // Removed broken import
 import type {
   UsePermissionsReturn,
   Permission,
@@ -95,7 +95,10 @@ import {
  * ```
  */
 export function usePermissions(): UsePermissionsReturn {
-  const { isImpersonating, impersonatedUser, realUser } = useImpersonation()
+  // const { isImpersonating, impersonatedUser, realUser } = useImpersonation() // Removed broken hook
+  const isImpersonating = false // Placeholder
+  const impersonatedUser = null // Placeholder
+  const realUser = null // Placeholder
   const [authUser, setAuthUser] = useState<UserWithRole | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -108,35 +111,7 @@ export function usePermissions(): UsePermissionsReturn {
 
     async function loadUser() {
       try {
-        // If impersonating, use impersonated user
-        if (isImpersonating && impersonatedUser) {
-          if (mounted) {
-            setAuthUser({
-              id: impersonatedUser.id,
-              role: impersonatedUser.role,
-              email: impersonatedUser.email,
-              full_name: impersonatedUser.full_name,
-            })
-            setLoading(false)
-          }
-          return
-        }
-
-        // If not impersonating but real user exists (owner who stopped impersonating)
-        if (!isImpersonating && realUser) {
-          if (mounted) {
-            setAuthUser({
-              id: realUser.id,
-              role: realUser.role,
-              email: realUser.email,
-              full_name: realUser.full_name,
-            })
-            setLoading(false)
-          }
-          return
-        }
-
-        // Otherwise, fetch from Supabase
+        // Fetch from Supabase
         const supabase = createClient()
         const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -165,6 +140,11 @@ export function usePermissions(): UsePermissionsReturn {
         }
 
         if (mounted) {
+          // Cleanup legacy impersonation if present
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('impersonatedRole')
+          }
+
           setAuthUser({
             id: userProfile.id,
             role: userProfile.role as UserRole,
@@ -187,7 +167,7 @@ export function usePermissions(): UsePermissionsReturn {
     return () => {
       mounted = false
     }
-  }, [isImpersonating, impersonatedUser, realUser])
+  }, []) // No dependencies needed anymore
 
   // ============================================================================
   // PERMISSION CHECK FUNCTIONS (MEMOIZED)

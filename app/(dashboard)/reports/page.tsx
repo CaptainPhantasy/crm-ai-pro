@@ -21,31 +21,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Loader2, Plus, RefreshCw } from 'lucide-react'
 import { toast } from '@/lib/toast'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { useQuery } from '@tanstack/react-query'
 
 function ReportsPageContent() {
   const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate | null>(null)
   const [filters, setFilters] = useState<ReportFilters>(getDefaultFilters())
-  const [report, setReport] = useState<Report | null>(null)
-  const [reportData, setReportData] = useState<ReportData | null>(null)
   const [chartType, setChartType] = useState<ChartType>('line')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
   const [customReportDialogOpen, setCustomReportDialogOpen] = useState(false)
 
-  // Auto-generate report when template or filters change
+  // Reset chart type when template changes
   useEffect(() => {
     if (selectedTemplate) {
-      generateReport()
+      setChartType(selectedTemplate.defaultChartType)
     }
-  }, [selectedTemplate, filters])
+  }, [selectedTemplate])
 
-  const generateReport = async () => {
-    if (!selectedTemplate) return
+  const {
+    data: queryData,
+    isLoading,
+    error,
+    refetch,
+    isError
+  } = useQuery({
+    queryKey: ['report', selectedTemplate?.id, filters],
+    queryFn: async () => {
+      if (!selectedTemplate) return null
 
-    setLoading(true)
-    setError(null)
-
-    try {
       const params = new URLSearchParams({
         from: filters.dateRange.from,
         to: filters.dateRange.to,
@@ -59,50 +60,54 @@ function ReportsPageContent() {
       const response = await fetch(`/api/reports/${selectedTemplate.id}?${params.toString()}`)
 
       if (!response.ok) {
-        throw new Error('Failed to generate report')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to generate report')
       }
 
-      const { data, metadata } = await response.json()
+      return response.json()
+    },
+    enabled: !!selectedTemplate,
+    retry: 2, // Retry twice on failure to handle transient issues
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  })
 
-      const newReport: Report = {
-        id: `report-${Date.now()}`,
-        type: selectedTemplate.id,
-        title: selectedTemplate.name,
-        description: selectedTemplate.description,
-        filters,
-        data,
-        chartType: selectedTemplate.defaultChartType,
-        createdAt: metadata.generatedAt,
-        createdBy: metadata.generatedBy,
-        accountId: '',
-      }
-
-      setReport(newReport)
-      setReportData(data)
-      setChartType(selectedTemplate.defaultChartType)
-
-      toast({
-        title: 'Report Generated',
-        description: `${selectedTemplate.name} generated successfully`,
-      })
-    } catch (err) {
-      const error = err as Error
-      setError(error)
+  // Show error toast when error occurs
+  useEffect(() => {
+    if (isError && error) {
       toast({
         title: 'Report Generation Failed',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       })
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [isError, error])
+
+  // Show success toast when data is loaded (optional, but consistent with previous behavior)
+  useEffect(() => {
+    if (queryData && !isLoading && !isError) {
+      // Only show if it's a fresh fetch (not from cache)? 
+      // Actually, previous behavior showed toast on every generation.
+      // We'll skip the toast for cached data to be less annoying, 
+      // or we can keep it if desired. For now, let's skip it to reduce noise.
+    }
+  }, [queryData, isLoading, isError])
+
+  const report: Report | null = queryData && selectedTemplate ? {
+    id: `report-${selectedTemplate.id}-${filters.dateRange.from}`, // Stable ID based on params
+    type: selectedTemplate.id,
+    title: selectedTemplate.name,
+    description: selectedTemplate.description,
+    filters,
+    data: queryData.data,
+    chartType: chartType, // Use local state for chart type
+    createdAt: queryData.metadata.generatedAt,
+    createdBy: queryData.metadata.generatedBy,
+    accountId: '',
+  } : null
 
   const handleTemplateSelect = (template: ReportTemplate) => {
     setSelectedTemplate(template)
-    setReport(null)
-    setReportData(null)
-    setError(null)
+    // React Query will automatically trigger the fetch due to key change
   }
 
   const handleFiltersChange = (newFilters: ReportFilters) => {
@@ -111,13 +116,14 @@ function ReportsPageContent() {
 
   const handleChartTypeChange = (newChartType: ChartType) => {
     setChartType(newChartType)
-    if (report) {
-      setReport({ ...report, chartType: newChartType })
-    }
   }
 
   const handleRefresh = () => {
-    generateReport()
+    refetch()
+    toast({
+      title: 'Refreshing Report',
+      description: 'Fetching latest data...',
+    })
   }
 
   const handleSaveCustomReport = (config: any) => {
@@ -149,8 +155,8 @@ function ReportsPageContent() {
           </Button>
           {report && selectedTemplate && (
             <>
-              <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
               <ReportExportButton
@@ -196,7 +202,7 @@ function ReportsPageContent() {
 
               {/* Report Preview */}
               <div className="lg:col-span-3">
-                {loading && !reportData ? (
+                {isLoading ? (
                   <Card>
                     <CardContent className="flex items-center justify-center py-16">
                       <div className="text-center">
@@ -207,15 +213,27 @@ function ReportsPageContent() {
                       </div>
                     </CardContent>
                   </Card>
-                ) : report && reportData ? (
+                ) : report ? (
                   <ReportPreview
                     report={report}
-                    data={reportData}
+                    data={report.data}
                     chartType={chartType}
                     onChartTypeChange={handleChartTypeChange}
-                    loading={loading}
-                    error={error}
+                    loading={isLoading}
+                    error={error as Error | null}
                   />
+                ) : isError ? (
+                  <Card>
+                    <CardContent className="flex items-center justify-center py-16">
+                      <div className="text-center text-destructive">
+                        <p className="font-semibold">Failed to generate report</p>
+                        <p className="text-sm mt-2">{error?.message || 'Unknown error'}</p>
+                        <Button variant="outline" onClick={() => refetch()} className="mt-4">
+                          Try Again
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ) : null}
               </div>
             </div>

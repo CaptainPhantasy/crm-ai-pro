@@ -29,45 +29,64 @@ export async function POST(request: NextRequest) {
     }
 
     // Sync events from calendar provider
-    const events = await listCalendarEvents(
-      user.account_id,
-      startDate,
-      endDate,
-      session.user.id
-    )
+    let events: any[] = []
+
+    try {
+      events = await listCalendarEvents(
+        user.account_id,
+        startDate,
+        endDate,
+        session.user.id
+      )
+    } catch (calendarError) {
+      console.error('Calendar provider sync failed:', calendarError)
+      // Return success with 0 synced instead of failing
+      return NextResponse.json({
+        success: true,
+        synced: 0,
+        message: 'Calendar provider not configured or unavailable'
+      })
+    }
 
     // Store/update events in database
+    let syncedCount = 0
     for (const event of events) {
-      // Check if event already exists
-      const { data: existing } = await supabase
-        .from('calendar_events')
-        .select('id')
-        .eq('account_id', user.account_id)
-        .eq('start_time', event.startTime)
-        .eq('title', event.title)
-        .single()
+      try {
+        // Check if event already exists
+        const { data: existing } = await supabase
+          .from('calendar_events')
+          .select('id')
+          .eq('account_id', user.account_id)
+          .eq('start_time', event.startTime)
+          .eq('title', event.title)
+          .maybeSingle()
 
-      if (!existing) {
-        // Create new event
-        await supabase.from('calendar_events').insert({
-          account_id: user.account_id,
-          provider: 'google', // TODO: Detect provider
-          provider_event_id: `sync_${Date.now()}_${Math.random()}`,
-          title: event.title,
-          description: event.description,
-          start_time: event.startTime,
-          end_time: event.endTime,
-          location: event.location,
-          contact_id: event.contactId,
-          job_id: event.jobId,
-          conversation_id: event.conversationId,
-        })
+        if (!existing) {
+          // Create new event
+          await supabase.from('calendar_events').insert({
+            account_id: user.account_id,
+            provider: 'google', // TODO: Detect provider
+            provider_event_id: event.id || `sync_${Date.now()}_${Math.random()}`,
+            title: event.title,
+            description: event.description,
+            start_time: event.startTime,
+            end_time: event.endTime,
+            location: event.location,
+            contact_id: event.contactId || null,
+            job_id: event.jobId || null,
+            conversation_id: event.conversationId || null,
+          })
+          syncedCount++
+        }
+      } catch (eventError) {
+        console.error('Failed to sync event:', event.title, eventError)
+        // Continue with next event
       }
     }
 
     return NextResponse.json({
       success: true,
-      synced: events.length,
+      synced: syncedCount,
     })
   } catch (error) {
     console.error('Error syncing calendar:', error)

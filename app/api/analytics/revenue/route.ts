@@ -32,7 +32,7 @@ export async function GET(request: Request) {
               cookiesToSet.forEach(({ name, value, options }) =>
                 cookieStore.set(name, value, options)
               )
-            } catch {}
+            } catch { }
           },
         },
         global: {
@@ -54,12 +54,23 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get payments
+    // Construct efficient query with joins if needed
+    let selectQuery = 'id, amount, created_at, job_id'
+
+    // If we need grouping by tech or status, join with jobs table immediately
+    if (groupBy === 'tech' || groupBy === 'status') {
+      // Note: This assumes a foreign key relationship exists. 
+      // If not, we fall back to the previous method, but standard Supabase setups usually have this.
+      // We select the related job data in the same query.
+      selectQuery += ', jobs ( id, status, tech_assigned_id, users ( id, name, full_name ) )'
+    }
+
     let paymentsQuery = supabase
       .from('payments')
-      .select('amount, created_at, job:jobs(tech_assigned_id, status, tech:users!tech_assigned_id(name))')
+      .select(selectQuery)
       .eq('account_id', user.account_id)
       .eq('status', 'completed')
+      .order('created_at', { ascending: true })
 
     if (dateFrom) {
       paymentsQuery = paymentsQuery.gte('created_at', dateFrom)
@@ -72,32 +83,41 @@ export async function GET(request: Request) {
     const { data: payments, error } = await paymentsQuery
 
     if (error) {
-      console.error('Error fetching revenue:', error)
+      console.error('Error fetching revenue payments:', error)
       return NextResponse.json({ error: 'Failed to fetch revenue' }, { status: 500 })
     }
 
-    const totalRevenue = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0
+    const paymentsList = (payments || []) as any[]
+    const totalRevenue = paymentsList.reduce((sum, p) => sum + (p.amount || 0), 0)
 
     let breakdown: Record<string, number> = {}
 
     if (groupBy === 'date') {
-      breakdown = payments?.reduce((acc, payment) => {
-        const date = new Date(payment.created_at).toISOString().split('T')[0]
-        acc[date] = (acc[date] || 0) + (payment.amount || 0)
+      breakdown = paymentsList.reduce((acc, payment) => {
+        const timestamp = new Date(payment.created_at)
+        if (Number.isNaN(timestamp.getTime())) {
+          return acc
+        }
+        const dateKey = timestamp.toISOString().split('T')[0]
+        acc[dateKey] = (acc[dateKey] || 0) + (payment.amount || 0)
         return acc
-      }, {} as Record<string, number>) || {}
+      }, {} as Record<string, number>)
     } else if (groupBy === 'tech') {
-      breakdown = payments?.reduce((acc, payment) => {
-        const techName = payment.job?.tech?.name || 'Unassigned'
+      breakdown = paymentsList.reduce((acc, payment: any) => {
+        // Access nested joined data
+        const job = payment.jobs
+        const tech = job?.users
+        const techName = tech?.name || tech?.full_name || 'Unassigned'
         acc[techName] = (acc[techName] || 0) + (payment.amount || 0)
         return acc
-      }, {} as Record<string, number>) || {}
+      }, {} as Record<string, number>)
     } else if (groupBy === 'status') {
-      breakdown = payments?.reduce((acc, payment) => {
-        const status = payment.job?.status || 'unknown'
-        acc[status] = (acc[status] || 0) + (payment.amount || 0)
+      breakdown = paymentsList.reduce((acc, payment: any) => {
+        const job = payment.jobs
+        const statusKey = job?.status || 'unknown'
+        acc[statusKey] = (acc[statusKey] || 0) + (payment.amount || 0)
         return acc
-      }, {} as Record<string, number>) || {}
+      }, {} as Record<string, number>)
     }
 
     return NextResponse.json({
@@ -110,4 +130,3 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
-

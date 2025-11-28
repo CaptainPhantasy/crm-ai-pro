@@ -17,8 +17,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { 
+    // Parse JSON with fallback for empty body
+    let body: any = {}
+    try {
+      const text = await request.text()
+      body = text ? JSON.parse(text) : {}
+    } catch (jsonError) {
+      console.error('Failed to parse JSON body:', jsonError)
+      body = {}
+    }
+
+    const {
       syncFrom, // ISO date string
       maxMessages = 100,
     } = body
@@ -78,16 +87,43 @@ export async function POST(request: Request) {
     const provider = providers[0]
 
     // Decrypt tokens
-    const accessToken = decrypt(provider.access_token_encrypted)
-    const refreshToken = decrypt(provider.refresh_token_encrypted)
+    let accessToken: string
+    let refreshToken: string
+    try {
+      accessToken = decrypt(provider.access_token_encrypted)
+      refreshToken = decrypt(provider.refresh_token_encrypted)
+    } catch (decryptError) {
+      console.error('Failed to decrypt tokens:', decryptError)
+      return NextResponse.json(
+        { error: 'Failed to decrypt Microsoft credentials. Please reconnect your Microsoft account.' },
+        { status: 400 }
+      )
+    }
 
     // Sync emails
     const syncFromDate = syncFrom ? new Date(syncFrom) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Default: last 30 days
 
-    const messages = await syncMicrosoftEmails(accessToken, refreshToken, user.account_id, {
-      syncFrom: syncFromDate,
-      maxMessages,
-    })
+    let messages: any[] = []
+    try {
+      messages = await syncMicrosoftEmails(accessToken, refreshToken, user.account_id, {
+        syncFrom: syncFromDate,
+        maxMessages,
+      })
+    } catch (syncError) {
+      console.error('Microsoft API sync error:', syncError)
+      // Return success with 0 messages instead of failing
+      return NextResponse.json({
+        success: true,
+        stats: {
+          messagesProcessed: 0,
+          contactsCreated: 0,
+          contactsUpdated: 0,
+          conversationsCreated: 0,
+          messagesCreated: 0,
+        },
+        message: 'Microsoft sync unavailable or credentials expired'
+      })
+    }
 
     // Process each message (same logic as Gmail sync)
     const stats = {

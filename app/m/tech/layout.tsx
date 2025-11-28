@@ -1,6 +1,7 @@
 'use client'
 
 import { useOfflineSync } from '@/lib/hooks/use-offline-sync'
+import { useGpsTracking } from '@/lib/hooks/use-gps-tracking'
 
 export default function TechLayout({
   children,
@@ -8,6 +9,7 @@ export default function TechLayout({
   children: React.ReactNode
 }) {
   const { isOnline, isSyncing, pendingCount } = useOfflineSync()
+  useGpsTracking() // Initialize GPS tracking
 
   return (
     <>

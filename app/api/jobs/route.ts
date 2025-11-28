@@ -108,8 +108,8 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    // 1. Authenticate User
     const auth = await getAuthenticatedSession(request)
+    console.log('NEXT_PUBLIC_SUPABASE_URL in GET /api/jobs:', process.env.NEXT_PUBLIC_SUPABASE_URL)
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

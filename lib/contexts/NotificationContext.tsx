@@ -37,6 +37,7 @@ export function NotificationProvider({
 }: NotificationProviderProps) {
   const notificationState = useNotifications({
     enabled: true,
+    autoRefresh: false, // Disable auto-refresh to prevent spam
     onNewNotification: (notification) => {
       // Show toast when new notification arrives
       onShowToast?.(notification)

@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PlacesAutocomplete } from '@/components/ui/places-autocomplete'
 
 interface AddContactDialogProps {
   open: boolean
@@ -136,11 +137,11 @@ export function AddContactDialog({ open, onOpenChange, onSuccess }: AddContactDi
 
             <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
-              <Input
+              <PlacesAutocomplete
                 id="address"
                 placeholder="123 Main St, City, State ZIP"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, address: value })}
               />
             </div>
           </div>

@@ -48,17 +48,17 @@ export async function GET(request: NextRequest) {
     const to = searchParams.get('to') || new Date().toISOString()
     const serviceType = searchParams.get('serviceType')
 
-    // Build base query
+    // Build base query - note: service_type column may not exist in all deployments
     let jobsQuery = supabase
       .from('jobs')
-      .select('id, total_amount, service_type, created_at, status, contact:contacts(id, first_name, last_name)')
+      .select('id, total_amount, type, created_at, status, contact:contacts(id, first_name, last_name)')
       .eq('account_id', userData.account_id)
       .gte('created_at', from)
       .lte('created_at', to)
       .not('total_amount', 'is', null)
 
     if (serviceType) {
-      jobsQuery = jobsQuery.eq('service_type', serviceType)
+      jobsQuery = jobsQuery.eq('type', serviceType)
     }
 
     const { data: jobs, error: jobsError } = await jobsQuery
@@ -90,9 +90,9 @@ export async function GET(request: NextRequest) {
       return acc
     }, [])
 
-    // Revenue by service type
+    // Revenue by service type (using 'type' field)
     const revenueByServiceType = jobs?.reduce((acc: any[], job) => {
-      const serviceType = job.service_type || 'Unknown'
+      const serviceType = job.type || 'Unknown'
       const existing = acc.find((item) => item.serviceType === serviceType)
 
       if (existing) {
