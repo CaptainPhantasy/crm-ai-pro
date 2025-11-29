@@ -1,9 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, MapPin, Mic, User, Clock, Plus } from 'lucide-react'
+import { Calendar, MapPin, Mic, User, Clock, Plus, Menu } from 'lucide-react'
 import { BigButton, BigButtonGrid } from '@/components/mobile/big-button'
 import { VoiceButton } from '@/components/mobile/voice-button'
+import { MobileSidebar, MobileMenuButton } from '@/components/mobile/mobile-sidebar'
+import { Card } from '@/components/ui/card'
+import { SalesBottomNav } from '@/components/mobile/bottom-nav'
 import Link from 'next/link'
 
 interface Meeting {
@@ -20,6 +23,7 @@ export default function SalesDashboard() {
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
   const [nextMeeting, setNextMeeting] = useState<Meeting | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     fetchTodaysMeetings()
@@ -69,18 +73,24 @@ export default function SalesDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white p-4 pb-24">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] p-4 pb-24">
+      {/* Mobile Sidebar */}
+      <MobileSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} role="sales" />
+
       {/* Header */}
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold">{getGreeting()}</h1>
-        <p className="text-gray-400">
-          {meetings.length} meeting{meetings.length !== 1 ? 's' : ''} today
-        </p>
+      <header className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{getGreeting()}</h1>
+          <p className="text-[var(--color-text-secondary)]">
+            {meetings.length} meeting{meetings.length !== 1 ? 's' : ''} today
+          </p>
+        </div>
+        <MobileMenuButton onClick={() => setSidebarOpen(true)} />
       </header>
 
       {/* Next Meeting Card */}
       {nextMeeting && (
-        <div className="bg-gradient-to-br from-[var(--color-accent-primary)]/20 to-[var(--color-accent-primary)]/10 border border-[var(--color-accent-primary)]/50 rounded-2xl p-5 mb-6">
+        <Card className="p-5 mb-6 border-2 border-[var(--color-accent-primary)]/30 bg-gradient-to-br from-[var(--color-accent-primary)]/10 to-transparent shadow-card">
           <div className="text-[var(--color-accent-primary)] text-sm font-bold mb-2">NEXT UP</div>
           <div className="text-2xl font-bold mb-1">{nextMeeting.contactName}</div>
           {nextMeeting.title && (
@@ -99,14 +109,14 @@ export default function SalesDashboard() {
           )}
 
           <BigButtonGrid>
-            <Link href={`/sales/briefing/${nextMeeting.contactId}`}>
+            <Link href={`/m/sales/briefing/${nextMeeting.contactId}`}>
               <BigButton
                 icon={User}
                 label="BRIEFING"
                 variant="primary"
               />
             </Link>
-            <Link href={`/sales/meeting/${nextMeeting.id}`}>
+            <Link href={`/m/sales/meeting/${nextMeeting.id}`}>
               <BigButton
                 icon={Mic}
                 label="START"
@@ -114,13 +124,13 @@ export default function SalesDashboard() {
               />
             </Link>
           </BigButtonGrid>
-        </div>
+        </Card>
       )}
 
       {/* Quick Actions */}
       <div className="mb-6">
         <BigButtonGrid>
-          <Link href="/sales/meeting/new">
+          <Link href="/m/sales/meeting/new">
             <BigButton
               icon={Plus}
               label="NEW MEETING"
@@ -128,7 +138,7 @@ export default function SalesDashboard() {
               variant="primary"
             />
           </Link>
-          <Link href="/sales/voice-note">
+          <Link href="/m/sales/voice-note">
             <BigButton
               icon={Mic}
               label="VOICE NOTE"
@@ -145,40 +155,45 @@ export default function SalesDashboard() {
         {meetings.map((meeting) => (
           <Link
             key={meeting.id}
-            href={`/sales/meeting/${meeting.id}`}
-            className="block bg-[var(--color-bg-secondary)] rounded-xl p-4 active:bg-gray-700 transition-colors"
+            href={`/m/sales/meeting/${meeting.id}`}
+            className="block"
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="font-bold">{meeting.contactName}</div>
-                {meeting.title && (
-                  <div className="text-gray-400 text-sm">{meeting.title}</div>
-                )}
-                <div className="flex items-center gap-4 mt-2 text-gray-500 text-xs">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {formatTime(meeting.scheduledAt)}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-gray-700 text-gray-400">
-                    {meeting.meetingType}
-                  </span>
+            <Card className="p-4 hover:shadow-card-hover transition-all duration-200">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-bold">{meeting.contactName}</div>
+                  {meeting.title && (
+                    <div className="text-[var(--color-text-secondary)] text-sm">{meeting.title}</div>
+                  )}
+                  <div className="flex items-center gap-4 mt-2 text-[var(--color-text-subtle)] text-xs">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {formatTime(meeting.scheduledAt)}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-[var(--color-bg-surface)] text-[var(--color-text-subtle)]">
+                      {meeting.meetingType}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Card>
           </Link>
         ))}
 
         {meetings.length === 0 && (
-          <div className="text-center text-gray-500 py-12">
-            <Calendar className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p>No meetings scheduled for today</p>
-            <p className="text-sm mt-2">Tap "New Meeting" to start recording</p>
-          </div>
+          <Card className="text-center py-12">
+            <Calendar className="w-16 h-16 mx-auto mb-4 opacity-50 text-[var(--color-text-subtle)]" />
+            <p className="text-[var(--color-text-secondary)]">No meetings scheduled for today</p>
+            <p className="text-sm mt-2 text-[var(--color-text-subtle)]">Tap "New Meeting" to start recording</p>
+          </Card>
         )}
       </div>
 
       {/* Voice Command Button */}
       <VoiceButton />
+
+      {/* Bottom Navigation */}
+      <SalesBottomNav />
     </div>
   )
 }

@@ -16,7 +16,7 @@ export default function TechLayout({
     <>
       {/* Offline indicator banner */}
       {!isOnline && (
-        <div className="bg-yellow-500 text-white px-4 py-2 text-center text-sm font-medium fixed top-0 left-0 right-0 z-50">
+        <div className="bg-amber-500/20 text-amber-400 px-4 py-2 text-center text-sm font-medium fixed top-0 left-0 right-0 z-50 shadow-elevated">
           Offline Mode - {pendingCount} item{pendingCount !== 1 ? 's' : ''} pending sync
         </div>
       )}

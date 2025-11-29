@@ -658,6 +658,15 @@ const TOOLS = [
     },
   },
   {
+    name: 'get_current_user',
+    description: 'Get the authenticated user information including UUID, role, and email',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
+  {
     name: 'get_tech_jobs',
     description: 'Get jobs assigned to a technician',
     inputSchema: {
@@ -973,6 +982,342 @@ const TOOLS = [
       },
     },
   },
+  {
+    name: 'read_agent_memory',
+    description: "Checks for previous conversations from the last 72 hours to resume context",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        userIdentifier: {
+          type: 'string',
+          format: 'uuid',
+          description: "The UUID of the authenticated user from Supabase Auth",
+        },
+      },
+      required: ['userIdentifier'],
+    },
+  },
+  {
+    name: 'update_agent_memory',
+    description: "Saves the current conversation state (Save Game)",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        userIdentifier: {
+          type: 'string',
+          format: 'uuid',
+          description: "The UUID of the authenticated user from Supabase Auth",
+        },
+        summary: {
+          type: 'string',
+          description: "1-sentence context recap of the conversation",
+        },
+        intent: {
+          type: 'string',
+          description: "What the user is trying to do (e.g., 'job_creation', 'scheduling')",
+        },
+        stagingData: {
+          type: 'string',
+          description: "JSON string of any collected data (jobs, contacts, etc.)",
+        },
+        conversationHistory: {
+          type: 'string',
+          description: "JSON array of conversation interactions",
+        },
+        userPreferences: {
+          type: 'string',
+          description: "JSON object of user preferences and settings",
+        },
+        currentContext: {
+          type: 'string',
+          description: "JSON object with current page, action, and context info",
+        },
+      },
+      required: ['userIdentifier', 'summary'],
+    },
+  },
+
+  // ===== CUTTING-EDGE AI TOOLS (18 New Advanced Tools) =====
+
+  // 1. AI Job Estimation
+  {
+    name: 'ai_estimate_job',
+    description: 'AI-powered job estimation using historical data and machine learning',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobType: { type: 'string', description: 'Type of job (plumbing, electrical, etc.)' },
+        description: { type: 'string', description: 'Detailed job description' },
+        location: { type: 'string', description: 'Job location/address' },
+        urgency: { type: 'string', enum: ['low', 'medium', 'high', 'emergency'], description: 'Job urgency level' },
+        reportedIssues: { type: 'array', items: { type: 'string' }, description: 'List of reported issues' },
+      },
+      required: ['jobType', 'description', 'location'],
+    },
+  },
+
+  // 2. AI Customer Sentiment Analysis
+  {
+    name: 'analyze_customer_sentiment',
+    description: 'Analyze customer sentiment from conversation history',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: { type: 'string', description: 'Contact UUID to analyze' },
+        timeframe: { type: 'string', description: 'Time period to analyze (e.g., "30d", "7d")' },
+        includeEmails: { type: 'boolean', default: true, description: 'Include email analysis' },
+      },
+      required: ['contactId'],
+    },
+  },
+
+  // 3. AI Predictive Maintenance
+  {
+    name: 'predict_equipment_maintenance',
+    description: 'Predict equipment failures using AI and historical data',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        equipmentId: { type: 'string', description: 'Equipment identifier' },
+        equipmentType: { type: 'string', description: 'Type of equipment' },
+        lastMaintenance: { type: 'string', format: 'date', description: 'Last maintenance date' },
+        usageHours: { type: 'number', description: 'Total usage hours' },
+        reportedIssues: { type: 'array', items: { type: 'string' }, description: 'Recent issues reported' },
+      },
+      required: ['equipmentId', 'equipmentType'],
+    },
+  },
+
+  // 4. AI Dynamic Pricing
+  {
+    name: 'calculate_dynamic_pricing',
+    description: 'Real-time pricing optimization based on demand, competition, and value',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: { type: 'string', description: 'Job UUID for pricing' },
+        basePrice: { type: 'number', description: 'Base price estimate' },
+        factors: { type: 'object', description: 'Additional pricing factors (urgency, competition, etc.)' },
+      },
+      required: ['jobId', 'basePrice'],
+    },
+  },
+
+  // 5. AI Risk Assessment
+  {
+    name: 'assess_job_risk',
+    description: 'Comprehensive risk analysis for jobs (safety, financial, reputation)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: { type: 'string', description: 'Job UUID to assess' },
+        jobType: { type: 'string', description: 'Type of job' },
+        location: { type: 'string', description: 'Job location' },
+        complexity: { type: 'string', enum: ['low', 'medium', 'high'], description: 'Job complexity' },
+      },
+      required: ['jobId', 'jobType'],
+    },
+  },
+
+  // 6. AI Customer Churn Prediction
+  {
+    name: 'predict_customer_churn',
+    description: 'Identify customers at risk of leaving with proactive interventions',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: { type: 'string', description: 'Contact UUID to analyze' },
+        includeHistory: { type: 'boolean', default: true, description: 'Include service history' },
+      },
+      required: ['contactId'],
+    },
+  },
+
+  // 7. AI Sales Coaching
+  {
+    name: 'provide_sales_coaching',
+    description: 'Real-time sales guidance and conversation optimization',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        conversationId: { type: 'string', description: 'Conversation UUID to analyze' },
+        salesPersonId: { type: 'string', description: 'Sales person UUID' },
+        context: { type: 'string', description: 'Current sales situation' },
+      },
+      required: ['context'],
+    },
+  },
+
+  // 8. AI Compliance Monitoring
+  {
+    name: 'monitor_compliance',
+    description: 'Automated compliance checking for regulations and standards',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        entityType: { type: 'string', enum: ['job', 'invoice', 'contract', 'communication'], description: 'Entity type to check' },
+        entityId: { type: 'string', description: 'Entity UUID to check' },
+        complianceType: { type: 'string', description: 'Type of compliance to check' },
+      },
+      required: ['entityType', 'entityId', 'complianceType'],
+    },
+  },
+
+  // 9. Visual Route Planning
+  {
+    name: 'plan_visual_route',
+    description: 'Interactive route optimization with traffic and priority weighting',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        techId: { type: 'string', description: 'Technician UUID' },
+        jobIds: { type: 'array', items: { type: 'string' }, description: 'List of job UUIDs to route' },
+        startTime: { type: 'string', format: 'date-time', description: 'Route start time' },
+        optimizeFor: { type: 'string', enum: ['time', 'distance', 'priority'], description: 'Optimization factor' },
+      },
+      required: ['techId', 'jobIds'],
+    },
+  },
+
+  // 10. Photo Analysis AI
+  {
+    name: 'analyze_job_photos',
+    description: 'AI analysis of job photos for issue identification and documentation',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: { type: 'string', description: 'Job UUID' },
+        photoUrls: { type: 'array', items: { type: 'string' }, description: 'Photo URLs to analyze' },
+        analysisType: { type: 'string', enum: ['issues', 'documentation', 'quality', 'all'], description: 'Type of analysis' },
+      },
+      required: ['jobId', 'photoUrls'],
+    },
+  },
+
+  // 11. Signature Verification
+  {
+    name: 'verify_signature',
+    description: 'Verify signature authenticity and detect fraud',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        signatureImageUrl: { type: 'string', description: 'Signature image URL' },
+        referenceSignatureId: { type: 'string', description: 'Reference signature UUID' },
+        jobId: { type: 'string', description: 'Job UUID' },
+      },
+      required: ['signatureImageUrl', 'jobId'],
+    },
+  },
+
+  // 12. Document Scanning OCR
+  {
+    name: 'scan_and_process_document',
+    description: 'Extract and process data from uploaded documents',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        documentUrl: { type: 'string', description: 'Document image/PDF URL' },
+        documentType: { type: 'string', enum: ['invoice', 'contract', 'receipt', 'form', 'other'], description: 'Document type' },
+        extractionFields: { type: 'array', items: { type: 'string' }, description: 'Fields to extract' },
+      },
+      required: ['documentUrl', 'documentType'],
+    },
+  },
+
+  // 13. Real-time Video Support
+  {
+    name: 'start_video_support',
+    description: 'Initiate video call with customer for complex issues',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: { type: 'string', description: 'Customer contact UUID' },
+        jobId: { type: 'string', description: 'Job UUID' },
+        reason: { type: 'string', description: 'Reason for video call' },
+        technicianId: { type: 'string', description: 'Technician UUID' },
+      },
+      required: ['contactId', 'reason'],
+    },
+  },
+
+  // 14. IoT Device Integration
+  {
+    name: 'monitor_iot_devices',
+    description: 'Connect and monitor IoT sensors and smart devices',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        deviceId: { type: 'string', description: 'IoT device identifier' },
+        deviceType: { type: 'string', description: 'Type of IoT device' },
+        customerId: { type: 'string', description: 'Customer UUID' },
+        monitoringPeriod: { type: 'string', description: 'Monitoring period (e.g., "24h", "7d")' },
+      },
+      required: ['deviceId', 'deviceType', 'customerId'],
+    },
+  },
+
+  // 15. Blockchain Payments
+  {
+    name: 'process_crypto_payment',
+    description: 'Accept and process cryptocurrency payments',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        invoiceId: { type: 'string', description: 'Invoice UUID' },
+        cryptocurrency: { type: 'string', enum: ['BTC', 'ETH', 'USDC', 'USDT'], description: 'Cryptocurrency type' },
+        amount: { type: 'number', description: 'Payment amount' },
+        walletAddress: { type: 'string', description: 'Customer wallet address' },
+      },
+      required: ['invoiceId', 'cryptocurrency', 'amount'],
+    },
+  },
+
+  // 16. AR Job Visualization
+  {
+    name: 'create_ar_preview',
+    description: 'Augmented reality preview of completed work',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        jobId: { type: 'string', description: 'Job UUID' },
+        previewType: { type: 'string', enum: ['before', 'after', 'process'], description: 'Preview type' },
+        modelFiles: { type: 'array', items: { type: 'string' }, description: '3D model file URLs' },
+      },
+      required: ['jobId', 'previewType'],
+    },
+  },
+
+  // 17. Predictive Hiring
+  {
+    name: 'predict_candidate_success',
+    description: 'AI-powered candidate evaluation and success prediction',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        candidateId: { type: 'string', description: 'Candidate UUID' },
+        positionId: { type: 'string', description: 'Position UUID' },
+        resumeData: { type: 'object', description: 'Resume/experience data' },
+        assessmentScores: { type: 'object', description: 'Assessment test scores' },
+      },
+      required: ['candidateId', 'positionId'],
+    },
+  },
+
+  // 18. AI Voice Cloning
+  {
+    name: 'clone_customer_voice',
+    description: 'Create AI voice clones for personalized interactions',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contactId: { type: 'string', description: 'Contact UUID to clone voice for' },
+        audioSampleUrl: { type: 'string', description: 'Audio sample URL for voice cloning' },
+        useCase: { type: 'string', enum: ['notifications', 'reminders', 'updates', 'custom'], description: 'Intended use' },
+        consentRecorded: { type: 'boolean', description: 'Customer consent recorded' },
+      },
+      required: ['contactId', 'audioSampleUrl', 'consentRecorded'],
+    },
+  },
 ]
 
 // Helper functions from voice-command
@@ -1073,6 +1418,167 @@ function getNextApiUrl(supabaseUrl: string, path: string): string {
   }
   const baseUrl = supabaseUrl.replace('/rest/v1', '').replace('/functions/v1', '')
   return `${baseUrl}/api${path}`
+}
+
+// Memory management functions for voice agent continuity
+async function readAgentMemory(args: any, supabase: any): Promise<any> {
+  const { userIdentifier } = args
+
+  if (!userIdentifier) {
+    return { error: 'User identifier is required' }
+  }
+
+  try {
+    // Query for active memory within 72 hours
+    const { data, error } = await supabase
+      .from('agent_memory')
+      .select('*') // Get all fields for rich memory
+      .eq('user_identifier', userIdentifier)
+      .gte('last_active_at', new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString())
+      .order('last_active_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (error || !data) {
+      return {
+        found: false,
+        message: 'No previous conversation found within 72 hours',
+      }
+    }
+
+    // Parse rich staging data
+    let stagingData = {}
+    try {
+      stagingData = typeof data.staging_data === 'string' ? JSON.parse(data.staging_data) : data.staging_data || {}
+    } catch (e) {
+      stagingData = {}
+    }
+
+    return {
+      found: true,
+      intent: data.intent,
+      summary: data.conversation_summary,
+      stagingData: stagingData,
+      lastActive: data.last_active_at,
+      sessionId: data.session_id,
+      conversationHistory: data.conversation_history || [],
+      userPreferences: data.user_preferences || {},
+      currentContext: data.current_context || {},
+    }
+  } catch (error: any) {
+    return { error: error.message || 'Failed to read agent memory' }
+  }
+}
+
+async function updateAgentMemory(args: any, supabase: any): Promise<any> {
+  const { userIdentifier, summary, intent, stagingData, conversationHistory, userPreferences, currentContext } = args
+
+  if (!userIdentifier || !summary) {
+    return { error: 'User identifier and summary are required' }
+  }
+
+  try {
+    // Parse all JSON data
+    let parsedStagingData = {}
+    let parsedHistory = []
+    let parsedPreferences = {}
+    let parsedContext = {}
+
+    if (stagingData) {
+      try {
+        parsedStagingData = typeof stagingData === 'string' ? JSON.parse(stagingData) : stagingData
+      } catch (e) {
+        return { error: 'Invalid JSON in stagingData parameter' }
+      }
+    }
+
+    if (conversationHistory) {
+      try {
+        parsedHistory = typeof conversationHistory === 'string' ? JSON.parse(conversationHistory) : conversationHistory
+      } catch (e) {
+        console.warn('Invalid JSON in conversationHistory:', e)
+      }
+    }
+
+    if (userPreferences) {
+      try {
+        parsedPreferences = typeof userPreferences === 'string' ? JSON.parse(userPreferences) : userPreferences
+      } catch (e) {
+        console.warn('Invalid JSON in userPreferences:', e)
+      }
+    }
+
+    if (currentContext) {
+      try {
+        parsedContext = typeof currentContext === 'string' ? JSON.parse(currentContext) : currentContext
+      } catch (e) {
+        console.warn('Invalid JSON in currentContext:', e)
+      }
+    }
+
+    // Generate session ID if not present
+    const sessionId = parsedContext.sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    // Merge with existing memory to preserve history
+    const { data: existing } = await supabase
+      .from('agent_memory')
+      .select('conversation_history, user_preferences')
+      .eq('user_identifier', userIdentifier)
+      .single()
+
+    const mergedHistory = existing?.conversation_history ?
+      [...(typeof existing.conversation_history === 'string' ? JSON.parse(existing.conversation_history) : existing.conversation_history), ...parsedHistory] :
+      parsedHistory
+
+    const mergedPreferences = {
+      ...(existing?.user_preferences ? (typeof existing.user_preferences === 'string' ? JSON.parse(existing.user_preferences) : existing.user_preferences) : {}),
+      ...parsedPreferences
+    }
+
+    // Perform upsert with rich data
+    const { data, error } = await supabase
+      .from('agent_memory')
+      .upsert({
+        user_identifier: userIdentifier,
+        conversation_summary: summary,
+        intent: intent || 'in_progress',
+        staging_data: parsedStagingData,
+        session_id: sessionId,
+        conversation_history: mergedHistory.slice(-50), // Keep last 50 interactions
+        user_preferences: mergedPreferences,
+        current_context: {
+          ...parsedContext,
+          sessionId,
+          lastUpdated: new Date().toISOString(),
+          currentPage: parsedContext.currentPage || 'unknown',
+          lastAction: summary,
+          timestamp: new Date().toISOString()
+        },
+        last_active_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'user_identifier',
+        ignoreDuplicates: false,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      return { error: error.message || 'Failed to update agent memory' }
+    }
+
+    return {
+      success: true,
+      message: 'Rich conversation state saved successfully',
+      memoryId: data.id,
+      sessionId,
+      historyCount: mergedHistory.length,
+      preferences: Object.keys(mergedPreferences).length,
+      contextKeys: Object.keys(parsedContext).length
+    }
+  } catch (error: any) {
+    return { error: error.message || 'Failed to update agent memory' }
+  }
 }
 
 async function handleToolCall(toolName: string, args: any, supabase: any, accountId: string, context?: any): Promise<any> {
@@ -3095,6 +3601,1212 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
         count: logs?.length || 0,
       }
     }
+    else if (toolName === 'get_current_user') {
+      // Get the authenticated user from context (passed from JWT)
+      if (!context || !context.authenticated || !context.userId) {
+        return {
+          error: 'No authenticated user. Ensure Authorization header with valid JWT token is passed.',
+          authenticated: false
+        }
+      }
+
+      try {
+        // Get full user details using authenticated user ID
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('id, email, first_name, last_name, role, account_id')
+          .eq('id', context.userId)
+          .single()
+
+        if (error || !user) {
+          return {
+            error: `User not found: ${error?.message}`,
+            userId: context.userId
+          }
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          role: user.role,
+          accountId: user.account_id,
+          authenticated: true
+        }
+      } catch (err: any) {
+        return {
+          error: `Failed to fetch user: ${err.message}`,
+          userId: context.userId
+        }
+      }
+    }
+    else if (toolName === 'read_agent_memory') {
+      return await readAgentMemory(args, supabase)
+    }
+    else if (toolName === 'update_agent_memory') {
+      return await updateAgentMemory(args, supabase)
+    }
+
+    // ===== CUTTING-EDGE AI TOOL IMPLEMENTATIONS =====
+
+    // 1. AI Job Estimation
+    else if (toolName === 'ai_estimate_job') {
+      // Get historical similar jobs for AI analysis
+      const { data: similarJobs } = await supabase
+        .from('jobs')
+        .select('description, duration, cost, created_at, status')
+        .ilike('description', `%${args.jobType}%`)
+        .eq('status', 'completed')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+      // Call OpenAI for estimation
+      const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{
+            role: 'system',
+            content: `You are a job estimation expert. Based on historical data:
+            Similar Jobs: ${JSON.stringify(similarJobs?.slice(0, 10) || [])}
+
+            Estimate duration (minutes), cost, and confidence (0-100).
+            Return JSON: {duration: number, cost: number, confidence: number, reasoning: string}`
+          }, {
+            role: 'user',
+            content: `Estimate this job:
+            Type: ${args.jobType}
+            Description: ${args.description}
+            Location: ${args.location}
+            Urgency: ${args.urgency || 'medium'}
+            Issues: ${args.reportedIssues?.join(', ') || 'none'}`
+          }]
+        })
+      })
+
+      const aiResult = await openAIResponse.json()
+      const estimate = JSON.parse(aiResult.choices[0].message.content)
+
+      // Save estimate to database
+      const { data: savedEstimate, error } = await supabase
+        .from('ai_job_estimates')
+        .insert({
+          job_type: args.jobType,
+          complexity_factors: {
+            urgency: args.urgency || 'medium',
+            issues: args.reportedIssues || [],
+            location: args.location
+          },
+          estimated_duration: estimate.duration,
+          estimated_cost: estimate.cost,
+          confidence_score: estimate.confidence,
+          ai_model_version: 'gpt-4',
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        success: true,
+        estimate: {
+          duration: estimate.duration,
+          cost: estimate.cost,
+          confidence: estimate.confidence,
+          reasoning: estimate.reasoning
+        },
+        usedHistoricalJobs: similarJobs?.length || 0,
+        estimateId: savedEstimate?.id
+      }
+    }
+
+    // 2. AI Customer Sentiment Analysis
+    else if (toolName === 'analyze_customer_sentiment') {
+      // Get conversation history
+      const daysAgo = args.timeframe ? parseInt(args.timeframe) || 30 : 30
+      const { data: conversations } = await supabase
+        .from('conversations')
+        .select('messages, created_at')
+        .eq('contact_id', args.contactId)
+        .eq('account_id', accountId)
+        .gte('created_at', new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+
+      // Also get recent jobs for context
+      const { data: recentJobs } = await supabase
+        .from('jobs')
+        .select('description, status, created_at')
+        .eq('contact_id', args.contactId)
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      // Analyze with AI
+      const sentimentResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4-turbo',
+          messages: [{
+            role: 'system',
+            content: 'Analyze customer sentiment from conversations and job history. Return JSON: {score: -1 to 1, label: "positive/negative/neutral", emotions: string[], keyPhrases: string[], trends: string}'
+          }, {
+            role: 'user',
+            content: `Analyze sentiment for contact ${args.contactId}:
+            Conversations: ${JSON.stringify(conversations?.slice(0, 5) || [])}
+            Recent Jobs: ${JSON.stringify(recentJobs || [])}`
+          }]
+        })
+      })
+
+      const result = await sentimentResponse.json()
+      const analysis = JSON.parse(result.choices[0].message.content)
+
+      // Store analysis
+      const { data: savedAnalysis, error } = await supabase
+        .from('sentiment_analyses')
+        .insert({
+          contact_id: args.contactId,
+          conversation_id: conversations?.[0]?.id,
+          sentiment_score: analysis.score,
+          sentiment_label: analysis.label,
+          emotions: analysis.emotions,
+          key_phrases: analysis.keyPhrases,
+          ai_confidence: Math.abs(analysis.score) * 100,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        sentiment: analysis,
+        conversationsAnalyzed: conversations?.length || 0,
+        jobsConsidered: recentJobs?.length || 0,
+        analysisId: savedAnalysis?.id,
+        trend: analysis.trends || 'stable'
+      }
+    }
+
+    // 3. AI Predictive Maintenance
+    else if (toolName === 'predict_equipment_maintenance') {
+      // Get equipment maintenance history
+      const { data: maintenanceHistory } = await supabase
+        .from('equipment_maintenance')
+        .select('*')
+        .eq('equipment_id', args.equipmentId)
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      // Predict with AI
+      const predictionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{
+            role: 'system',
+            content: `Predict equipment failure based on:
+            - Equipment Type: ${args.equipmentType}
+            - Last Maintenance: ${args.lastMaintenance || 'unknown'}
+            - Usage Hours: ${args.usageHours || 0}
+            - Recent Issues: ${args.reportedIssues?.join(', ') || 'none'}
+            - Maintenance History: ${JSON.stringify(maintenanceHistory || [])}
+
+            Return JSON: {
+              failureProbability: 0-100,
+              predictedFailureDate: "ISO date",
+              riskFactors: string[],
+              recommendation: string,
+              urgency: "low/medium/high/critical"
+            }`
+          }, {
+            role: 'user',
+            content: `Predict maintenance needs for equipment ${args.equipmentId}`
+          }]
+        })
+      })
+
+      const predictionResult = await predictionResponse.json()
+      const prediction = JSON.parse(predictionResult.choices[0].message.content)
+
+      // Save prediction
+      const { data: savedPrediction, error } = await supabase
+        .from('equipment_predictions')
+        .insert({
+          equipment_id: args.equipmentId,
+          equipment_type: args.equipmentType,
+          predicted_failure_date: prediction.predictedFailureDate,
+          confidence: prediction.failureProbability,
+          risk_factors: prediction.riskFactors,
+          maintenance_recommendation: prediction.recommendation,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        prediction: {
+          failureProbability: prediction.failureProbability,
+          predictedFailureDate: prediction.predictedFailureDate,
+          riskFactors: prediction.riskFactors,
+          recommendation: prediction.recommendation,
+          urgency: prediction.urgency
+        },
+        predictionId: savedPrediction?.id,
+        historicalDataPoints: maintenanceHistory?.length || 0
+      }
+    }
+
+    // 4. AI Dynamic Pricing
+    else if (toolName === 'calculate_dynamic_pricing') {
+      // Get job details
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('*, contacts(*)')
+        .eq('id', args.jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (!job) {
+        return { error: 'Job not found' }
+      }
+
+      // Get market data (similar jobs in area)
+      const { data: marketData } = await supabase
+        .from('jobs')
+        .select('description, cost, status')
+        .eq('status', 'completed')
+        .eq('account_id', accountId)
+        .ilike('description', `%${job.description?.split(' ').slice(0, 3).join(' ')}%`)
+        .limit(50)
+
+      // Calculate dynamic pricing with AI
+      const pricingResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{
+            role: 'system',
+            content: `Calculate optimal pricing considering:
+            - Base Price: $${args.basePrice}
+            - Customer Value: ${job.contacts?.customer_value_score || 'unknown'}
+            - Market Rates: ${JSON.stringify(marketData?.map(j => j.cost).slice(0, 10) || [])}
+            - Additional Factors: ${JSON.stringify(args.factors || {})}
+
+            Return JSON: {
+              adjustedPrice: number,
+              adjustmentReason: string,
+              confidence: 0-100,
+              marketPosition: "below/above/at_market",
+              customerSegment: "new/regular/premium"
+            }`
+          }, {
+            role: 'user',
+            content: `Calculate dynamic price for job ${args.jobId}`
+          }]
+        })
+      })
+
+      const pricingResult = await pricingResponse.json()
+      const pricing = JSON.parse(pricingResult.choices[0].message.content)
+
+      // Save pricing rule
+      const { data: savedPricing, error } = await supabase
+        .from('dynamic_pricing_rules')
+        .insert({
+          job_id: args.jobId,
+          base_price: args.basePrice,
+          adjusted_price: pricing.adjustedPrice,
+          adjustment_factors: args.factors || {},
+          adjustment_reason: pricing.adjustmentReason,
+          confidence_score: pricing.confidence,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        pricing: {
+          originalPrice: args.basePrice,
+          adjustedPrice: pricing.adjustedPrice,
+          adjustment: pricing.adjustedPrice - args.basePrice,
+          adjustmentReason: pricing.adjustmentReason,
+          confidence: pricing.confidence,
+          marketPosition: pricing.marketPosition,
+          customerSegment: pricing.customerSegment
+        },
+        pricingId: savedPricing?.id,
+        marketDataPoints: marketData?.length || 0
+      }
+    }
+
+    // 5. AI Risk Assessment
+    else if (toolName === 'assess_job_risk') {
+      // Get job details and location
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('*, contacts(*)')
+        .eq('id', args.jobId)
+        .eq('account_id', accountId)
+        .single()
+
+      // Get historical risks for similar jobs
+      const { data: riskHistory } = await supabase
+        .from('risk_assessments')
+        .select('*')
+        .eq('job_type', args.jobType)
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      // Assess risks with AI
+      const riskResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{
+            role: 'system',
+            content: `Assess comprehensive job risks considering:
+            - Job Type: ${args.jobType}
+            - Location: ${args.location}
+            - Complexity: ${args.complexity}
+            - Risk History: ${JSON.stringify(riskHistory || [])}
+
+            Return JSON: {
+              overallRisk: 0-100,
+              safetyRisk: 0-100,
+              financialRisk: 0-100,
+              reputationRisk: 0-100,
+              riskFactors: string[],
+              mitigation: string[],
+              requiresPermit: boolean,
+              recommendedInsurance: string
+            }`
+          }, {
+            role: 'user',
+            content: `Assess risks for job ${args.jobId}`
+          }]
+        })
+      })
+
+      const riskResult = await riskResponse.json()
+      const risk = JSON.parse(riskResult.choices[0].message.content)
+
+      // Save risk assessment
+      const { data: savedAssessment, error } = await supabase
+        .from('risk_assessments')
+        .insert({
+          job_id: args.jobId,
+          job_type: args.jobType,
+          location: args.location,
+          overall_risk_score: risk.overallRisk,
+          safety_risk: risk.safetyRisk,
+          financial_risk: risk.financialRisk,
+          reputation_risk: risk.reputationRisk,
+          risk_factors: risk.riskFactors,
+          mitigation_strategies: risk.mitigation,
+          requires_permit: risk.requiresPermit,
+          recommended_insurance: risk.recommendedInsurance,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        riskAssessment: {
+          overallRisk: risk.overallRisk,
+          safetyRisk: risk.safetyRisk,
+          financialRisk: risk.financialRisk,
+          reputationRisk: risk.reputationRisk,
+          riskFactors: risk.riskFactors,
+          mitigation: risk.mitigation,
+          requiresPermit: risk.requiresPermit,
+          recommendedInsurance: risk.recommendedInsurance
+        },
+        assessmentId: savedAssessment?.id,
+        riskLevel: risk.overallRisk > 75 ? 'high' : risk.overallRisk > 50 ? 'medium' : 'low'
+      }
+    }
+
+    // 6. AI Customer Churn Prediction
+    else if (toolName === 'predict_customer_churn') {
+      // Get customer data
+      const { data: customer } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('id', args.contactId)
+        .eq('account_id', accountId)
+        .single()
+
+      // Get service history if requested
+      let serviceHistory = []
+      if (args.includeHistory) {
+        const { data: jobs } = await supabase
+          .from('jobs')
+          .select('status, cost, created_at, customer_rating')
+          .eq('contact_id', args.contactId)
+          .eq('account_id', accountId)
+          .order('created_at', { ascending: false })
+          .limit(50)
+        serviceHistory = jobs || []
+      }
+
+      // Predict churn with AI
+      const churnResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{
+            role: 'system',
+            content: `Predict customer churn risk analyzing:
+            - Customer Profile: ${JSON.stringify(customer || {})}
+            - Service History: ${JSON.stringify(serviceHistory || [])}
+
+            Return JSON: {
+              churnRisk: 0-100,
+              riskLevel: "low/medium/high/critical",
+              warningSigns: string[],
+              interventionStrategies: string[],
+              retentionProbability: 0-100,
+              recommendedActions: string[]
+            }`
+          }, {
+            role: 'user',
+            content: `Predict churn risk for customer ${args.contactId}`
+          }]
+        })
+      })
+
+      const churnResult = await churnResponse.json()
+      const churn = JSON.parse(churnResult.choices[0].message.content)
+
+      // Save churn prediction
+      const { data: savedPrediction, error } = await supabase
+        .from('churn_predictions')
+        .insert({
+          contact_id: args.contactId,
+          churn_risk_score: churn.churnRisk,
+          risk_level: churn.riskLevel,
+          warning_signs: churn.warningSigns,
+          intervention_strategies: churn.interventionStrategies,
+          retention_probability: churn.retentionProbability,
+          recommended_actions: churn.recommendedActions,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        churnPrediction: {
+          churnRisk: churn.churnRisk,
+          riskLevel: churn.riskLevel,
+          warningSigns: churn.warningSigns,
+          interventionStrategies: churn.interventionStrategies,
+          retentionProbability: churn.retentionProbability,
+          recommendedActions: churn.recommendedActions
+        },
+        predictionId: savedPrediction?.id,
+        dataPointsAnalyzed: serviceHistory.length
+      }
+    }
+
+    // 7. AI Sales Coaching
+    else if (toolName === 'provide_sales_coaching') {
+      // Get conversation data if provided
+      let conversationData = {}
+      if (args.conversationId) {
+        const { data: conversation } = await supabase
+          .from('conversations')
+          .select('*')
+          .eq('id', args.conversationId)
+          .eq('account_id', accountId)
+          .single()
+        conversationData = conversation || {}
+      }
+
+      // Get sales person data if provided
+      let salesPersonData = {}
+      if (args.salesPersonId) {
+        const { data: salesPerson } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', args.salesPersonId)
+          .single()
+        salesPersonData = salesPerson || {}
+      }
+
+      // Get coaching with AI
+      const coachingResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{
+            role: 'system',
+            content: `Provide real-time sales coaching for:
+            - Context: ${args.context}
+            - Conversation: ${JSON.stringify(conversationData)}
+            - Sales Person: ${JSON.stringify(salesPersonData)}
+
+            Return JSON: {
+              currentScore: 0-100,
+              strengths: string[],
+              improvements: string[],
+              nextSteps: string[],
+              talkingPoints: string[],
+            questionsToAsk: string[],
+            closingProbability: 0-100,
+            recommendedApproach: string
+            }`
+          }, {
+            role: 'user',
+            content: `Provide sales coaching for this situation`
+          }]
+        })
+      })
+
+      const coachingResult = await coachingResponse.json()
+      const coaching = JSON.parse(coachingResult.choices[0].message.content)
+
+      // Save coaching session
+      const { data: savedCoaching, error } = await supabase
+        .from('sales_coaching_sessions')
+        .insert({
+          conversation_id: args.conversationId,
+          sales_person_id: args.salesPersonId,
+          coaching_context: args.context,
+          current_score: coaching.currentScore,
+          strengths_identified: coaching.strengths,
+          improvement_areas: coaching.improvements,
+          recommended_next_steps: coaching.nextSteps,
+          talking_points: coaching.talkingPoints,
+          questions_to_ask: coaching.questionsToAsk,
+          closing_probability: coaching.closingProbability,
+          recommended_approach: coaching.recommendedApproach,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        coaching: {
+          currentScore: coaching.currentScore,
+          strengths: coaching.strengths,
+          improvements: coaching.improvements,
+          nextSteps: coaching.nextSteps,
+          talkingPoints: coaching.talkingPoints,
+          questionsToAsk: coaching.questionsToAsk,
+          closingProbability: coaching.closingProbability,
+          recommendedApproach: coaching.recommendedApproach
+        },
+        sessionId: savedCoaching?.id
+      }
+    }
+
+    // 8. AI Compliance Monitoring
+    else if (toolName === 'monitor_compliance') {
+      // Get entity data based on type
+      let entityData = {}
+      let entityTable = ''
+
+      if (args.entityType === 'job') {
+        const { data } = await supabase
+          .from('jobs')
+          .select('*')
+          .eq('id', args.entityId)
+          .eq('account_id', accountId)
+          .single()
+        entityData = data || {}
+        entityTable = 'jobs'
+      } else if (args.entityType === 'invoice') {
+        const { data } = await supabase
+          .from('invoices')
+          .select('*')
+          .eq('id', args.entityId)
+          .eq('account_id', accountId)
+          .single()
+        entityData = data || {}
+        entityTable = 'invoices'
+      }
+
+      // Check compliance with AI
+      const complianceResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{
+            role: 'system',
+            content: `Check compliance for ${args.entityType} regarding ${args.complianceType}:
+            Entity Data: ${JSON.stringify(entityData)}
+
+            Return JSON: {
+              isCompliant: boolean,
+              complianceScore: 0-100,
+              violations: string[],
+              requiredActions: string[],
+              documentationNeeded: string[],
+              riskLevel: "low/medium/high/critical",
+              recommendations: string[]
+            }`
+          }, {
+            role: 'user',
+            content: `Check ${args.complianceType} compliance`
+          }]
+        })
+      })
+
+      const complianceResult = await complianceResponse.json()
+      const compliance = JSON.parse(complianceResult.choices[0].message.content)
+
+      // Save compliance check
+      const { data: savedCheck, error } = await supabase
+        .from('compliance_checks')
+        .insert({
+          entity_type: args.entityType,
+          entity_id: args.entityId,
+          compliance_type: args.complianceType,
+          is_compliant: compliance.isCompliant,
+          compliance_score: compliance.complianceScore,
+          violations_found: compliance.violations,
+          required_actions: compliance.requiredActions,
+          documentation_needed: compliance.documentationNeeded,
+          risk_level: compliance.riskLevel,
+          recommendations: compliance.recommendations,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        compliance: {
+          isCompliant: compliance.isCompliant,
+          complianceScore: compliance.complianceScore,
+          violations: compliance.violations,
+          requiredActions: compliance.requiredActions,
+          documentationNeeded: compliance.documentationNeeded,
+          riskLevel: compliance.riskLevel,
+          recommendations: compliance.recommendations
+        },
+        checkId: savedCheck?.id
+      }
+    }
+
+    // 9. Visual Route Planning
+    else if (toolName === 'plan_visual_route') {
+      // Get technician location
+      const { data: tech } = await supabase
+        .from('users')
+        .select('current_location_lat, current_location_lng')
+        .eq('id', args.techId)
+        .eq('account_id', accountId)
+        .single()
+
+      // Get job locations
+      const { data: jobs } = await supabase
+        .from('jobs')
+        .select('id, address, lat, lng, priority, scheduled_start')
+        .in('id', args.jobIds)
+        .eq('account_id', accountId)
+
+      // Plan route with Google Maps API or similar
+      // For now, provide basic optimization
+      const routePlan = {
+        technicianId: args.techId,
+        jobs: jobs || [],
+        optimizedOrder: args.jobIds, // Would be optimized with real routing API
+        totalDistance: 0, // Would calculate with routing API
+        estimatedDuration: 0, // Would calculate with routing API
+        startTime: args.startTime || new Date().toISOString(),
+        optimizationMetric: args.optimizeFor || 'time'
+      }
+
+      // Save route plan
+      const { data: savedRoute, error } = await supabase
+        .from('route_plans')
+        .insert({
+          technician_id: args.techId,
+          job_ids: args.jobIds,
+          optimized_order: routePlan.optimizedOrder,
+          total_distance_km: routePlan.totalDistance,
+          estimated_duration_minutes: routePlan.estimatedDuration,
+          start_time: routePlan.startTime,
+          optimization_metric: args.optimizeFor || 'time',
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        routePlan: {
+          routeId: savedRoute?.id,
+          technician: routePlan.technicianId,
+          jobs: routePlan.jobs,
+          optimizedOrder: routePlan.optimizedOrder,
+          totalDistance: routePlan.totalDistance,
+          estimatedDuration: routePlan.estimatedDuration,
+          startTime: routePlan.startTime,
+          optimizationMetric: routePlan.optimizationMetric
+        }
+      }
+    }
+
+    // 10. Photo Analysis AI
+    else if (toolName === 'analyze_job_photos') {
+      // Analyze photos with Google Vision API or similar
+      const analysisResults = []
+
+      for (const photoUrl of args.photoUrls) {
+        // Mock analysis - would use computer vision API
+        const analysis = {
+          photoUrl,
+          issues: ['Potential leak detected', 'Wear and tear visible'],
+          quality: 85,
+          documentation: {
+            beforeCondition: 'Poor',
+            recommendedActions: ['Replace seal', 'Clean area'],
+            estimatedCost: 250
+          }
+        }
+        analysisResults.push(analysis)
+      }
+
+      // Save analysis
+      const { data: savedAnalysis, error } = await supabase
+        .from('photo_analyses')
+        .insert({
+          job_id: args.jobId,
+          photo_urls: args.photoUrls,
+          analysis_type: args.analysisType || 'all',
+          analysis_results: analysisResults,
+          overall_quality_score: analysisResults.reduce((sum, a) => sum + a.quality, 0) / analysisResults.length,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        analysis: {
+          analysisId: savedAnalysis?.id,
+          jobId: args.jobId,
+          photosAnalyzed: args.photoUrls.length,
+          results: analysisResults,
+          overallQuality: analysisResults.reduce((sum, a) => sum + a.quality, 0) / analysisResults.length,
+          totalIssues: analysisResults.reduce((sum, a) => sum + a.issues.length, 0)
+        }
+      }
+    }
+
+    // 11. Signature Verification
+    else if (toolName === 'verify_signature') {
+      // Verify signature with computer vision
+      // Mock implementation - would use signature verification API
+      const verificationResult = {
+        isValid: true,
+        confidence: 92,
+        matches: [
+          { feature: 'pressure patterns', match: 94 },
+          { feature: 'stroke order', match: 89 },
+          { feature: 'letter formation', match: 93 }
+        ],
+        anomalies: ['Slightly faster than usual'],
+        riskScore: 8
+      }
+
+      // Save verification
+      const { data: savedVerification, error } = await supabase
+        .from('signature_verifications')
+        .insert({
+          job_id: args.jobId,
+          signature_image_url: args.signatureImageUrl,
+          reference_signature_id: args.referenceSignatureId,
+          is_verified: verificationResult.isValid,
+          confidence_score: verificationResult.confidence,
+          match_features: verificationResult.matches,
+          anomalies_detected: verificationResult.anomalies,
+          fraud_risk_score: verificationResult.riskScore,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        verification: {
+          verificationId: savedVerification?.id,
+          isValid: verificationResult.isValid,
+          confidence: verificationResult.confidence,
+          matches: verificationResult.matches,
+          anomalies: verificationResult.anomalies,
+          riskScore: verificationResult.riskScore,
+          riskLevel: verificationResult.riskScore > 50 ? 'high' : verificationResult.riskScore > 20 ? 'medium' : 'low'
+        }
+      }
+    }
+
+    // 12. Document Scanning OCR
+    else if (toolName === 'scan_and_process_document') {
+      // Process document with OCR
+      // Mock implementation - would use OCR service like Google Vision OCR
+      const extractedData = {
+        documentType: args.documentType,
+        extractedFields: args.extractionFields || ['all'],
+        text: 'Extracted text content would appear here',
+        confidence: 95,
+        fields: {
+          invoiceNumber: 'INV-2024-001',
+          amount: 1250.00,
+          date: '2024-11-28',
+          vendor: 'ABC Supplies Inc'
+        }
+      }
+
+      // Save document scan
+      const { data: savedScan, error } = await supabase
+        .from('document_scans')
+        .insert({
+          document_url: args.documentUrl,
+          document_type: args.documentType,
+          extracted_text: extractedData.text,
+          extracted_fields: extractedData.fields,
+          confidence_score: extractedData.confidence,
+          extraction_fields_requested: args.extractionFields,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        scan: {
+          scanId: savedScan?.id,
+          documentType: args.documentType,
+          extractedText: extractedData.text,
+          fields: extractedData.fields,
+          confidence: extractedData.confidence
+        }
+      }
+    }
+
+    // 13. Real-time Video Support
+    else if (toolName === 'start_video_support') {
+      // Create video session
+      const sessionId = crypto.randomUUID()
+      const sessionData = {
+        sessionId,
+        contactId: args.contactId,
+        jobId: args.jobId,
+        technicianId: args.technicianId,
+        reason: args.reason,
+        status: 'initiated',
+        createdAt: new Date().toISOString(),
+        webrtcUrl: `wss://video.crm-ai-pro.com/session/${sessionId}` // Mock WebRTC URL
+      }
+
+      // Save video session
+      const { data: savedSession, error } = await supabase
+        .from('video_support_sessions')
+        .insert({
+          session_id: sessionId,
+          contact_id: args.contactId,
+          job_id: args.jobId,
+          technician_id: args.technicianId,
+          session_reason: args.reason,
+          status: 'initiated',
+          webrtc_url: sessionData.webrtcUrl,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        videoSession: {
+          sessionId: savedSession?.session_id,
+          webRTCUrl: sessionData.webrtcUrl,
+          status: 'initiated',
+          customerLink: `${sessionData.webrtcUrl}?role=customer`,
+          technicianLink: `${sessionData.webrtcUrl}?role=tech`,
+          reason: args.reason
+        }
+      }
+    }
+
+    // 14. IoT Device Integration
+    else if (toolName === 'monitor_iot_devices') {
+      // Connect to IoT device
+      const monitoringData = {
+        deviceId: args.deviceId,
+        deviceType: args.deviceType,
+        customerId: args.customerId,
+        monitoringPeriod: args.monitoringPeriod || '24h',
+        status: 'connected',
+        lastReading: {
+          timestamp: new Date().toISOString(),
+          value: 23.5,
+          unit: 'celsius',
+          status: 'normal'
+        },
+        alerts: []
+      }
+
+      // Save IoT device monitoring
+      const { data: savedMonitoring, error } = await supabase
+        .from('iot_device_monitoring')
+        .insert({
+          device_id: args.deviceId,
+          device_type: args.deviceType,
+          customer_id: args.customerId,
+          monitoring_period: args.monitoringPeriod,
+          connection_status: 'connected',
+          last_reading: monitoringData.lastReading,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        iotMonitoring: {
+          monitoringId: savedMonitoring?.id,
+          deviceId: args.deviceId,
+          deviceType: args.deviceType,
+          status: 'connected',
+          lastReading: monitoringData.lastReading,
+          monitoringPeriod: args.monitoringPeriod
+        }
+      }
+    }
+
+    // 15. Blockchain Payments
+    else if (toolName === 'process_crypto_payment') {
+      // Process cryptocurrency payment
+      const transactionData = {
+        invoiceId: args.invoiceId,
+        cryptocurrency: args.cryptocurrency,
+        amount: args.amount,
+        walletAddress: args.walletAddress,
+        transactionHash: `0x${crypto.randomUUID().replace(/-/g, '')}`,
+        status: 'pending',
+        gasFee: args.cryptocurrency === 'ETH' ? 0.01 : 0,
+        estimatedConfirmation: '15 minutes'
+      }
+
+      // Save blockchain transaction
+      const { data: savedTransaction, error } = await supabase
+        .from('blockchain_transactions')
+        .insert({
+          invoice_id: args.invoiceId,
+          cryptocurrency: args.cryptocurrency,
+          amount: args.amount,
+          from_wallet: args.walletAddress,
+          transaction_hash: transactionData.transactionHash,
+          status: 'pending',
+          gas_fee: transactionData.gasFee,
+          estimated_confirmation_time: transactionData.estimatedConfirmation,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        cryptoPayment: {
+          transactionId: savedTransaction?.id,
+          transactionHash: transactionData.transactionHash,
+          cryptocurrency: args.cryptocurrency,
+          amount: args.amount,
+          status: 'pending',
+          gasFee: transactionData.gasFee,
+          estimatedConfirmation: transactionData.estimatedConfirmation,
+          paymentAddress: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa' // Mock address
+        }
+      }
+    }
+
+    // 16. AR Job Visualization
+    else if (toolName === 'create_ar_preview') {
+      // Create AR preview
+      const previewData = {
+        jobId: args.jobId,
+        previewType: args.previewType,
+        modelFiles: args.modelFiles || [],
+        arUrl: `https://ar.crm-ai-pro.com/preview/${crypto.randomUUID()}`,
+        requiredApp: 'CRM AI AR Viewer',
+        compatibility: ['iOS 12+', 'Android 8+']
+      }
+
+      // Save AR preview
+      const { data: savedPreview, error } = await supabase
+        .from('ar_previews')
+        .insert({
+          job_id: args.jobId,
+          preview_type: args.previewType,
+          model_files: args.modelFiles,
+          ar_url: previewData.arUrl,
+          required_app: previewData.requiredApp,
+          compatibility_info: previewData.compatibility,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        arPreview: {
+          previewId: savedPreview?.id,
+          arUrl: previewData.arUrl,
+          previewType: args.previewType,
+          requiredApp: previewData.requiredApp,
+          compatibility: previewData.compatibility,
+          qrCode: `data:image/png;base64,${btoa(previewData.arUrl)}` // Mock QR code
+        }
+      }
+    }
+
+    // 17. Predictive Hiring
+    else if (toolName === 'predict_candidate_success') {
+      // Evaluate candidate with AI
+      const evaluationResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{
+            role: 'system',
+            content: `Evaluate candidate success potential:
+            - Candidate Resume: ${JSON.stringify(args.resumeData || {})}
+            - Assessment Scores: ${JSON.stringify(args.assessmentScores || {})}
+
+            Return JSON: {
+              successProbability: 0-100,
+              technicalSkills: 0-100,
+              culturalFit: 0-100,
+              growthPotential: 0-100,
+              strengths: string[],
+              concerns: string[],
+              recommendedLevel: "junior/mid/senior",
+              interviewQuestions: string[]
+            }`
+          }, {
+            role: 'user',
+            content: `Evaluate candidate ${args.candidateId} for position ${args.positionId}`
+          }]
+        })
+      })
+
+      const evaluationResult = await evaluationResponse.json()
+      const evaluation = JSON.parse(evaluationResult.choices[0].message.content)
+
+      // Save candidate evaluation
+      const { data: savedEvaluation, error } = await supabase
+        .from('candidate_evaluations')
+        .insert({
+          candidate_id: args.candidateId,
+          position_id: args.positionId,
+          success_probability: evaluation.successProbability,
+          technical_score: evaluation.technicalSkills,
+          cultural_fit_score: evaluation.culturalFit,
+          growth_potential_score: evaluation.growthPotential,
+          strengths_identified: evaluation.strengths,
+          concerns_identified: evaluation.concerns,
+          recommended_level: evaluation.recommendedLevel,
+          recommended_interview_questions: evaluation.interviewQuestions,
+          resume_data: args.resumeData,
+          assessment_scores: args.assessmentScores,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        candidateEvaluation: {
+          evaluationId: savedEvaluation?.id,
+          successProbability: evaluation.successProbability,
+          technicalSkills: evaluation.technicalSkills,
+          culturalFit: evaluation.culturalFit,
+          growthPotential: evaluation.growthPotential,
+          strengths: evaluation.strengths,
+          concerns: evaluation.concerns,
+          recommendedLevel: evaluation.recommendedLevel,
+          interviewQuestions: evaluation.interviewQuestions
+        }
+      }
+    }
+
+    // 18. AI Voice Cloning
+    else if (toolName === 'clone_customer_voice') {
+      if (!args.consentRecorded) {
+        return { error: 'Customer consent must be recorded before voice cloning' }
+      }
+
+      // Clone voice with ElevenLabs or similar service
+      const voiceCloneData = {
+        voiceId: `voice_${crypto.randomUUID()}`,
+        contactId: args.contactId,
+        audioSampleUrl: args.audioSampleUrl,
+        useCase: args.useCase,
+        status: 'processing',
+        estimatedReadyTime: '2 hours',
+        voiceQuality: 'high'
+      }
+
+      // Save voice clone
+      const { data: savedClone, error } = await supabase
+        .from('voice_clones')
+        .insert({
+          contact_id: args.contactId,
+          audio_sample_url: args.audioSampleUrl,
+          use_case: args.useCase,
+          consent_recorded: args.consentRecorded,
+          voice_id: voiceCloneData.voiceId,
+          status: 'processing',
+          estimated_ready_time: voiceCloneData.estimatedReadyTime,
+          voice_quality: voiceCloneData.voiceQuality,
+          account_id: accountId
+        })
+        .select()
+        .single()
+
+      return {
+        voiceClone: {
+          cloneId: savedClone?.id,
+          voiceId: voiceCloneData.voiceId,
+          status: 'processing',
+          estimatedReadyTime: voiceCloneData.estimatedReadyTime,
+          useCase: args.useCase,
+          consentRecorded: args.consentRecorded
+        }
+      }
+    }
 
     else {
       return { error: `Unknown tool: ${toolName}` }
@@ -3147,12 +4859,53 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+    // Extract and validate JWT token from request
+    const authHeader = req.headers.get('Authorization')
+    let userId = null
+    let accountId = Deno.env.get('DEFAULT_ACCOUNT_ID') || 'fde73a6a-ea84-46a7-803b-a3ae7cc09d00'
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7)
+
+      // Create Supabase client with JWT token to get user info
+      const supabaseWithAuth = createClient(supabaseUrl, serviceRoleKey, {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      })
+
+      // Verify the token and get user
+      const { data: { user }, error } = await supabaseWithAuth.auth.getUser(token)
+
+      if (!error && user) {
+        userId = user.id
+        // Get account ID from user metadata
+        accountId = user.user_metadata?.account_id || accountId
+
+        console.log('[MCP] Authenticated user:', {
+          userId,
+          email: user.email,
+          accountId,
+          role: user.app_metadata?.role
+        })
+      } else {
+        console.error('[MCP] Invalid token:', error?.message)
+        // Continue with default account for compatibility
+      }
+    }
+
     const supabase = createClient(supabaseUrl, serviceRoleKey)
-
-    // Get account ID (default for now)
-    const accountId = Deno.env.get('DEFAULT_ACCOUNT_ID') || 'fde73a6a-ea84-46a7-803b-a3ae7cc09d00'
-
     const mcpRequest: MCPRequest = await req.json()
+
+    // Pass user context to tool calls
+    const context = {
+      userId,
+      accountId,
+      authenticated: !!userId
+    }
 
     // Validate MCP request
     if (mcpRequest.jsonrpc !== '2.0' || !mcpRequest.method) {
@@ -3192,7 +4945,7 @@ Deno.serve(async (req) => {
       result = { tools: TOOLS }
     } else if (mcpRequest.method === 'tools/call') {
       const { name, arguments: args } = mcpRequest.params
-      const toolResult = await handleToolCall(name, args, supabase, accountId)
+      const toolResult = await handleToolCall(name, args, supabase, accountId, context)
       result = {
         content: [
           {

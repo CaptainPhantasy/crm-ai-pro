@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { AlertTriangle, CheckCircle, Phone, MessageSquare, Users, Clock } from 'lucide-react'
 import { BigButton, BigButtonGrid } from '@/components/mobile/big-button'
+import { Card } from '@/components/ui/card'
 
 interface Escalation {
   id: string
@@ -88,11 +89,11 @@ export default function OfficeDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white p-4 pb-24">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] p-4 pb-24">
       {/* Header */}
       <header className="mb-6">
         <h1 className="text-2xl font-bold">Office Dashboard</h1>
-        <p className="text-gray-400">
+        <p className="text-[var(--color-text-secondary)]">
           {new Date().toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'short',
@@ -102,29 +103,29 @@ export default function OfficeDashboard() {
       </header>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
-          <div className="text-gray-400 text-sm">Jobs Today</div>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <Card className="p-6">
+          <div className="text-[var(--color-text-secondary)] text-sm">Jobs Today</div>
           <div className="text-2xl font-bold">
             {stats.jobsCompleted}/{stats.jobsToday}
           </div>
-        </div>
-        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4">
-          <div className="text-gray-400 text-sm">Avg Rating</div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-[var(--color-text-secondary)] text-sm">Avg Rating</div>
           <div className="text-2xl font-bold text-yellow-400">
             {stats.avgRating.toFixed(1)} ⭐
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Alerts */}
       {escalations.length > 0 && (
-        <div className="bg-red-900/50 border border-red-500 rounded-xl p-4 mb-6">
+        <Card className="p-6 mb-6 border border-red-500/50 bg-[var(--color-bg-surface)]">
           <div className="flex items-center gap-2 text-red-400 font-bold">
             <AlertTriangle className="w-5 h-5" />
             {escalations.length} Escalation{escalations.length !== 1 ? 's' : ''} Need Attention
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Escalation Queue */}
@@ -139,10 +140,10 @@ export default function OfficeDashboard() {
         ))}
         
         {escalations.length === 0 && (
-          <div className="text-center py-12">
+          <Card className="text-center py-8">
             <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
-            <p className="text-gray-400">All clear! No escalations pending.</p>
-          </div>
+            <p className="text-[var(--color-text-secondary)]">All clear! No escalations pending.</p>
+          </Card>
         )}
       </div>
 
@@ -196,8 +197,8 @@ function EscalationCard({
   }
 
   return (
-    <div className="bg-[var(--color-bg-secondary)] rounded-xl overflow-hidden">
-      <div className="p-4">
+    <Card className="overflow-hidden hover:shadow-card-hover transition-all duration-200">
+      <div className="p-6">
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="font-bold text-lg">{item.customerName}</div>
@@ -205,15 +206,15 @@ function EscalationCard({
               <span className="text-red-400 font-bold">
                 Rating: {item.rating}/5
               </span>
-              <span className="text-gray-500">•</span>
-              <span className="text-gray-400 text-sm">
+              <span className="text-[var(--color-text-subtle)]">•</span>
+              <span className="text-[var(--color-text-secondary)] text-sm">
                 {new Date(item.createdAt).toLocaleTimeString('en-US', {
                   hour: 'numeric',
                   minute: '2-digit',
                 })}
               </span>
             </div>
-            <div className="text-gray-400 text-sm mt-1">
+            <div className="text-[var(--color-text-secondary)] text-sm mt-1">
               {item.techName} • {item.jobDescription}
             </div>
           </div>
@@ -227,7 +228,7 @@ function EscalationCard({
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-700 p-4 space-y-4">
+        <div className="border-t border-[var(--color-border)] p-6 space-y-4">
           {/* Call Button */}
           <a
             href={`tel:${item.customerPhone}`}
@@ -236,17 +237,17 @@ function EscalationCard({
             <Phone className="w-5 h-5" />
             Call {item.customerName}
           </a>
-          
+
           {/* Notes */}
           <div>
-            <label className="block text-gray-400 text-sm mb-2">
+            <label className="block text-[var(--color-text-secondary)] text-sm mb-2">
               Resolution Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="What was discussed? How was it resolved?"
-              className="w-full bg-gray-700 rounded-xl p-3 text-white placeholder-gray-500 resize-none"
+              className="w-full bg-[var(--input-bg)] rounded-xl p-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-subtle)] resize-none border border-[var(--color-border)]"
               rows={3}
             />
           </div>
@@ -261,7 +262,7 @@ function EscalationCard({
           />
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 

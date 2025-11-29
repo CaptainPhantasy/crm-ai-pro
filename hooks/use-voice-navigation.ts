@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
-// Default account ID - matches the MCP server default
+// Default account ID - matches the Supabase MCP server default
 // TODO: Make this dynamic based on logged-in user
 const DEFAULT_ACCOUNT_ID = 'fde73a6a-ea84-46a7-803b-a3ae7cc09d00'
 

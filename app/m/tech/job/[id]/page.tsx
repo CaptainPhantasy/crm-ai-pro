@@ -486,15 +486,15 @@ export default function TechJobPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] text-white">
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
       {/* Header */}
-      <header className="bg-[var(--color-bg-secondary)] p-4 flex items-center gap-4">
-        <button onClick={() => router.back()} className="p-2">
+      <header className="bg-[var(--color-bg-secondary)] p-4 flex items-center gap-3 shadow-elevated">
+        <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-[var(--color-bg-surface)] transition-colors">
           <ArrowLeft className="w-6 h-6" />
         </button>
         <div className="flex-1">
           <div className="font-bold">{job.contact.firstName} {job.contact.lastName}</div>
-          <div className="text-gray-400 text-sm">{job.description}</div>
+          <div className="text-[var(--color-text-secondary)] text-sm">{job.description}</div>
         </div>
         <a
           href={`https://maps.google.com/?q=${encodeURIComponent(job.contact.address)}`}
@@ -643,26 +643,26 @@ export default function TechJobPage() {
             <div className="text-center py-4">
               <Star className="w-16 h-16 mx-auto text-yellow-400 mb-4" />
               <h2 className="text-2xl font-bold mb-2">Customer Satisfaction</h2>
-              <p className="text-gray-400">How satisfied is the customer?</p>
+              <p className="text-[var(--color-text-secondary)]">How satisfied is the customer?</p>
             </div>
-            
+
             <div className="flex justify-center gap-2">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <button
                   key={rating}
                   onClick={() => handleSatisfactionRating(rating)}
-                  className={`w-14 h-14 rounded-full text-2xl font-bold transition-all ${
-                    rating <= 3 
-                      ? 'bg-red-900 hover:bg-red-800 border-2 border-red-500' 
-                      : 'bg-green-900 hover:bg-green-800 border-2 border-green-500'
+                  className={`w-14 h-14 rounded-full text-2xl font-bold transition-all shadow-card hover:shadow-card-hover hover:-translate-y-px ${
+                    rating <= 3
+                      ? 'bg-red-500/20 text-red-400 border-red-500/30 hover:opacity-80 border'
+                      : 'bg-green-500/20 text-green-400 border-green-500/30 hover:opacity-80 border'
                   }`}
                 >
                   {rating}
                 </button>
               ))}
             </div>
-            
-            <p className="text-center text-gray-500 text-sm">
+
+            <p className="text-center text-[var(--color-text-subtle)] text-sm">
               Ratings 1-3 will notify the manager
             </p>
           </div>

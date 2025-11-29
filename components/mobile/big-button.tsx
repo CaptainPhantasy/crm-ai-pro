@@ -14,9 +14,9 @@ interface BigButtonProps {
 }
 
 const variantStyles = {
-  default: 'bg-gray-800 text-white border-gray-700',
-  primary: 'bg-[var(--color-accent-primary)] text-white border-[var(--color-accent-primary)]',
-  success: 'bg-green-600 text-white border-green-500',
+  default: 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]',
+  primary: 'bg-[var(--color-accent-primary)] text-white border-[var(--color-accent-primary)] shadow-glow',
+  success: 'bg-[var(--color-accent-secondary)] text-white border-[var(--color-accent-secondary)]',
   warning: 'bg-amber-600 text-white border-amber-500',
   danger: 'bg-red-600 text-white border-red-500',
 }
@@ -44,11 +44,17 @@ export function BigButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'w-full min-h-[44px] px-6 py-4 rounded-2xl border-2',
+        'w-full min-h-[44px] px-6 py-4 rounded-xl border',
         'flex items-center justify-center gap-3',
         'font-bold text-lg uppercase tracking-wide',
-        'transition-all duration-150 active:scale-[0.98]',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'transition-all duration-200 ease-out',
+        'shadow-card hover:shadow-card-hover hover:-translate-y-px',
+        'active:scale-[0.98] active:shadow-sm',
+        'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-sm',
+        'relative overflow-hidden',
+        // Add subtle top highlight for depth - same as desktop cards
+        'before:absolute before:inset-x-0 before:top-0 before:h-px',
+        'before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent',
         variantStyles[variant],
         className
       )}

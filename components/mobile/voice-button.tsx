@@ -45,14 +45,21 @@ export function VoiceButton() {
         fixed bottom-20 right-4 z-40
         w-14 h-14 rounded-full
         flex items-center justify-center
-        transition-all duration-200
-        shadow-lg
+        transition-all duration-200 ease-out
+        shadow-card hover:shadow-card-hover
+        relative overflow-hidden
+        border-2 border-white/20
         ${isListening
-          ? 'bg-red-500 scale-110 animate-pulse'
-          : 'bg-[var(--color-accent-primary)]'
+          ? 'bg-red-500 scale-110 animate-pulse shadow-glow shadow-red-500/50'
+          : 'bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-primary)]'
         }
-        ${isPressed ? 'scale-95' : 'scale-100'}
-        active:scale-95
+        ${isPressed ? 'scale-95 shadow-sm' : 'scale-100'}
+        active:scale-95 active:shadow-sm
+        // Add inner glow for depth
+        before:absolute before:inset-0 before:rounded-full
+        before:bg-gradient-to-br before:from-white/20 before:to-transparent
+        before:opacity-0 hover:before:opacity-100
+        before:transition-opacity before:duration-200
       `}
       aria-label={isListening ? 'Stop listening' : 'Start voice command'}
     >
