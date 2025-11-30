@@ -30,8 +30,7 @@ async function main() {
     // Setup Docker environment
     await setupDocker()
 
-    // Setup MCP server
-    await setupMCPServer()
+    // MCP server is deployed on Supabase - no local setup needed
 
     // Configure ElevenLabs integration
     await configureElevenLabs()
@@ -45,7 +44,7 @@ async function main() {
     log('1. Run: npm run dev:full')
     log('2. Open: http://localhost:3000')
     log('3. Test voice agent: http://localhost:3000/voice-demo')
-    log('4. Check MCP server: http://localhost:3001/health')
+    log('4. MCP server is deployed at: https://expbvujyegxmxvatcjqt.supabase.co/functions/v1/mcp-server')
 
   } catch (err) {
     error(`Setup failed: ${err instanceof Error ? err.message : String(err)}`)

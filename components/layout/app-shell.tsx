@@ -9,7 +9,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="flex h-screen bg-theme-primary text-theme-primary">
+    <div className="flex min-h-screen bg-theme-primary text-theme-primary">
       {/* Left Navigation */}
       <SidebarNav />
 

@@ -13,8 +13,9 @@
 
 /**
  * All available user roles in the system
+ * Admin is the highest role with full access
  */
-export type UserRole = 'owner' | 'admin' | 'dispatcher' | 'tech' | 'sales'
+export type UserRole = 'admin' | 'owner' | 'dispatcher' | 'tech' | 'sales'
 
 // ============================================================================
 // PERMISSIONS
@@ -76,6 +77,14 @@ export type Permission =
   | 'desktop_only'        // Access to desktop interface
   | 'mobile_only'         // Access to mobile interface
   | 'desktop_and_mobile'  // Access to both interfaces
+
+  // AI & Voice Features
+  | 'voice_navigation_access'     // Access voice navigation commands
+  | 'predictive_analytics_view'   // View predictive analytics insights
+
+  // Advanced Features
+  | 'equipment_management_advanced' // Advanced equipment management
+  | 'customer_insights_export'     // Export customer insights data
 
 // ============================================================================
 // PERMISSION GROUPS

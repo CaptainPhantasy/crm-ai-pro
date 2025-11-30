@@ -14,7 +14,7 @@ export function LoadingSpinner({ message = 'Loading...', size = 'md' }: LoadingS
 
     return (
         <div className="flex flex-col items-center justify-center p-8">
-            <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-600 mb-4`} />
+            <Loader2 className={`${sizeClasses[size]} animate-spin text-[var(--color-accent-primary)] mb-4`} />
             <p className="text-sm text-neutral-600">{message}</p>
         </div>
     )

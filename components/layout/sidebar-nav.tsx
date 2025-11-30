@@ -18,7 +18,11 @@ import {
   Zap,
   Brain,
   FileCheck,
-  PieChart
+  PieChart,
+  Wrench,
+  Handshake,
+  Crown,
+  Target
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { VoiceAgentWidget } from '@/components/voice-agent/voice-agent-widget'
@@ -35,6 +39,25 @@ const navItems = [
   { label: "Analytics", icon: BarChart3, href: "/analytics", permission: 'view_analytics' as const },
   { label: "Reports", icon: PieChart, href: "/reports", permission: 'view_analytics' as const },
   { label: "Finance", icon: DollarSign, href: "/finance/dashboard", permission: 'view_financials' as const },
+]
+
+const roleDashboards = [
+  { label: "Tech Dashboard", icon: Wrench, href: "/tech/dashboard", permission: null },
+  { label: "Sales Dashboard", icon: Handshake, href: "/sales/dashboard", permission: null },
+  { label: "Owner Dashboard", icon: Crown, href: "/owner/dashboard", permission: null },
+]
+
+const techItems = [
+  { label: "Tech Map", icon: Map, href: "/tech/map", permission: null },
+]
+
+const salesItems = [
+  { label: "Leads", icon: Target, href: "/sales/leads", permission: 'view_contacts' as const },
+  { label: "Meetings", icon: Calendar, href: "/sales/meetings", permission: 'view_contacts' as const },
+]
+
+const ownerItems = [
+  { label: "Business Reports", icon: PieChart, href: "/owner/reports", permission: 'view_analytics' as const },
 ]
 
 const marketingItems = [
@@ -82,6 +105,28 @@ function isActive(pathname: string, href: string): boolean {
   if (href === '/parts') {
     return pathname === '/parts' || pathname.startsWith('/parts/')
   }
+  // Role dashboard routes
+  if (href === '/tech/dashboard') {
+    return pathname === '/tech/dashboard'
+  }
+  if (href === '/tech/map') {
+    return pathname === '/tech/map' || pathname.startsWith('/tech/map')
+  }
+  if (href === '/sales/dashboard') {
+    return pathname === '/sales/dashboard'
+  }
+  if (href === '/sales/leads') {
+    return pathname === '/sales/leads' || pathname.startsWith('/sales/leads')
+  }
+  if (href === '/sales/meetings') {
+    return pathname === '/sales/meetings' || pathname.startsWith('/sales/meetings')
+  }
+  if (href === '/owner/dashboard') {
+    return pathname === '/owner/dashboard'
+  }
+  if (href === '/owner/reports') {
+    return pathname === '/owner/reports' || pathname.startsWith('/owner/reports')
+  }
   if (href === '/marketing/campaigns') {
     return pathname === '/marketing/campaigns' || pathname.startsWith('/marketing/campaigns')
   }
@@ -113,14 +158,14 @@ export function SidebarNav() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-60 border-r border-theme-border bg-theme-surface flex flex-col">
+    <aside className="w-60 border-r border-theme-border bg-theme-surface flex flex-col h-screen sticky top-0">
       {/* Logo */}
-      <div className="flex items-center px-3 py-4 border-b border-theme-border">
+      <div className="flex items-center px-3 py-4 border-b border-theme-border flex-shrink-0">
         <span className="text-2xl font-bold tracking-tight text-theme-primary">CRM-AI PRO</span>
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 px-3 py-4 space-y-6">
+      <div className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
         {/* Core Section */}
         <div className="space-y-3">
           <p className="text-xs uppercase text-theme-secondary px-1">Core</p>
@@ -143,6 +188,98 @@ export function SidebarNav() {
                   <span>{item.label}</span>
                 </Link>
               </PermissionGate>
+            ))}
+          </nav>
+        </div>
+
+        {/* Role Dashboards Section */}
+        <div className="space-y-3">
+          <p className="text-xs uppercase text-theme-secondary px-1">Dashboards</p>
+          <nav className="space-y-1">
+            {roleDashboards.map(item => (
+              <PermissionGate
+                key={item.label}
+                requires={item.permission || undefined}
+              >
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                    isActive(pathname, item.href)
+                      ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
+                      : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              </PermissionGate>
+            ))}
+          </nav>
+        </div>
+
+        {/* Tech Section */}
+        <div className="space-y-3">
+          <p className="text-xs uppercase text-theme-secondary px-1">Tech</p>
+          <nav className="space-y-1">
+            {techItems.map(item => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={cn(
+                  "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                  isActive(pathname, item.href)
+                    ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
+                    : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Sales Section */}
+        <div className="space-y-3">
+          <p className="text-xs uppercase text-theme-secondary px-1">Sales</p>
+          <nav className="space-y-1">
+            {salesItems.map(item => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={cn(
+                  "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                  isActive(pathname, item.href)
+                    ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
+                    : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Owner Section */}
+        <div className="space-y-3">
+          <p className="text-xs uppercase text-theme-secondary px-1">Owner</p>
+          <nav className="space-y-1">
+            {ownerItems.map(item => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={cn(
+                  "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                  isActive(pathname, item.href)
+                    ? "bg-theme-accent-secondary/20 text-theme-accent-primary border border-theme-accent-primary"
+                    : "text-theme-secondary hover:bg-theme-surface hover:text-theme-primary"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </Link>
             ))}
           </nav>
         </div>

@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { X, Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Notification } from '@/types/notifications'
@@ -77,12 +77,17 @@ export function NotificationToast({
   const router = useRouter()
   const [isVisible, setIsVisible] = useState(true)
   const [progress, setProgress] = useState(100)
+  const isMounted = useRef(true)
 
   // Auto-dismiss timer
   useEffect(() => {
+    isMounted.current = true
+    
     if (duration === 0) return
 
     const interval = setInterval(() => {
+      if (!isMounted.current) return
+      
       setProgress(prev => {
         const newProgress = prev - (100 / (duration / 100))
         if (newProgress <= 0) {
@@ -93,16 +98,24 @@ export function NotificationToast({
       })
     }, 100)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      isMounted.current = false
+    }
   }, [duration])
 
   // Handle dismiss
   const handleDismiss = () => {
+    if (!isMounted.current) return
+    
     setIsVisible(false)
     setTimeout(() => {
-      onDismiss?.(notification.id)
-    }, 300) // Wait for exit animation
+      if (isMounted.current) {
+        onDismiss?.(notification.id)
+      }
+    }, 150)
   }
+
 
   // Handle action button click
   const handleAction = () => {
@@ -230,16 +243,15 @@ export function NotificationToastContainer({
   onDismiss,
   className
 }: NotificationToastContainerProps) {
-  // Show only the most recent notifications up to maxToasts
   const visibleNotifications = notifications.slice(0, maxToasts)
 
   return (
-    <>
+    <div className="fixed inset-0 pointer-events-none z-50">
       {visibleNotifications.map((notification, index) => (
         <div
           key={notification.id}
+          className="pointer-events-auto"
           style={{
-            // Stack toasts with slight offset
             transform: `translateY(${index * 8}px)`,
             zIndex: 50 - index
           }}
@@ -253,8 +265,9 @@ export function NotificationToastContainer({
           />
         </div>
       ))}
-    </>
+    </div>
   )
 }
+
 
 export default NotificationToast

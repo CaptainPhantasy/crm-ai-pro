@@ -1,12 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { useConversation } from '@elevenlabs/react'
 import { Phone, PhoneOff, Volume2, VolumeX, Mic, MicOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { useVoiceConversation } from '@/components/voice-conversation-provider'
 
-const AGENT_ID = 'agent_6501katrbe2re0c834kfes3hvk2d'
+/**
+ * VoiceAgentWidget
+ *
+ * UI component for controlling the voice agent conversation.
+ * This now uses the shared conversation context from VoiceConversationProvider,
+ * which includes client-side navigation tools.
+ *
+ * **Changes from original:**
+ * - No longer creates its own useConversation() hook
+ * - Uses shared conversation from VoiceConversationProvider
+ * - Calls startSessionWithTools() to register client-side tools
+ * - All UI controls work with the shared session
+ */
 
 export function VoiceAgentWidget() {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -14,40 +26,25 @@ export function VoiceAgentWidget() {
   const [volume, setVolume] = useState(0.8)
   const [isConnecting, setIsConnecting] = useState(false)
 
-  const conversation = useConversation({
-    micMuted,
-    volume,
-    onConnect: () => {
-      setIsConnecting(false)
-      console.log('[VoiceAgent] Connected')
-    },
-    onDisconnect: () => {
-      setIsConnecting(false)
-      console.log('[VoiceAgent] Disconnected')
-    },
-    onError: (error) => {
-      setIsConnecting(false)
-      console.error('[VoiceAgent] Error:', error)
-    },
-    onStatusChange: (status) => {
-      console.log('[VoiceAgent] Status:', status)
-    },
-  })
+  const { conversation, startSessionWithTools } = useVoiceConversation()
 
   const { status, isSpeaking } = conversation
 
   const isConnected = status === 'connected'
 
   const handleStartCall = async () => {
+    console.error('🔴 BUTTON CLICKED - handleStartCall EXECUTING')
     try {
       setIsConnecting(true)
-      await conversation.startSession({
-        agentId: AGENT_ID,
-        connectionType: 'webrtc',
-      })
+      console.error('🔴 CALLING startSessionWithTools NOW...')
+      await startSessionWithTools()
+      console.error('🔴 startSessionWithTools COMPLETED')
       setIsExpanded(true)
     } catch (error) {
+      console.error('🔴 ERROR in handleStartCall:', error)
       console.error('[VoiceAgent] Failed to start session:', error)
+      setIsConnecting(false)
+    } finally {
       setIsConnecting(false)
     }
   }
@@ -63,10 +60,14 @@ export function VoiceAgentWidget() {
 
   const toggleMic = () => {
     setMicMuted(!micMuted)
+    // Note: You may need to update the conversation's micMuted state
+    // depending on how the SDK handles this
   }
 
   const toggleVolume = () => {
     setVolume(volume > 0 ? 0 : 0.8)
+    // Note: You may need to update the conversation's volume state
+    // depending on how the SDK handles this
   }
 
   return (
@@ -170,4 +171,3 @@ export function VoiceAgentWidget() {
     </div>
   )
 }
-

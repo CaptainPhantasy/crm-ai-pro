@@ -28,13 +28,74 @@ import type {
  * Customize this object to match your project's access control requirements.
  *
  * **Roles Overview:**
- * - **Owner**: Full system access (can do everything)
- * - **Admin**: Most management tasks (cannot impersonate or delete users)
+ * - **Admin**: Super Admin with full system access (highest role - only Douglas has this)
+ * - **Owner**: Full system access (can do everything except super admin tasks)
  * - **Dispatcher**: Job assignment, dispatch operations, GPS tracking
  * - **Tech**: Mobile-focused, assigned jobs only, time/materials entry
  * - **Sales**: Mobile-focused, leads, meetings, contacts, AI briefings
  */
 export const ROLE_PERMISSIONS: RolePermissionsMap = {
+  /**
+   * ADMIN - Super Admin with full system access (highest role)
+   */
+  admin: [
+    // User Management
+    'manage_users',
+    'view_users',
+    'impersonate_users',
+
+    // Job Management
+    'view_all_jobs',
+    'create_jobs',
+    'edit_jobs',
+    'delete_jobs',
+    'assign_jobs',
+
+    // Contact Management
+    'view_contacts',
+    'create_contacts',
+    'edit_contacts',
+    'delete_contacts',
+
+    // Financial Management
+    'manage_financials',
+    'view_financials',
+    'create_invoices',
+    'edit_invoices',
+
+    // Marketing
+    'manage_marketing',
+    'view_marketing',
+    'send_campaigns',
+
+    // Analytics & Reports
+    'view_analytics',
+    'view_reports',
+    'export_reports',
+    'view_estimates', // New
+    'view_parts',     // New
+
+    // Dispatch & GPS
+    'view_dispatch_map',
+    'manage_dispatch',
+    'view_gps',
+
+    // Settings
+    'manage_settings',
+    'view_settings',
+
+    // Platform Access
+    'desktop_and_mobile',
+
+    // AI & Voice Features
+    'voice_navigation_access',
+    'predictive_analytics_view',
+
+    // Advanced Features
+    'equipment_management_advanced',
+    'customer_insights_export',
+  ],
+
   /**
    * OWNER - Full system access
    */
@@ -86,56 +147,14 @@ export const ROLE_PERMISSIONS: RolePermissionsMap = {
 
     // Platform Access
     'desktop_and_mobile',
-  ],
 
-  /**
-   * ADMIN - Management access (no user impersonation)
-   */
-  admin: [
-    // User Management (view only, cannot manage)
-    'view_users',
+    // AI & Voice Features
+    'voice_navigation_access',
+    'predictive_analytics_view',
 
-    // Job Management
-    'view_all_jobs',
-    'create_jobs',
-    'edit_jobs',
-    'delete_jobs',
-    'assign_jobs',
-
-    // Contact Management
-    'view_contacts',
-    'create_contacts',
-    'edit_contacts',
-    'delete_contacts',
-
-    // Financial Management
-    'manage_financials',
-    'view_financials',
-    'create_invoices',
-    'edit_invoices',
-
-    // Marketing
-    'manage_marketing',
-    'view_marketing',
-    'send_campaigns',
-
-    // Analytics & Reports
-    'view_analytics',
-    'view_reports',
-    'export_reports',
-    'view_estimates', // New
-    'view_parts',     // New
-
-    // Dispatch & GPS
-    'view_dispatch_map',
-    'manage_dispatch',
-    'view_gps',
-
-    // Settings
-    'view_settings',
-
-    // Platform Access
-    'desktop_only',
+    // Advanced Features
+    'equipment_management_advanced',
+    'customer_insights_export',
   ],
 
   /**
@@ -168,6 +187,12 @@ export const ROLE_PERMISSIONS: RolePermissionsMap = {
 
     // Platform Access
     'desktop_only',
+
+    // AI & Voice Features
+    'voice_navigation_access',
+
+    // Advanced Features (limited)
+    'equipment_management_advanced',
   ],
 
   /**
@@ -183,6 +208,9 @@ export const ROLE_PERMISSIONS: RolePermissionsMap = {
 
     // Platform Access
     'mobile_only',
+
+    // AI & Voice Features
+    'voice_navigation_access',
   ],
 
   /**
@@ -200,6 +228,9 @@ export const ROLE_PERMISSIONS: RolePermissionsMap = {
 
     // Platform Access
     'mobile_only',
+
+    // AI & Voice Features
+    'voice_navigation_access',
   ],
 }
 
@@ -461,6 +492,14 @@ export const getPermissionDescription = (permission: Permission): string => {
     desktop_only: 'Access desktop interface',
     mobile_only: 'Access mobile interface',
     desktop_and_mobile: 'Access both desktop and mobile',
+
+    // AI & Voice Features
+    voice_navigation_access: 'Access voice navigation commands',
+    predictive_analytics_view: 'View predictive analytics insights',
+
+    // Advanced Features
+    equipment_management_advanced: 'Advanced equipment management',
+    customer_insights_export: 'Export customer insights data',
   }
 
   return descriptions[permission] || permission

@@ -191,7 +191,7 @@ async function sendViaResend(options: EmailSendOptions): Promise<EmailSendResult
 
   try {
     const to = Array.isArray(options.to) ? options.to : [options.to]
-    const from = options.from || 'CRM <noreply@317plumber.com>'
+    const from = options.from || getCrmSenderEmail()
 
     const { data, error } = await resend.emails.send({
       from,
@@ -214,6 +214,26 @@ async function sendViaResend(options: EmailSendOptions): Promise<EmailSendResult
         error: error.message || 'Failed to send email',
       }
     }
+
+    // Track the sent event for analytics
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(supabaseUrl, serviceRoleKey)
+
+    // Add to analytics tracking
+    await supabase
+      .from('email_analytics')
+      .insert({
+        message_id: data?.id || '',
+        recipient_email: Array.isArray(options.to) ? options.to[0] : options.to,
+        event: 'sent',
+        timestamp: new Date().toISOString(),
+        data: {
+          provider: 'resend',
+          subject: options.subject,
+          accountId: options.accountId
+        }
+      })
 
     return {
       success: true,

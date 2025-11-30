@@ -3,7 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
-import { VoiceAgentOverlay } from "@/components/voice-agent-overlay";
+// import { VoiceAgentOverlay } from "@/components/voice-agent-overlay"; // DISABLED - replaced by React SDK
+import { VoiceNavigationBridge } from "@/components/voice-navigation-bridge";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -108,9 +109,11 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster />
+          {/* Voice Navigation Bridge - Enables client-side tool execution */}
+          <VoiceNavigationBridge />
         </Providers>
-        {/* Old embed widget cleanup - removes any existing instances */}
-        <VoiceAgentOverlay />
+        {/* Old embed widget cleanup - DISABLED - replaced by React SDK */}
+        {/* <VoiceAgentOverlay /> */}
       </body>
     </html>
   );

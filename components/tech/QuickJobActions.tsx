@@ -61,7 +61,7 @@ export function QuickJobActions({
             'border-2',
             isInProgress
               ? 'bg-green-600 border-green-500 text-white hover:bg-green-700'
-              : 'bg-blue-600 border-blue-500 text-white hover:bg-blue-700'
+              : 'bg-[var(--color-accent-primary)] border-[var(--color-accent-primary)] text-white hover:bg-[var(--color-accent-primary)]/80'
           )}
         >
           {isInProgress ? (
@@ -156,7 +156,7 @@ export function CompactJobActions({
       {jobStatus !== 'completed' && (
         <button
           onClick={onStart}
-          className="flex-1 h-12 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-sm active:scale-95 transition-all"
+          className="flex-1 h-12 px-4 bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-primary)]/80 rounded-lg font-bold text-sm active:scale-95 transition-all"
         >
           {jobStatus === 'in_progress' ? 'CONTINUE' : 'START'}
         </button>

@@ -15,10 +15,23 @@ async function getServiceAccountToken(): Promise<string> {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   const supabase = createClient(supabaseUrl, anonKey)
 
-  // Sign in with service account
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'voice-agent@demo.local',
-    password: 'demo123456',
+  // CRITICAL FIX: Use service role key instead of hardcoded credentials
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  if (!serviceRoleKey) {
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+  }
+
+  // Create service client with proper authentication
+  const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false
+    }
+  })
+
+  // Get service account token using service role
+  const { data, error } = await serviceClient.auth.admin.generateLink({
+    type: 'magiclink',
+    email: 'voice-agent@demo.local'
   })
 
   if (error || !data.session) {
