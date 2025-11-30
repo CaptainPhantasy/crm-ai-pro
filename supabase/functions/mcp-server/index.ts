@@ -568,20 +568,46 @@ const TOOLS = [
       required: ['contactId', 'direction'],
     },
   },
-  // Navigation Tool
+  // Navigation Tool - Navigate to specific pages in the CRM application
   {
     name: 'navigate',
-    description: 'Navigate the user to a different page in the CRM application. Use this when the user asks to go to a specific section like Jobs, Inbox, Contacts, Analytics, Finance, Settings, etc. Examples: "Go to jobs", "Show me contacts", "Take me to the inbox", "Open analytics"',
+    description: 'Navigate the user to a different page in the CRM application. Use this when the user asks to go to a specific section like Jobs, Inbox, Contacts, Analytics, Finance, Settings, etc. Examples: "Go to jobs", "Show me contacts", "Take me to the inbox", "Open analytics", "Navigate to tech map", "Go to owner dashboard", "Show sales leads", "Open calendar", "View estimates", "Go to admin settings", "Show marketing campaigns", "View parts inventory"',
     inputSchema: {
       type: 'object',
       properties: {
-        page: { 
-          type: 'string', 
-          enum: ['inbox', 'jobs', 'contacts', 'analytics', 'finance', 'tech', 'campaigns', 'email-templates', 'tags', 'settings', 'integrations', 'dashboard'], 
-          description: 'The page to navigate to' 
+        page: {
+          type: 'string',
+          enum: [
+            // Main dashboards
+            'dashboard', 'owner-dashboard', 'admin-dashboard', 'sales-dashboard', 'tech-dashboard', 'office-dashboard', 'finance-dashboard',
+
+            // Core business functions
+            'jobs', 'contacts', 'estimates', 'inbox', 'calendar', 'parts', 'analytics', 'reports',
+
+            // Job management
+            'tech', 'tech-jobs', 'tech-map', 'dispatch-map',
+
+            // Sales & Marketing
+            'sales-leads', 'sales-meetings', 'sales-meeting-new', 'sales-meeting-record',
+            'campaigns', 'marketing-campaigns', 'email-templates', 'marketing-email-templates', 'tags', 'marketing-tags',
+
+            // Financial
+            'finance', 'finance-payments',
+
+            // Administrative
+            'admin-users', 'admin-audit', 'admin-automation', 'admin-llm-providers',
+            'admin-settings', 'admin-settings-company', 'admin-settings-ai', 'admin-settings-automation',
+
+            // Settings & Configuration
+            'settings', 'settings-profile', 'settings-notifications', 'settings-integrations', 'integrations'
+          ],
+          description: 'The page to navigate to'
         },
         jobId: { type: 'string', description: 'Optional: Job ID if navigating to a specific job' },
         contactId: { type: 'string', description: 'Optional: Contact ID if navigating to a specific contact' },
+        estimateId: { type: 'string', description: 'Optional: Estimate ID if navigating to a specific estimate' },
+        meetingId: { type: 'string', description: 'Optional: Meeting ID if navigating to a specific meeting' },
+        campaignId: { type: 'string', description: 'Optional: Campaign ID if navigating to a specific campaign' },
       },
       required: ['page'],
     },
@@ -1053,6 +1079,22 @@ const TOOLS = [
         reportedIssues: { type: 'array', items: { type: 'string' }, description: 'List of reported issues' },
       },
       required: ['jobType', 'description', 'location'],
+    },
+  },
+
+  // CRITICAL FIX: Create formal estimate from AI calculation
+  {
+    name: 'create_formal_estimate_from_ai',
+    description: 'Create a formal estimate record from AI calculation that appears on Estimates page. Use this after ai_estimate_job to make the estimate visible in the UI.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        aiEstimateId: { type: 'string', description: 'The ID returned from ai_estimate_job tool' },
+        jobId: { type: 'string', description: 'Optional: Job ID to link estimate to' },
+        contactId: { type: 'string', description: 'Contact ID for the customer' },
+        title: { type: 'string', description: 'Optional: Custom title for the estimate' },
+      },
+      required: ['aiEstimateId', 'contactId'],
     },
   },
 
@@ -2576,37 +2618,98 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
 
     // Navigation Tool - writes to voice_navigation_commands table for frontend to execute
     else if (toolName === 'navigate') {
-      // Page URL mappings
+      // Complete page URL mappings matching the actual application structure
       const pageRoutes: Record<string, string> = {
-        'inbox': '/inbox',
+        // Main dashboards
+        'dashboard': '/dashboard',
+        'owner-dashboard': '/owner/dashboard',
+        'admin-dashboard': '/admin/users',
+        'sales-dashboard': '/sales/dashboard',
+        'tech-dashboard': '/tech/dashboard',
+        'office-dashboard': '/office/dashboard',
+        'finance-dashboard': '/finance/dashboard',
+
+        // Core business functions
         'jobs': '/jobs',
         'contacts': '/contacts',
+        'estimates': '/estimates',
+        'inbox': '/inbox',
+        'calendar': '/calendar',
+        'parts': '/parts',
         'analytics': '/analytics',
-        'finance': '/finance/dashboard',
-        'tech': '/tech/dashboard',
-        'campaigns': '/marketing/campaigns',
-        'email-templates': '/marketing/email-templates',
-        'tags': '/marketing/tags',
-        'settings': '/admin/settings',
-        'integrations': '/settings/integrations',
-        'dashboard': '/jobs', // Default dashboard to jobs
+        'reports': '/reports',
+
+        // Job management
+        'tech': '/tech/dashboard', // tech shortcut
+        'tech-jobs': '/tech/jobs',
+        'tech-map': '/tech/map',
+        'dispatch-map': '/dispatch/map',
+
+        // Sales & Marketing
+        'sales-leads': '/sales/leads',
+        'sales-meetings': '/sales/meetings',
+        'sales-meeting-new': '/sales/meetings/new',
+        'sales-meeting-record': '/sales/meetings/record',
+        'campaigns': '/marketing/campaigns', // campaigns shortcut
+        'marketing-campaigns': '/marketing/campaigns',
+        'email-templates': '/marketing/email-templates', // email-templates shortcut
+        'marketing-email-templates': '/marketing/email-templates',
+        'tags': '/marketing/tags', // tags shortcut
+        'marketing-tags': '/marketing/tags',
+
+        // Financial
+        'finance': '/finance/dashboard', // finance shortcut
+        'finance-payments': '/finance/payments',
+
+        // Administrative
+        'admin-users': '/admin/users',
+        'admin-audit': '/admin/audit',
+        'admin-automation': '/admin/automation',
+        'admin-llm-providers': '/admin/llm-providers',
+        'admin-settings': '/admin/settings',
+        'admin-settings-company': '/admin/settings/company',
+        'admin-settings-ai': '/admin/settings/ai',
+        'admin-settings-automation': '/admin/settings/automation',
+
+        // Settings & Configuration
+        'settings': '/admin/settings', // settings shortcut
+        'settings-profile': '/settings/profile',
+        'settings-notifications': '/settings/notifications',
+        'settings-integrations': '/settings/integrations',
+        'integrations': '/settings/integrations', // integrations shortcut
       }
 
       const page = args.page || args.route // Support both new and old param names
-      
+
       if (!pageRoutes[page]) {
-        return { error: `Invalid page: ${page}. Valid pages are: ${Object.keys(pageRoutes).join(', ')}` }
+        return { error: `Invalid page: ${page}. Valid pages are: ${Object.keys(pageRoutes).sort().join(', ')}` }
       }
 
       // Build the full path
       let fullPath = pageRoutes[page]
-      
-      // Handle specific item navigation
-      if (page === 'jobs' && args.jobId) {
+
+      // Handle specific item navigation with dynamic parameters
+      if ((page === 'jobs' || page === 'job-detail') && args.jobId) {
         fullPath = `/jobs/${args.jobId}`
-      } else if (page === 'contacts' && args.contactId) {
+      } else if ((page === 'contacts' || page === 'contact-detail') && args.contactId) {
         fullPath = `/contacts/${args.contactId}`
+      } else if ((page === 'estimates' || page === 'estimate-detail') && args.estimateId) {
+        fullPath = `/estimates/${args.estimateId}`
+      } else if ((page === 'sales-meetings' || page === 'sales-meeting-detail') && args.meetingId) {
+        fullPath = `/sales/meetings/${args.meetingId}`
+      } else if ((page === 'marketing-campaigns' || page === 'marketing-campaign-detail') && args.campaignId) {
+        fullPath = `/marketing/campaigns/${args.campaignId}`
+      } else if (page === 'tech-jobs' && args.jobId) {
+        fullPath = `/tech/jobs/${args.jobId}`
       }
+
+      // Collect all navigation parameters
+      const navParams: any = {}
+      if (args.jobId) navParams.jobId = args.jobId
+      if (args.contactId) navParams.contactId = args.contactId
+      if (args.estimateId) navParams.estimateId = args.estimateId
+      if (args.meetingId) navParams.meetingId = args.meetingId
+      if (args.campaignId) navParams.campaignId = args.campaignId
 
       // Insert navigation command into database for frontend to pick up via Realtime
       const { data: navCommand, error: navError } = await supabase
@@ -2614,7 +2717,7 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
         .insert({
           account_id: accountId,
           page: fullPath,
-          params: { jobId: args.jobId, contactId: args.contactId },
+          params: navParams,
           executed: false,
         })
         .select()
@@ -3723,6 +3826,94 @@ async function handleToolCall(toolName: string, args: any, supabase: any, accoun
         },
         usedHistoricalJobs: similarJobs?.length || 0,
         estimateId: savedEstimate?.id
+      }
+    }
+
+    // CRITICAL FIX: Create formal estimate record from AI estimate
+    else if (toolName === 'create_formal_estimate_from_ai') {
+      const { aiEstimateId, jobId, contactId, title } = args
+
+      if (!aiEstimateId || !contactId) {
+        return { error: 'Missing required fields: aiEstimateId, contactId' }
+      }
+
+      // Get AI estimate data
+      const { data: aiEstimate, error: aiError } = await supabase
+        .from('ai_job_estimates')
+        .select('*')
+        .eq('id', aiEstimateId)
+        .eq('account_id', accountId)
+        .single()
+
+      if (aiError || !aiEstimate) {
+        return { error: `AI estimate not found: ${aiError?.message || 'Unknown error'}` }
+      }
+
+      // Generate estimate number
+      const estimateNumber = `EST-${Date.now().toString().slice(-6)}`
+
+      // Create formal estimate record
+      const { data: formalEstimate, error: createError } = await supabase
+        .from('estimates')
+        .insert({
+          account_id: accountId,
+          contact_id: contactId,
+          estimate_number: estimateNumber,
+          title: title || `${aiEstimate.job_type} Estimate`,
+          description: `AI-generated estimate for ${aiEstimate.job_type}`,
+          subtotal: Math.round(aiEstimate.estimated_cost * 100), // Convert to cents
+          tax_rate: 0.0,
+          tax_amount: 0,
+          total_amount: Math.round(aiEstimate.estimated_cost * 100), // Convert to cents
+          status: 'draft',
+          notes: `AI Confidence: ${aiEstimate.confidence_score}%\nDuration: ${aiEstimate.estimated_duration} minutes\nAI Model: ${aiEstimate.ai_model_version}\nComplexity Factors: ${JSON.stringify(aiEstimate.complexity_factors)}`,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (createError) {
+        return { error: `Failed to create formal estimate: ${createError.message}` }
+      }
+
+      // Add estimate line item
+      const { error: itemError } = await supabase
+        .from('estimate_items')
+        .insert({
+          estimate_id: formalEstimate.id,
+          description: `${aiEstimate.job_type} - AI Estimated Duration: ${aiEstimate.estimated_duration} minutes`,
+          quantity: 1,
+          unit_price: Math.round(aiEstimate.estimated_cost * 100), // Convert to cents
+          total: Math.round(aiEstimate.estimated_cost * 100), // Convert to cents
+          item_type: 'labor'
+        })
+
+      if (itemError) {
+        console.error('Failed to create estimate line item:', itemError)
+      }
+
+      // Link AI estimate to job if jobId provided
+      if (jobId) {
+        const { error: linkError } = await supabase
+          .from('ai_job_estimates')
+          .update({ job_id: jobId })
+          .eq('id', aiEstimateId)
+
+        if (linkError) {
+          console.error('Failed to link AI estimate to job:', linkError)
+        }
+      }
+
+      return {
+        success: true,
+        formalEstimate: {
+          id: formalEstimate.id,
+          estimateNumber: formalEstimate.estimate_number,
+          totalAmount: formalEstimate.total_amount / 100, // Convert back to dollars
+          status: formalEstimate.status,
+          title: formalEstimate.title
+        },
+        message: `Formal estimate ${estimateNumber} created and ready to view on Estimates page`
       }
     }
 
