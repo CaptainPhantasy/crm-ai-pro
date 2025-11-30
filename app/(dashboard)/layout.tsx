@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { GlobalSearch } from '@/components/search/global-search'
@@ -15,22 +15,16 @@ import { VoiceNavigationProvider } from '@/hooks/use-voice-navigation'
 import { AppShell } from '@/components/layout/app-shell'
 import { NotificationProvider } from '@/lib/contexts/NotificationContext'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
-import { NotificationToastContainer } from '@/components/notifications/NotificationToast'
-import type { Notification } from '@/types/notifications'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Client component layout to avoid SSR issues
-  // Skip Supabase for now to allow pages to load
-  // Auth can be added back later when needed
   const pathname = usePathname()
   const router = useRouter()
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false)
-  const [toastNotifications, setToastNotifications] = useState<Notification[]>([])
 
   const isActive = (path: string) => {
     if (path === '/inbox') {
@@ -65,6 +59,7 @@ export default function DashboardLayout({
     }
     return false
   }
+
 
   const getNavLinkClasses = (path: string, glowColor: 'blue' | 'green' = 'blue') => {
     const active = isActive(path)
@@ -145,28 +140,8 @@ export default function DashboardLayout({
 
   useKeyboardShortcuts(shortcuts)
 
-  // Handle new notification toast
-  const handleShowToast = (notification: Notification) => {
-    setToastNotifications(prev => [notification, ...prev])
-
-    // Remove toast after it's dismissed
-    setTimeout(() => {
-      setToastNotifications(prev => prev.filter(n => n.id !== notification.id))
-    }, 6000) // Slightly longer than toast duration to ensure smooth removal
-  }
-
   return (
-      <NotificationProvider onShowToast={handleShowToast}>
-
-        {/* Toast notifications */}
-        <NotificationToastContainer
-          notifications={toastNotifications}
-          maxToasts={3}
-          position="top-right"
-          duration={5000}
-          onDismiss={(id) => setToastNotifications(prev => prev.filter(n => n.id !== id))}
-        />
-
+      <NotificationProvider>
         <AppShell>
           {/* Header with global search and user controls */}
           <header className="flex-none h-16 bg-theme-surface border-b border-theme-border px-6 flex items-center justify-between">
@@ -204,4 +179,3 @@ export default function DashboardLayout({
       </NotificationProvider>
   )
 }
-

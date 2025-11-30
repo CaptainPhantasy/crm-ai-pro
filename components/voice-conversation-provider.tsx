@@ -1,8 +1,9 @@
 'use client'
 
-import { createContext, useContext, useRef, ReactNode } from 'react'
+import { createContext, useContext, useRef, ReactNode, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useConversation } from '@elevenlabs/react'
+import { createBrowserClient } from '@supabase/ssr'
 
 /**
  * VoiceConversationProvider
@@ -29,6 +30,45 @@ export function VoiceConversationProvider({ children }: { children: ReactNode })
   const router = useRouter()
   const pathname = usePathname()
   const sessionStarted = useRef(false)
+
+  // CRITICAL FIX: Extract user context for ElevenLabs
+  const [userContext, setUserContext] = useState<any>(null)
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  // Get user context on mount
+  useEffect(() => {
+    const getUserContext = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
+          // Get user role and account info
+          const { data: accountUser } = await supabase
+            .from('account_users')
+            .select('role, account_id')
+            .eq('user_id', user.id)
+            .single()
+
+          const context = {
+            user_identifier: user.id,
+            user_name: user.user_metadata?.full_name || user.email,
+            user_role: accountUser?.role || 'unknown',
+            account_id: accountUser?.account_id || 'unknown'
+          }
+
+          console.log('[VoiceConversation] User context loaded:', context)
+          setUserContext(context)
+        }
+      } catch (error) {
+        console.error('[VoiceConversation] Failed to load user context:', error)
+      }
+    }
+
+    getUserContext()
+  }, [])
 
   const conversation = useConversation({
     onConnect: () => {
@@ -86,59 +126,64 @@ export function VoiceConversationProvider({ children }: { children: ReactNode })
             let target = route.toLowerCase().trim()
 
             // ==========================================
-            // SMART ALIASING: Mobile PWA Routes
+            // UNIFIED ROUTE MAPPING: All routes serve desktop UI
             // ==========================================
 
-            // Tech Routes
+            // Tech Routes - Keep /m/ routes but they now serve desktop UI
             if (target.includes('tech') && (target.includes('dashboard') || target.includes('home'))) {
-              target = '/m/tech/dashboard'
+              target = pathname.startsWith('/m/tech') ? '/m/tech/dashboard' : '/tech/dashboard'
             } else if (target.includes('tech') && target.includes('map')) {
-              target = '/m/tech/map'
+              target = pathname.startsWith('/m/') ? '/m/tech/map' : '/dispatch/map'
             } else if (target.includes('tech') && target.includes('job')) {
-              // If job ID is provided, extract it, otherwise go to job list
+              // If job ID is provided, extract it
               const jobIdMatch = target.match(/job[\/\s]+(\d+)/)
               if (jobIdMatch) {
-                target = `/m/tech/job/${jobIdMatch[1]}`
+                target = pathname.startsWith('/m/') ? `/m/tech/job/${jobIdMatch[1]}` : `/tech/jobs/${jobIdMatch[1]}`
               } else {
-                target = '/m/tech/dashboard' // Default to dashboard if no ID
+                target = pathname.startsWith('/m/') ? '/m/tech/dashboard' : '/tech/jobs'
               }
             } else if (target.includes('tech') && target.includes('profile')) {
-              target = '/m/tech/profile'
+              target = pathname.startsWith('/m/') ? '/m/tech/profile' : '/tech/profile'
             }
 
             // Sales Routes
             else if (target.includes('sales') && (target.includes('dashboard') || target.includes('home'))) {
-              target = '/m/sales/dashboard'
+              target = pathname.startsWith('/m/sales') ? '/m/sales/dashboard' : '/sales/dashboard'
             } else if (target.includes('sales') && target.includes('lead')) {
-              target = '/m/sales/leads'
+              const leadIdMatch = target.match(/lead[\/\s]+([a-f0-9\-]+)/)
+              if (leadIdMatch) {
+                target = pathname.startsWith('/m/') ? `/m/sales/lead/${leadIdMatch[1]}` : `/sales/leads/${leadIdMatch[1]}`
+              } else {
+                target = pathname.startsWith('/m/') ? '/m/sales/leads' : '/sales/leads'
+              }
             } else if (target.includes('sales') && target.includes('briefing')) {
               // If contact ID is provided, extract it
               const contactIdMatch = target.match(/briefing[\/\s]+([a-f0-9\-]+)/)
               if (contactIdMatch) {
-                target = `/m/sales/briefing/${contactIdMatch[1]}`
+                target = pathname.startsWith('/m/') ? `/m/sales/briefing/${contactIdMatch[1]}` : `/sales/briefing/${contactIdMatch[1]}`
               } else {
-                target = '/m/sales/leads' // Default to leads if no ID
+                target = pathname.startsWith('/m/') ? '/m/sales/dashboard' : '/sales/dashboard'
               }
             } else if (target.includes('sales') && target.includes('meeting')) {
               // If meeting ID is provided, extract it
               const meetingIdMatch = target.match(/meeting[\/\s]+([a-f0-9\-]+)/)
               if (meetingIdMatch) {
-                target = `/m/sales/meeting/${meetingIdMatch[1]}`
+                target = pathname.startsWith('/m/') ? `/m/sales/meeting/${meetingIdMatch[1]}` : `/meetings/${meetingIdMatch[1]}`
               } else {
-                target = '/m/sales/dashboard' // Default to dashboard if no ID
+                target = pathname.startsWith('/m/') ? '/m/sales/dashboard' : '/sales/dashboard'
               }
             } else if (target.includes('sales') && target.includes('profile')) {
-              target = '/m/sales/profile'
+              target = pathname.startsWith('/m/') ? '/m/sales/profile' : '/sales/profile'
             }
 
             // Owner Routes
             else if (target.includes('owner') && (target.includes('dashboard') || target.includes('home'))) {
-              target = '/m/owner/dashboard'
+              target = pathname.startsWith('/m/owner') ? '/m/owner/dashboard' : '/owner/dashboard'
             }
 
-            // Generic Dashboard (try to infer from current route)
+            // Generic Dashboard - Stay in current context
             else if (target === 'dashboard' || target === '/dashboard') {
-              // If user is currently on a mobile route, stay in mobile context
+              // If user is currently on /m/ routes, stay there (they now serve desktop UI)
               if (pathname.startsWith('/m/tech')) {
                 target = '/m/tech/dashboard'
               } else if (pathname.startsWith('/m/sales')) {
@@ -146,8 +191,8 @@ export function VoiceConversationProvider({ children }: { children: ReactNode })
               } else if (pathname.startsWith('/m/owner')) {
                 target = '/m/owner/dashboard'
               } else {
-                // Default to original route (desktop or generic)
-                target = route
+                // User is on desktop routes, stay there
+                target = '/inbox' // Desktop owner default is inbox
               }
             }
 
@@ -294,10 +339,21 @@ export function VoiceConversationProvider({ children }: { children: ReactNode })
       console.log("🚀 STARTING SESSION... Registering Client Tools:", Object.keys(clientTools))
       console.error('🚨 Navigation tool handler type:', typeof clientTools.navigation.handler)
 
-      await conversation.startSession({
+      // CRITICAL FIX: Pass user context to ElevenLabs
+      const sessionPayload: any = {
         agentId: AGENT_ID,
-        clientTools: clientTools // <--- THIS is the critical payload
-      })
+        clientTools: clientTools
+      }
+
+      // Add user context if available
+      if (userContext) {
+        sessionPayload.variableValues = userContext
+        console.log('[VoiceConversation] Starting session with user context:', userContext)
+      } else {
+        console.warn('[VoiceConversation] Starting session without user context - this may limit functionality')
+      }
+
+      await conversation.startSession(sessionPayload)
 
       console.log("✅ Session Started Successfully")
       console.log('[VoiceConversation] Client tools registered:', Object.keys(clientTools))

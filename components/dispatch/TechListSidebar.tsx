@@ -165,7 +165,7 @@ export default function TechListSidebar({
             placeholder="Search techs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
+            className="pl-10 pr-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-[var(--color-accent-primary)]"
           />
           {searchQuery && (
             <button
@@ -186,7 +186,7 @@ export default function TechListSidebar({
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
               statusFilter === 'all'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[var(--color-accent-primary)] text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
             )}
           >
@@ -208,7 +208,7 @@ export default function TechListSidebar({
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
               statusFilter === 'en_route'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[var(--color-accent-primary)] text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
             )}
           >
@@ -250,7 +250,7 @@ export default function TechListSidebar({
                   variant="link"
                   size="sm"
                   onClick={clearSearch}
-                  className="mt-2 text-blue-400"
+                  className="mt-2 text-[var(--color-accent-primary)]"
                 >
                   Clear search
                 </Button>
@@ -279,7 +279,7 @@ export default function TechListSidebar({
                       "w-full p-3 rounded-lg text-left transition-all",
                       "border border-transparent",
                       isSelected
-                        ? 'bg-blue-900 border-blue-500'
+                        ? 'bg-[var(--color-bg-surface)] border-[var(--color-accent-primary)]'
                         : 'bg-gray-800 hover:bg-gray-750 hover:border-gray-600'
                     )}
                   >
@@ -311,7 +311,7 @@ export default function TechListSidebar({
 
                     {/* Distance to Selected Job */}
                     {distance !== null && (
-                      <div className="flex items-center gap-1 text-xs text-blue-400 mb-1">
+                      <div className="flex items-center gap-1 text-xs text-[var(--color-accent-primary)] mb-1">
                         <MapPin className="w-3 h-3" />
                         <span>{formatDistance(distance)} from job</span>
                       </div>
@@ -373,11 +373,11 @@ export default function TechListSidebar({
             className={cn(
               "absolute top-4 -right-10 z-50",
               "w-8 h-12 rounded-r-lg", // Tab shape
-              "bg-blue-600 border-y border-r border-white/20",
+              "bg-[var(--color-accent-primary)] border-y border-r border-white/20",
               "flex items-center justify-center",
               "text-white shadow-xl",
-              "hover:bg-blue-700 hover:w-10 transition-all duration-200",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              "hover:bg-[var(--color-accent-primary)]/80 hover:w-10 transition-all duration-200",
+              "focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-primary)] focus:ring-offset-2"
             )}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >

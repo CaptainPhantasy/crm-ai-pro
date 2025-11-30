@@ -230,7 +230,7 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
       color = 'text-yellow-500'
       label = 'Fair'
     } else if (accuracy > 10) {
-      color = 'text-blue-500'
+      color = 'text-[var(--color-accent-primary)]'
       label = 'Good'
     }
 
@@ -269,7 +269,7 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
               <div className="flex items-start gap-4">
                 <Avatar className="w-16 h-16">
                   <AvatarImage src={undefined} alt={tech.name} />
-                  <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-lg font-semibold">
+                  <AvatarFallback className="bg-[var(--badge-bg)] text-[var(--badge-text)] text-lg font-semibold">
                     {getInitials(tech.name)}
                   </AvatarFallback>
                 </Avatar>
@@ -296,18 +296,18 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
 
               {/* Current Job */}
               {tech.currentJob && (
-                <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-900">
+                <Card className="bg-[var(--card-bg)] border-[var(--card-border)]">
                   <CardContent className="pt-4">
                     <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <MapPin className="w-4 h-4 text-[var(--color-accent-primary)] mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">
                           Current Job
                         </p>
-                        <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                        <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                           {tech.currentJob.description}
                         </p>
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                        <p className="text-xs text-[var(--color-accent-primary)] mt-1">
                           {tech.currentJob.address}
                         </p>
                       </div>
@@ -346,7 +346,7 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
               <div className="space-y-2">
                 <Button
                   onClick={handleNavigate}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-primary)]/80"
                   disabled={!tech.lastLocation}
                 >
                   <Navigation className="w-4 h-4 mr-2" />
@@ -403,7 +403,7 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
                     <Card>
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-1">
-                          <Clock className="w-4 h-4 text-blue-600" />
+                          <Clock className="w-4 h-4 text-[var(--color-accent-primary)]" />
                           <span className="text-xs text-gray-600 dark:text-gray-400">Avg Time</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -494,7 +494,7 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
               <div className="flex items-start gap-4">
                 <Avatar className="w-16 h-16">
                   <AvatarImage src={undefined} alt={tech.name} />
-                  <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-lg font-semibold">
+                  <AvatarFallback className="bg-[var(--badge-bg)] text-[var(--badge-text)] text-lg font-semibold">
                     {getInitials(tech.name)}
                   </AvatarFallback>
                 </Avatar>
@@ -521,18 +521,18 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
 
               {/* Current Job */}
               {tech.currentJob && (
-                <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-900">
+                <Card className="bg-[var(--card-bg)] border-[var(--card-border)]">
                   <CardContent className="pt-4">
                     <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <MapPin className="w-4 h-4 text-[var(--color-accent-primary)] mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">
                           Current Job
                         </p>
-                        <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                        <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                           {tech.currentJob.description}
                         </p>
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                        <p className="text-xs text-[var(--color-accent-primary)] mt-1">
                           {tech.currentJob.address}
                         </p>
                       </div>
@@ -571,7 +571,7 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
               <div className="space-y-2">
                 <Button
                   onClick={handleNavigate}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-primary)]/80"
                   disabled={!tech.lastLocation}
                 >
                   <Navigation className="w-4 h-4 mr-2" />
@@ -628,7 +628,7 @@ export function TechDetailPanel({ tech, onClose, onAssignJob, onNavigate }: Tech
                     <Card>
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-1">
-                          <Clock className="w-4 h-4 text-blue-600" />
+                          <Clock className="w-4 h-4 text-[var(--color-accent-primary)]" />
                           <span className="text-xs text-gray-600 dark:text-gray-400">Avg Time</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
